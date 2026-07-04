@@ -1,6 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.scanning.vector_store import search_similar
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.models import Garment
 
 router = APIRouter()
 
@@ -27,4 +30,26 @@ async def search_garments(request: SearchRequest):
     return{
         "message" : f"Found {len(results)} similar garments",
         "results" : results
+    }
+
+@router.get("/garments")
+async def get_all_garments(db: Session = Depends(get_db)):
+    garments = db.query(Garment).all()
+
+    if not garments:
+        return{
+            "message": "No garments found",
+            "garments":[]
+        }
+    
+    return{
+        "message": f"Found {len(garments)} garments",
+        "garments": [
+            {"id": g.id,
+            "filename": g.filename,
+            "cutout_path": g.cutout_path,
+            "dominant_colors": g.dominant_colors,
+            "created_at": g.created_at}
+            for g in garments
+        ]
     }
