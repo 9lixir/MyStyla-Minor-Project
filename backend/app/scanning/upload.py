@@ -15,7 +15,7 @@ router = APIRouter()
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok = True)
 
-ALLOWED_TYPES = ["image/jpeg", "image/png", "imge/webp"]
+ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"]
 MAX_FILE_SIZE = 10*1024*1024 #10mb
 
 @router.post("/upload")
@@ -43,17 +43,17 @@ async def upload_grament(file: UploadFile = File(...), db: Session = Depends(get
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save image: {str(e)}")
 
-    #preprocessing by resizing
-    try:
-        preprocess_image(file_path)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to preprocess image: {str(e)}")
-
     # removing background
     try:
         cutout_path = remove_background(file_path)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Background removal failed: {str(e)}")
+
+    #preprocessing by resizing
+    try:
+        cutout_path = preprocess_image(cutout_path)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to preprocess image: {str(e)}")
 
     #extracting dominant colors
     try:
