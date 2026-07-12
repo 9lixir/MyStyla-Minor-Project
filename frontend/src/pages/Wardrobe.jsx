@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 
-export default function Wardrobe({ onAddGarment }) {
+export default function Wardrobe({ onAddGarment, onShowOutfitSuggestions }) {
   const [garments, setGarments] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -18,12 +18,20 @@ export default function Wardrobe({ onAddGarment }) {
     <div className="max-w-md mx-auto p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">My Wardrobe</h1>
-        <button
-          onClick={onAddGarment}
-          className="bg-black text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition"
-        >
-          + Add
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={onShowOutfitSuggestions}
+            className="bg-white text-gray-800 border border-gray-300 px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-100 transition"
+          >
+            Suggest Outfit
+          </button>
+          <button
+            onClick={onAddGarment}
+            className="bg-black text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition"
+          >
+            + Add
+          </button>
+        </div>
       </div>
 
       {loading && <p className="text-gray-400 text-center mt-20">Loading...</p>}

@@ -33,6 +33,11 @@ function App() {
           onSave={() => setCurrentPage("wardrobe")}
         />
       )}
+      {currentPage === "outfitSuggestions" && (
+        <OutfitSuggestions
+          onBack={() => setCurrentPage("wardrobe")}
+        />
+      )}
     </div>
   )
 }
