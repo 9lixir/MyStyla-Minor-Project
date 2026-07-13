@@ -4,17 +4,17 @@ import io
 import os
 
 OUTPUT_DIR = "processed"
-os.makedirs(OUTPUT_DIR,exist_ok = True)
+os.makedirs(OUTPUT_DIR, exist_ok = True)
 
 def remove_background(image_path: str) -> str:
     # opening the uploaded image
     with open(image_path, "rb") as f:
         input_data = f.read()
 
-    # removing bg using u2net
+    # removing bg using birefnet-general to prevent fragmentation in pants legs
     output_data = remove(
         input_data,
-        session = new_session("u2net_cloth_seg")
+        session = new_session("birefnet-general")
     )
 
     #saving the clean cutout as png
