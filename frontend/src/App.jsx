@@ -9,6 +9,7 @@ import Register from '@/pages/Register';
 import ReviewTags from '@/pages/ReviewTags';
 import Wardrobe from '@/pages/Wardrobe';
 import OutfitMatcher from '@/pages/OutfitMatcher';
+import OutfitSuggestions from '@/pages/OutfitSuggestions';
 import { useAuthStore } from '@/store/auth-store';
 
 const AUTH_PAGES = new Set(['login', 'register', 'forgot-password']);
@@ -73,6 +74,7 @@ export default function App() {
       {page === 'wardrobe' ? (
         <Wardrobe 
           onAddGarment={() => handleNavigate('add-garment')} 
+          onShowOutfitSuggestions={() => handleNavigate('outfit-suggestions')}
           onMatchOutfits={() => handleNavigate('outfit-matcher')}
         />
       ) : null}
@@ -88,6 +90,9 @@ export default function App() {
       ) : null}
       {page === 'outfit-matcher' ? (
         <OutfitMatcher onBack={() => handleNavigate('wardrobe')} />
+      ) : null}
+      {page === 'outfit-suggestions' ? (
+        <OutfitSuggestions onBack={() => handleNavigate('wardrobe')} />
       ) : null}
     </>
   );

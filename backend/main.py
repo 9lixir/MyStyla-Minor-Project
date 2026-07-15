@@ -5,6 +5,7 @@ from app.user_registration.auth_router import router as auth_router
 from app.database import engine
 from app import models
 from app.outfit_matching.router import router as outfit_router
+from app.recommendation_router import router as recommendation_router
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
@@ -38,8 +39,8 @@ app.mount("/processed", StaticFiles(directory="processed"), name="processed")
 app.include_router(scanning_router, prefix="/scanning")
 app.include_router(search_router, prefix="/scanning")
 app.include_router(auth_router)
-
 app.include_router(outfit_router, prefix="/outfits")
+app.include_router(recommendation_router, prefix="/recommend")
 
 @app.get("/")
 def root():

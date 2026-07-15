@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { API_BASE_URL } from "../config"
 
-export default function Wardrobe({ onAddGarment, onMatchOutfits }) {
+export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSuggestions }) {
   const [garments, setGarments] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -20,13 +20,24 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits }) {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">My Wardrobe</h1>
         <div className="flex gap-2">
-          <button
-            onClick={onMatchOutfits}
-            className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition"
-            title="Generate outfit combinations"
-          >
-            ✨ Match
-          </button>
+          {onShowOutfitSuggestions ? (
+            <button
+              onClick={onShowOutfitSuggestions}
+              className="bg-white text-gray-800 border border-gray-300 px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-100 transition"
+              title="Get outfit suggestions with accessory recommendations"
+            >
+              Suggest
+            </button>
+          ) : null}
+          {onMatchOutfits ? (
+            <button
+              onClick={onMatchOutfits}
+              className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition"
+              title="Generate outfit combinations"
+            >
+              ✨ Match
+            </button>
+          ) : null}
           <button
             onClick={onAddGarment}
             className="bg-black text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition"
