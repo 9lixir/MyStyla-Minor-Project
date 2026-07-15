@@ -1,134 +1,165 @@
 """
 Rule-based Accessory Recommendation Engine
 --------------------------------------------
-Input:  an outfit's combined tags (occasion, formality, season, pattern, dominant_colors)
-Output: ranked list of accessory suggestions, each with a reason and a confidence score
+Implements a* = R(f, h_bar) using Table 3.2.
 
-This does NOT do color-science (HSV harmony etc.) - that's Purnima's outfit-matching
-engine. This engine answers a narrower question: "given this outfit's occasion/formality/
-season, which accessory CATEGORIES make sense, and why."
+Inputs: formality f in {Casual, Smart Casual, Formal}, and the outfit's HSV
+color profile (computed from garment dominant_colors).
+
+Color-harmony rule (3-way, matches the outfit engine's HSV logic):
+  - warm-dominant outfit      -> cool-toned accessory
+  - cool-dominant outfit      -> warm-toned accessory
+  - multicolored/patterned    -> neutral-toned accessory   (high hue spread)
+  - neutral outfit (low sat)  -> accent-colored accessory  (low saturation)
+
+Before suggesting a generic catalog accessory, the engine checks whether the
+user already owns a compatible accessory in their scanned wardrobe.
 """
 
-RULES = [
-    {
-        "name": "formal_formality",
-        "condition": lambda tags: tags.get("formality") == "Formal",
-        "suggest": [
-            {"category": "watch", "name": "Minimalist Watch", "reason": "Formal outfits pair well with a clean timepiece"},
-            {"category": "belt", "name": "Leather Belt", "reason": "A leather belt completes formal tailoring"},
-        ],
-        "weight": 30,
+import colorsys
+import math
+
+ACCESSORY_TYPES = {
+    "Casual": {
+        "bag": "Canvas Tote",
+        "footwear": "Sandals",
+        "jewelry": "Minimal Jewelry",
+        "watch": "Digital Watch",
     },
-    {
-        "name": "smart_casual_formality",
-        "condition": lambda tags: tags.get("formality") == "Smart Casual",
-        "suggest": [
-            {"category": "watch", "name": "Casual Watch", "reason": "Smart casual looks benefit from an understated watch"},
-        ],
-        "weight": 20,
+    "Smart Casual": {
+        "bag": "Shoulder Bag",
+        "footwear": "Loafers",
+        "jewelry": "Simple Earrings",
+        "watch": "Analog Watch",
     },
-    {
-        "name": "party_occasion",
-        "condition": lambda tags: tags.get("occasion") == "Party",
-        "suggest": [
-            {"category": "jewelry", "name": "Statement Necklace", "reason": "Party occasions call for bolder jewelry"},
-        ],
-        "weight": 25,
+    "Formal": {
+        "bag": "Structured Handbag",
+        "footwear": "Oxford Shoes",
+        "jewelry": "Statement Jewelry",
+        "watch": "Elegant Watch",
     },
-    {
-        "name": "office_occasion",
-        "condition": lambda tags: tags.get("occasion") == "Office",
-        "suggest": [
-            {"category": "belt", "name": "Structured Belt", "reason": "Office wear pairs well with a structured, neutral belt"},
-        ],
-        "weight": 20,
-    },
-    {
-        "name": "date_occasion",
-        "condition": lambda tags: tags.get("occasion") == "Date",
-        "suggest": [
-            {"category": "jewelry", "name": "Delicate Jewelry", "reason": "Subtle jewelry suits a date without overpowering the outfit"},
-        ],
-        "weight": 15,
-    },
-    {
-        "name": "solid_pattern_allows_statement",
-        "condition": lambda tags: tags.get("pattern") == "Solid",
-        "suggest": [
-            {"category": "jewelry", "name": "Statement Piece", "reason": "Solid, pattern-free outfits have room for a bolder accessory"},
-        ],
-        "weight": 10,
-    },
-    {
-        "name": "busy_pattern_keep_minimal",
-        "condition": lambda tags: tags.get("pattern") in ("Graphic", "Floral", "Checked"),
-        "suggest": [
-            {"category": "watch", "name": "Minimal Watch", "reason": "Busy patterns pair best with understated, minimal accessories"},
-        ],
-        "weight": 10,
-    },
-    {
-        "name": "winter_season",
-        "condition": lambda tags: tags.get("season") == "Winter",
-        "suggest": [
-            {"category": "scarf", "name": "Wool Scarf", "reason": "Cold-weather outfits benefit from a layered scarf"},
-        ],
-        "weight": 15,
-    },
-    {
-        "name": "summer_season",
-        "condition": lambda tags: tags.get("season") == "Summer",
-        "suggest": [
-            {"category": "sunglasses", "name": "Sunglasses", "reason": "Summer outfits pair naturally with sunglasses"},
-        ],
-        "weight": 15,
-    },
-]
+}
+
+TONE_PREFIX = {
+    "warm": "Gold",
+    "cool": "Silver",
+    "neutral": "Black",
+    "accent": "Emerald",
+}
 
 
-def recommend_accessories(outfit_tags: dict) -> list[dict]:
+def hex_to_hsv(hex_color: str) -> tuple[float, float, float]:
+    """Converts hex (e.g. '#a13f2c') to (hue in degrees, saturation, value)."""
+    hex_color = hex_color.lstrip("#")
+    r = int(hex_color[0:2], 16) / 255.0
+    g = int(hex_color[2:4], 16) / 255.0
+    b = int(hex_color[4:6], 16) / 255.0
+    h, s, v = colorsys.rgb_to_hsv(r, g, b)
+    return h * 360.0, s, v
+
+
+def collect_hsv(garments: list[dict]) -> list[tuple[float, float, float]]:
+    hsv_values = []
+    for garment in garments:
+        for color in garment.get("dominant_colors", []):
+            hex_value = color.get("hex") if isinstance(color, dict) else color
+            if hex_value:
+                hsv_values.append(hex_to_hsv(hex_value))
+    return hsv_values
+
+
+def circular_mean_and_spread(hues: list[float]) -> tuple[float, float]:
     """
-    Takes an outfit's combined tags and returns ranked accessory suggestions.
-    Multiple rules can suggest the same category - their weights combine into
-    a single confidence score for that accessory, and reasons are merged.
+    Returns (mean_hue_degrees, resultant_length).
+    resultant_length near 1 = hues tightly clustered; near 0 = spread out
+    (multicolored/patterned).
     """
-    scored = {}
+    if not hues:
+        return 0.0, 1.0
+    radians = [math.radians(h) for h in hues]
+    sin_sum = sum(math.sin(r) for r in radians)
+    cos_sum = sum(math.cos(r) for r in radians)
+    n = len(hues)
+    resultant_length = math.sqrt(sin_sum**2 + cos_sum**2) / n
+    mean_deg = math.degrees(math.atan2(sin_sum, cos_sum)) % 360.0
+    return mean_deg, resultant_length
 
-    for rule in RULES:
-        if rule["condition"](outfit_tags):
-            for item in rule["suggest"]:
-                key = (item["category"], item["name"])
-                if key not in scored:
-                    scored[key] = {"reasons": [], "weight": 0}
-                scored[key]["reasons"].append(item["reason"])
-                scored[key]["weight"] += rule["weight"]
 
-    if not scored:
-        return []
+def is_warm_hue(hue: float) -> bool:
+    return hue < 90 or hue >= 270
 
-    max_weight = max(entry["weight"] for entry in scored.values())
+
+NEUTRAL_SATURATION_THRESHOLD = 0.20
+MULTICOLOR_SPREAD_THRESHOLD = 0.5
+
+
+def classify_outfit_tone(garments: list[dict]) -> str:
+    """Returns "warm-dominant", "cool-dominant", "multicolored", or "neutral"."""
+    hsv_values = collect_hsv(garments)
+    if not hsv_values:
+        return "neutral"
+
+    hues = [h for h, s, v in hsv_values]
+    saturations = [s for h, s, v in hsv_values]
+    avg_saturation = sum(saturations) / len(saturations)
+
+    if avg_saturation < NEUTRAL_SATURATION_THRESHOLD:
+        return "neutral"
+
+    mean_hue, resultant_length = circular_mean_and_spread(hues)
+    if resultant_length < MULTICOLOR_SPREAD_THRESHOLD:
+        return "multicolored"
+
+    return "warm-dominant" if is_warm_hue(mean_hue) else "cool-dominant"
+
+
+def get_accessory_tone(outfit_classification: str) -> str:
+    return {
+        "warm-dominant": "cool",
+        "cool-dominant": "warm",
+        "multicolored": "neutral",
+        "neutral": "accent",
+    }[outfit_classification]
+
+
+def check_wardrobe_for_accessory(slot: str, db=None) -> dict | None:
+    """
+    STUB - depends on the Garment model's `category` field, which doesn't
+    exist yet (Ayushma/Muskan's pipeline). Once it does:
+        match = db.query(Garment).filter(Garment.category == slot).first()
+        return {"name": match.filename, "source": "wardrobe"} if match else None
+    """
+    return None
+
+
+def recommend_accessories(formality: str, garments: list[dict]) -> list[dict]:
+    accessory_types = ACCESSORY_TYPES.get(formality)
+    if accessory_types is None:
+        raise ValueError(f"Unknown formality level: {formality}")
+
+    outfit_classification = classify_outfit_tone(garments)
+    tone = get_accessory_tone(outfit_classification)
+    tone_prefix = TONE_PREFIX[tone]
 
     results = []
-    for (category, name), data in scored.items():
-        confidence = min(100, round((data["weight"] / max_weight) * 100))
-        results.append({
-            "category": category,
-            "name": name,
-            "reason": data["reasons"][0],
-            "confidence": confidence,
-        })
+    for slot, base_type in accessory_types.items():
+        wardrobe_match = check_wardrobe_for_accessory(slot)
 
-    results.sort(key=lambda r: r["confidence"], reverse=True)
+        if wardrobe_match:
+            results.append({
+                "slot": slot,
+                "name": wardrobe_match["name"],
+                "source": "wardrobe",
+                "reason": f"You already own a compatible {slot} item",
+                "confidence": 100,
+            })
+        else:
+            results.append({
+                "slot": slot,
+                "name": f"{tone_prefix} {base_type}",
+                "source": "catalog",
+                "reason": f"Outfit is {outfit_classification} - a {tone}-toned {slot} complements it",
+                "confidence": 75,
+            })
+
     return results
-
-
-if __name__ == "__main__":
-    sample_outfit = {
-        "occasion": "Office",
-        "formality": "Formal",
-        "season": "Winter",
-        "pattern": "Solid",
-        "dominant_colors": ["#1a1a1a", "#f5f5f0"],
-    }
-    import json
-    print(json.dumps(recommend_accessories(sample_outfit), indent=2))

@@ -1,78 +1,77 @@
-const API_BASE_URL = "http://localhost:8000"; // adjust to match your backend main.py host/port
+const API_BASE_URL = "http://localhost:8000";
 
-/**
- * Fetches ranked outfit suggestions (each including an accessory pick) for a given occasion.
- * Expected response shape:
- * {
- *   suggestions: [
- *     {
- *       id: string,
- *       rank: number,
- *       compatibility: number, // 0-100
- *       items: [{ id, category }] // category: top | bottom | shoes | belt | watch | jewelry
- *     }
- *   ]
- * }
- *
- * NOTE: Backend endpoint not built yet. This function is mocked below.
- * Once your rule engine endpoint exists, replace the mock block with the
- * commented-out fetch call — nothing else in the app needs to change.
- */
+export async function getAccessoryRecommendations(formality, garments) {
+  const response = await fetch(`${API_BASE_URL}/recommend/accessories`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ formality, garments }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Recommendation request failed: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function fetchWardrobeGarments() {
+  const response = await fetch(`${API_BASE_URL}/scanning/garments`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch wardrobe: ${response.status}`);
+  }
+  const data = await response.json();
+  return data.garments || [];
+}
+
+const FORMALITY_BY_OCCASION = {
+  Work: "Smart Casual",
+  Party: "Formal",
+  Wedding: "Formal",
+  Everyday: "Casual",
+};
+
 export async function getOutfitSuggestions(occasion) {
-  // --- REAL CALL (uncomment when backend endpoint is ready) ---
-  // const response = await fetch(
-  //   `${API_BASE_URL}/api/recommend/outfits?occasion=${encodeURIComponent(occasion)}`
-  // );
-  // if (!response.ok) {
-  //   throw new Error(`Recommendation request failed: ${response.status}`);
-  // }
-  // return response.json();
+  const formality = FORMALITY_BY_OCCASION[occasion] || "Casual";
 
-  // --- MOCK (remove once real call is wired up) ---
-  await new Promise((resolve) => setTimeout(resolve, 700)); // simulate network delay
+  const wardrobeGarments = await fetchWardrobeGarments();
 
-  const mockAccessoryByOccasion = {
-    Work: "watch",
-    Party: "jewelry",
-    Wedding: "jewelry",
-    Everyday: "belt",
-  };
+  let garmentsForEngine;
+  let usedRealWardrobe;
 
-  const accessory = mockAccessoryByOccasion[occasion] || "belt";
+  if (wardrobeGarments.length > 0) {
+    garmentsForEngine = wardrobeGarments.slice(0, 3).map((g) => ({
+      dominant_colors: g.dominant_colors || [],
+    }));
+    usedRealWardrobe = true;
+  } else {
+    garmentsForEngine = [{ dominant_colors: [{ hex: "#4E8B8B" }, { hex: "#2C4A7C" }] }];
+    usedRealWardrobe = false;
+  }
+
+  const { accessories } = await getAccessoryRecommendations(formality, garmentsForEngine);
+
+  const avgConfidence = Math.round(
+    accessories.reduce((sum, a) => sum + a.confidence, 0) / accessories.length
+  );
 
   return {
+    usedRealWardrobe,
     suggestions: [
       {
         id: `${occasion}-1`,
         rank: 1,
-        compatibility: 95,
+        compatibility: avgConfidence,
         items: [
-          { id: "top1", category: "top" },
-          { id: "bottom1", category: "bottom" },
-          { id: "shoes1", category: "shoes" },
-          { id: "acc1", category: accessory },
-        ],
-      },
-      {
-        id: `${occasion}-2`,
-        rank: 2,
-        compatibility: 87,
-        items: [
-          { id: "top2", category: "top" },
-          { id: "bottom2", category: "bottom" },
-          { id: "shoes2", category: "shoes" },
-          { id: "acc2", category: accessory },
-        ],
-      },
-      {
-        id: `${occasion}-3`,
-        rank: 3,
-        compatibility: 78,
-        items: [
-          { id: "top3", category: "top" },
-          { id: "bottom3", category: "bottom" },
-          { id: "shoes3", category: "shoes" },
-          { id: "acc3", category: accessory },
+          { id: "top1", category: "top", label: "Top", isRecommendation: false },
+          { id: "bottom1", category: "bottom", label: "Bottom", isRecommendation: false },
+          ...accessories.map((a, i) => ({
+            id: `acc${i}`,
+            category: a.slot,
+            label: a.name,
+            reason: a.reason,
+            source: a.source,
+            isRecommendation: true,
+          })),
         ],
       },
     ],

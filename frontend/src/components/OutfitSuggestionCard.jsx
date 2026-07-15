@@ -5,9 +5,11 @@ const SIZE_BY_CATEGORY = {
   top: "w-20 h-20",
   bottom: "w-16 h-20",
   shoes: "w-14 h-14",
+  footwear: "w-14 h-14",
   belt: "w-10 h-10",
   watch: "w-10 h-10",
   jewelry: "w-10 h-10",
+  bag: "w-12 h-12",
 };
 
 function OutfitSuggestionCard({ suggestion, onViewDetails }) {
@@ -28,14 +30,30 @@ function OutfitSuggestionCard({ suggestion, onViewDetails }) {
         </span>
       </div>
 
-      <div className="flex items-end gap-3 mb-5" data-cy="flat-lay">
+      <div className="flex items-start gap-3 mb-5 flex-wrap" data-cy="flat-lay">
         {suggestion.items.map((item) => (
-          <div
-            key={item.id}
-            className={`${SIZE_BY_CATEGORY[item.category] || "w-12 h-12"} rounded-lg bg-[#EEF0EC] border border-[#211D1B]/10 flex items-center justify-center text-[#7C2A35]`}
-            data-cy={`flat-lay-item-${item.category}`}
-          >
-            <CategoryIcon category={item.category} className="w-2/3 h-2/3" />
+          <div key={item.id} className="flex flex-col items-center w-20">
+            <div
+              className={`${SIZE_BY_CATEGORY[item.category] || "w-12 h-12"} rounded-lg border flex items-center justify-center ${
+                item.isRecommendation
+                  ? "bg-[#7C2A35]/5 border-[#7C2A35]/30 text-[#7C2A35]"
+                  : "bg-[#EEF0EC] border-[#211D1B]/10 text-[#211D1B]/40"
+              }`}
+              data-cy={`flat-lay-item-${item.category}`}
+            >
+              <CategoryIcon category={item.category} className="w-2/3 h-2/3" />
+            </div>
+            <span
+              className="text-[10px] text-center mt-1.5 text-[#211D1B]/70 leading-tight"
+              style={{ fontFamily: "Inter, sans-serif" }}
+            >
+              {item.label}
+            </span>
+            {item.isRecommendation && (
+              <span className="text-[9px] text-[#B08D57] uppercase tracking-wide mt-0.5">
+                Suggested
+              </span>
+            )}
           </div>
         ))}
       </div>

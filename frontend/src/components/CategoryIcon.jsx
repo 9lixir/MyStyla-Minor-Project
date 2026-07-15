@@ -8,6 +8,9 @@ const ICONS = {
   shoes: (
     <path d="M4 16c0-2 2-3 4-4l6-3c1-.5 2-.5 3 0l3 2c1 .5 2 1.5 2 3v2H4v-0z" />
   ),
+  footwear: (
+    <path d="M4 16c0-2 2-3 4-4l6-3c1-.5 2-.5 3 0l3 2c1 .5 2 1.5 2 3v2H4v-0z" />
+  ),
   belt: (
     <path d="M3 11h6v-1a2 2 0 012-2h2a2 2 0 012 2v1h6v2h-6v1a2 2 0 01-2 2h-2a2 2 0 01-2-2v-1H3v-2z" />
   ),
@@ -20,6 +23,9 @@ const ICONS = {
   ),
   jewelry: (
     <path d="M12 3a7 7 0 00-2 13.7V19a2 2 0 004 0v-2.3A7 7 0 0012 3z" />
+  ),
+  bag: (
+    <path d="M6 8h12l1 12H5L6 8z M9 8V6a3 3 0 016 0v2" />
   ),
   default: <circle cx="12" cy="12" r="8" />,
 };
