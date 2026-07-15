@@ -1,15 +1,22 @@
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
 import uuid
+import os
+from dotenv import load_dotenv
 
-client = QdrantClient(":memory:")
+load_dotenv()
 
-COLLECTION_NAME = "wardrobe"
+QDRANT_HOST = os.getenv("QDRANT_HOST", "localhost")
+QDRANT_PORT = int(os.getenv("QDRANT_PORT", "6333"))
+COLLECTION_NAME = os.getenv("QDRANT_COLLECTION_NAME", "wardrobe")
 
-client.create_collection(
-    collection_name = COLLECTION_NAME,
-    vectors_config = VectorParams(size=512, distance = Distance.COSINE)
-)
+client = QdrantClient(host=QDRANT_HOST, port=QDRANT_PORT)
+
+if not client.collection_exists(collection_name=COLLECTION_NAME):
+    client.create_collection(
+        collection_name=COLLECTION_NAME,
+        vectors_config=VectorParams(size=512, distance=Distance.COSINE),
+    )
 
 def store_garment_vector(embedding: list, metadata: dict) -> str:
     garment_id = str(uuid.uuid4())
@@ -27,7 +34,7 @@ def store_garment_vector(embedding: list, metadata: dict) -> str:
     return garment_id
 
 def search_similar(embedding: list, top_k: int=5) -> list:
-    results = cliemt.search(
+    results = client.search(
         collection_name = COLLECTION_NAME,
         query_vector = embedding,
         limit = top_k

@@ -1,0 +1,772 @@
+{
+  "Office": {
+    "message": "Generated 5 outfit(s) for occasion 'Office'",
+    "occasion": "Office",
+    "wardrobe_size_after_filter": 5,
+    "outfits": [
+      {
+        "garments": [
+          {
+            "id": "garment-001",
+            "category": "top",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  255,
+                  255,
+                  255
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  255
+                ],
+                "hex": "#ffffff"
+              },
+              {
+                "rgb": [
+                  220,
+                  220,
+                  220
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  220
+                ],
+                "hex": "#dcdcdc"
+              }
+            ]
+          },
+          {
+            "id": "garment-004",
+            "category": "bottom",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  20,
+                  20,
+                  20
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  20
+                ],
+                "hex": "#141414"
+              },
+              {
+                "rgb": [
+                  40,
+                  40,
+                  40
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  40
+                ],
+                "hex": "#282828"
+              }
+            ]
+          },
+          {
+            "id": "garment-005",
+            "category": "outerwear",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  130,
+                  130,
+                  130
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  130
+                ],
+                "hex": "#828282"
+              },
+              {
+                "rgb": [
+                  100,
+                  100,
+                  100
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  100
+                ],
+                "hex": "#646464"
+              }
+            ]
+          }
+        ],
+        "harmony_score": 1.0,
+        "compat_score": 0.062,
+        "final_score": 0.43720000000000003
+      },
+      {
+        "garments": [
+          {
+            "id": "garment-001",
+            "category": "top",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  255,
+                  255,
+                  255
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  255
+                ],
+                "hex": "#ffffff"
+              },
+              {
+                "rgb": [
+                  220,
+                  220,
+                  220
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  220
+                ],
+                "hex": "#dcdcdc"
+              }
+            ]
+          },
+          {
+            "id": "garment-004",
+            "category": "bottom",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  20,
+                  20,
+                  20
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  20
+                ],
+                "hex": "#141414"
+              },
+              {
+                "rgb": [
+                  40,
+                  40,
+                  40
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  40
+                ],
+                "hex": "#282828"
+              }
+            ]
+          }
+        ],
+        "harmony_score": 1.0,
+        "compat_score": 0.036,
+        "final_score": 0.42160000000000003
+      },
+      {
+        "garments": [
+          {
+            "id": "garment-002",
+            "category": "top",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  10,
+                  30,
+                  90
+                ],
+                "hsv": [
+                  113,
+                  227,
+                  90
+                ],
+                "hex": "#0a1e5a"
+              },
+              {
+                "rgb": [
+                  20,
+                  50,
+                  120
+                ],
+                "hsv": [
+                  111,
+                  213,
+                  120
+                ],
+                "hex": "#143278"
+              }
+            ]
+          },
+          {
+            "id": "garment-003",
+            "category": "bottom",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  70,
+                  100,
+                  160
+                ],
+                "hsv": [
+                  110,
+                  143,
+                  160
+                ],
+                "hex": "#4664a0"
+              },
+              {
+                "rgb": [
+                  50,
+                  80,
+                  140
+                ],
+                "hsv": [
+                  110,
+                  164,
+                  140
+                ],
+                "hex": "#32508c"
+              }
+            ]
+          }
+        ],
+        "harmony_score": 0.867,
+        "compat_score": -0.002,
+        "final_score": 0.3456
+      },
+      {
+        "garments": [
+          {
+            "id": "garment-002",
+            "category": "top",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  10,
+                  30,
+                  90
+                ],
+                "hsv": [
+                  113,
+                  227,
+                  90
+                ],
+                "hex": "#0a1e5a"
+              },
+              {
+                "rgb": [
+                  20,
+                  50,
+                  120
+                ],
+                "hsv": [
+                  111,
+                  213,
+                  120
+                ],
+                "hex": "#143278"
+              }
+            ]
+          },
+          {
+            "id": "garment-004",
+            "category": "bottom",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  20,
+                  20,
+                  20
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  20
+                ],
+                "hex": "#141414"
+              },
+              {
+                "rgb": [
+                  40,
+                  40,
+                  40
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  40
+                ],
+                "hex": "#282828"
+              }
+            ]
+          },
+          {
+            "id": "garment-005",
+            "category": "outerwear",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  130,
+                  130,
+                  130
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  130
+                ],
+                "hex": "#828282"
+              },
+              {
+                "rgb": [
+                  100,
+                  100,
+                  100
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  100
+                ],
+                "hex": "#646464"
+              }
+            ]
+          }
+        ],
+        "harmony_score": 0.627,
+        "compat_score": 0.089,
+        "final_score": 0.3042
+      },
+      {
+        "garments": [
+          {
+            "id": "garment-002",
+            "category": "top",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  10,
+                  30,
+                  90
+                ],
+                "hsv": [
+                  113,
+                  227,
+                  90
+                ],
+                "hex": "#0a1e5a"
+              },
+              {
+                "rgb": [
+                  20,
+                  50,
+                  120
+                ],
+                "hsv": [
+                  111,
+                  213,
+                  120
+                ],
+                "hex": "#143278"
+              }
+            ]
+          },
+          {
+            "id": "garment-004",
+            "category": "bottom",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  20,
+                  20,
+                  20
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  20
+                ],
+                "hex": "#141414"
+              },
+              {
+                "rgb": [
+                  40,
+                  40,
+                  40
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  40
+                ],
+                "hex": "#282828"
+              }
+            ]
+          }
+        ],
+        "harmony_score": 0.44,
+        "compat_score": 0.11,
+        "final_score": 0.24200000000000002
+      }
+    ]
+  },
+  "Casual": {
+    "message": "Generated 2 outfit(s) for occasion 'Casual'",
+    "occasion": "Casual",
+    "wardrobe_size_after_filter": 3,
+    "outfits": [
+      {
+        "garments": [
+          {
+            "id": "garment-001",
+            "category": "top",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  255,
+                  255,
+                  255
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  255
+                ],
+                "hex": "#ffffff"
+              },
+              {
+                "rgb": [
+                  220,
+                  220,
+                  220
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  220
+                ],
+                "hex": "#dcdcdc"
+              }
+            ]
+          },
+          {
+            "id": "garment-003",
+            "category": "bottom",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  70,
+                  100,
+                  160
+                ],
+                "hsv": [
+                  110,
+                  143,
+                  160
+                ],
+                "hex": "#4664a0"
+              },
+              {
+                "rgb": [
+                  50,
+                  80,
+                  140
+                ],
+                "hsv": [
+                  110,
+                  164,
+                  140
+                ],
+                "hex": "#32508c"
+              }
+            ]
+          },
+          {
+            "id": "garment-005",
+            "category": "outerwear",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  130,
+                  130,
+                  130
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  130
+                ],
+                "hex": "#828282"
+              },
+              {
+                "rgb": [
+                  100,
+                  100,
+                  100
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  100
+                ],
+                "hex": "#646464"
+              }
+            ]
+          }
+        ],
+        "harmony_score": 0.467,
+        "compat_score": 0.078,
+        "final_score": 0.23360000000000003
+      },
+      {
+        "garments": [
+          {
+            "id": "garment-001",
+            "category": "top",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  255,
+                  255,
+                  255
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  255
+                ],
+                "hex": "#ffffff"
+              },
+              {
+                "rgb": [
+                  220,
+                  220,
+                  220
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  220
+                ],
+                "hex": "#dcdcdc"
+              }
+            ]
+          },
+          {
+            "id": "garment-003",
+            "category": "bottom",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  70,
+                  100,
+                  160
+                ],
+                "hsv": [
+                  110,
+                  143,
+                  160
+                ],
+                "hex": "#4664a0"
+              },
+              {
+                "rgb": [
+                  50,
+                  80,
+                  140
+                ],
+                "hsv": [
+                  110,
+                  164,
+                  140
+                ],
+                "hex": "#32508c"
+              }
+            ]
+          }
+        ],
+        "harmony_score": 0.2,
+        "compat_score": 0.069,
+        "final_score": 0.12140000000000001
+      }
+    ]
+  },
+  "Party": {
+    "message": "Generated 2 outfit(s) for occasion 'Party'",
+    "occasion": "Party",
+    "wardrobe_size_after_filter": 3,
+    "outfits": [
+      {
+        "garments": [
+          {
+            "id": "garment-006",
+            "category": "dress",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  240,
+                  180,
+                  200
+                ],
+                "hsv": [
+                  170,
+                  64,
+                  240
+                ],
+                "hex": "#f0b4c8"
+              },
+              {
+                "rgb": [
+                  255,
+                  200,
+                  210
+                ],
+                "hsv": [
+                  175,
+                  55,
+                  255
+                ],
+                "hex": "#ffc8d2"
+              }
+            ]
+          }
+        ],
+        "harmony_score": 1.0,
+        "compat_score": 1.0,
+        "final_score": 1.0
+      },
+      {
+        "garments": [
+          {
+            "id": "garment-002",
+            "category": "top",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  10,
+                  30,
+                  90
+                ],
+                "hsv": [
+                  113,
+                  227,
+                  90
+                ],
+                "hex": "#0a1e5a"
+              },
+              {
+                "rgb": [
+                  20,
+                  50,
+                  120
+                ],
+                "hsv": [
+                  111,
+                  213,
+                  120
+                ],
+                "hex": "#143278"
+              }
+            ]
+          },
+          {
+            "id": "garment-004",
+            "category": "bottom",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  20,
+                  20,
+                  20
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  20
+                ],
+                "hex": "#141414"
+              },
+              {
+                "rgb": [
+                  40,
+                  40,
+                  40
+                ],
+                "hsv": [
+                  0,
+                  0,
+                  40
+                ],
+                "hex": "#282828"
+              }
+            ]
+          }
+        ],
+        "harmony_score": 0.44,
+        "compat_score": 0.11,
+        "final_score": 0.24200000000000002
+      }
+    ]
+  },
+  "Date": {
+    "message": "Generated 1 outfit(s) for occasion 'Date'",
+    "occasion": "Date",
+    "wardrobe_size_after_filter": 3,
+    "outfits": [
+      {
+        "garments": [
+          {
+            "id": "garment-006",
+            "category": "dress",
+            "dominant_colors": [
+              {
+                "rgb": [
+                  240,
+                  180,
+                  200
+                ],
+                "hsv": [
+                  170,
+                  64,
+                  240
+                ],
+                "hex": "#f0b4c8"
+              },
+              {
+                "rgb": [
+                  255,
+                  200,
+                  210
+                ],
+                "hsv": [
+                  175,
+                  55,
+                  255
+                ],
+                "hex": "#ffc8d2"
+              }
+            ]
+          }
+        ],
+        "harmony_score": 1.0,
+        "compat_score": 1.0,
+        "final_score": 1.0
+      }
+    ]
+  }
+}

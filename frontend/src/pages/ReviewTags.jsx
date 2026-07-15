@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "../config"
+
 export default function ReviewTags({ garment, onBack, onSave }) {
   if (!garment) return null
 
@@ -16,7 +18,7 @@ export default function ReviewTags({ garment, onBack, onSave }) {
       {/* Cutout Preview */}
       <div className="bg-white rounded-xl shadow-sm p-4 mb-4 flex items-center justify-center h-48">
         <img
-          src={`http://localhost:8000/${garment.cutout}`}
+          src={`${API_BASE_URL}/${garment.cutout}`}
           alt="Garment cutout"
           className="h-full object-contain"
           onError={(e) => { e.target.style.display = 'none' }}

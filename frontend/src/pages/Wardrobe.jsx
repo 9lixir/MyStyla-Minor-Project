@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react"
+import { API_BASE_URL } from "../config"
 
-export default function Wardrobe({ onAddGarment }) {
+export default function Wardrobe({ onAddGarment, onMatchOutfits }) {
   const [garments, setGarments] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("http://localhost:8000/scanning/garments")
+    fetch(`${API_BASE_URL}/scanning/garments`)
       .then(res => res.json())
       .then(data => {
         setGarments(data.garments || [])
@@ -18,12 +19,21 @@ export default function Wardrobe({ onAddGarment }) {
     <div className="max-w-md mx-auto p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">My Wardrobe</h1>
-        <button
-          onClick={onAddGarment}
-          className="bg-black text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition"
-        >
-          + Add
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={onMatchOutfits}
+            className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition"
+            title="Generate outfit combinations"
+          >
+            ✨ Match
+          </button>
+          <button
+            onClick={onAddGarment}
+            className="bg-black text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition"
+          >
+            + Add
+          </button>
+        </div>
       </div>
 
       {loading && <p className="text-gray-400 text-center mt-20">Loading...</p>}
@@ -36,7 +46,7 @@ export default function Wardrobe({ onAddGarment }) {
         {garments.map((garment) => (
           <div key={garment.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="h-40 bg-gray-100 flex items-center justify-center">
-              <img src={`http://localhost:8000/${garment.cutout_path}`}
+              <img src={`${API_BASE_URL}/${garment.cutout_path}`}
                 alt={garment.filename}
                 className="h-full w-full object-contain p-2"
                 onError={(e) => { e.target.style.display = 'none' }}

@@ -3,9 +3,11 @@ annotated-doc==0.0.4
 annotated-types==0.7.0
 anyio==4.14.1
 attrs==26.1.0
+bcrypt==5.0.0
 certifi==2026.6.17
 charset-normalizer==3.4.7
 click==8.4.2
+email-validator==2.3.0
 fastapi==0.138.1
 flatbuffers==25.12.19
 grpcio==1.81.1
@@ -39,6 +41,7 @@ pydantic==2.13.4
 pydantic_core==2.46.4
 PyMatting==1.1.15
 python-multipart==0.0.32
+python-dotenv==1.1.1
 qdrant-client==1.18.0
 referencing==0.37.0
 rembg==2.0.76
