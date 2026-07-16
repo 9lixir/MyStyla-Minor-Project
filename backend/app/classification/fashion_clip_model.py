@@ -1,17 +1,32 @@
-from fashion_clip.fashion_clip import FashionCLIP
+import torch
+from transformers import CLIPModel, CLIPProcessor
 from PIL import Image
 
-# Loaded once when this module is first imported and not per request
-fclip = FashionCLIP('fashion-clip')
+MODEL_NAME = "patrickjohncyh/fashion-clip"
+
+model = CLIPModel.from_pretrained(MODEL_NAME)
+processor = CLIPProcessor.from_pretrained(MODEL_NAME)
+model.eval()
 
 
-def classify_image(image: Image.Image, labels: list) -> str:
-    """Given an image and a list of candidate text labels, return the best-matching label."""
-    result = fclip.zero_shot_classification([image], labels)
-    return result[0]
+def _unwrap(output):
+    """Handles both plain-tensor and wrapped-output versions of transformers."""
+    if hasattr(output, "detach"):
+        return output
+    return output.pooler_output
 
 
 def embed_image(image: Image.Image) -> list:
-    """Return the 512-dim embedding vector for one image, as a plain Python list."""
-    embedding = fclip.encode_images([image], batch_size=1)
-    return embedding[0].tolist()
+    inputs = processor(images=image, return_tensors="pt")
+    with torch.no_grad():
+        features = model.get_image_features(**inputs)
+    features = _unwrap(features)
+    return features[0].detach().cpu().numpy().tolist()
+
+
+def embed_texts(labels: list) -> list:
+    inputs = processor(text=labels, return_tensors="pt", padding=True)
+    with torch.no_grad():
+        features = model.get_text_features(**inputs)
+    features = _unwrap(features)
+    return features.detach().cpu().numpy().tolist()

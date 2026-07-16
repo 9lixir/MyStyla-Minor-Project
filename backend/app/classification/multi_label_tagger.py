@@ -1,5 +1,5 @@
-from PIL import Image
-from app.classification.fashion_clip_model import classify_image
+import numpy as np
+from app.classification.fashion_clip_model import embed_texts
 
 CATEGORY_LABELS = ["shirt", "t-shirt", "jacket", "dress", "jeans", "skirt", "sweater", "shorts"]
 FORMALITY_LABELS = ["casual", "formal", "business casual", "athletic"]
@@ -7,13 +7,27 @@ SEASON_LABELS = ["summer", "winter", "spring", "autumn", "all-season"]
 PATTERN_LABELS = ["solid", "striped", "floral", "plaid", "polka dot", "graphic print"]
 OCCASION_LABELS = ["everyday wear", "party", "work", "workout", "formal event"]
 
+LABEL_LISTS = {
+    "category": CATEGORY_LABELS,
+    "formality": FORMALITY_LABELS,
+    "season": SEASON_LABELS,
+    "pattern": PATTERN_LABELS,
+    "occasion": OCCASION_LABELS,
+}
 
-def tag_garment(image: Image.Image) -> dict:
-    """Run classification once per attribute type, return all tags as a dictionary."""
-    return {
-        "category": classify_image(image, CATEGORY_LABELS),
-        "formality": classify_image(image, FORMALITY_LABELS),
-        "season": classify_image(image, SEASON_LABELS),
-        "pattern": classify_image(image, PATTERN_LABELS),
-        "occasion": classify_image(image, OCCASION_LABELS),
-    }
+# Computed ONCE when the server starts, not per-upload
+LABEL_EMBEDDINGS = {field: embed_texts(labels) for field, labels in LABEL_LISTS.items()}
+
+
+def cosine_similarity(a, b):
+    a, b = np.array(a), np.array(b)
+    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+
+def tag_garment(image_embedding: list) -> dict:
+    tags = {}
+    for field, label_list in LABEL_LISTS.items():
+        scores = [cosine_similarity(image_embedding, le) for le in LABEL_EMBEDDINGS[field]]
+        best_idx = int(np.argmax(scores))
+        tags[field] = label_list[best_idx]
+    return tags
