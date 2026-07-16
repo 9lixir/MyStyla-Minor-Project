@@ -4,8 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 import os
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./mystyla.db")
-
+DATABASE_URL = "postgresql://postgres:muskan@127.0.0.1:5432/mystyla"
 #using sqlite for now instead of postgres (0 setup for now. if we have time we chagnge it for the mid defense)
 
 

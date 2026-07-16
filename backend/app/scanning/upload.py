@@ -6,6 +6,7 @@ from app.scanning.vector_store import store_garment_vector
 from app.scanning.preprocess import preprocess_image
 from app.database import get_db
 from app.models import Garment
+from app.classification.classify import analyze_garment
 import shutil
 import os
 import numpy as np
@@ -19,7 +20,7 @@ ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"]
 MAX_FILE_SIZE = 10*1024*1024 #10mb
 
 @router.post("/upload")
-async def upload_grament(file: UploadFile = File(...), db: Session = Depends(get_db)):
+async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get_db)):
     #only allowing images on here
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(
@@ -63,16 +64,17 @@ async def upload_grament(file: UploadFile = File(...), db: Session = Depends(get
     
     try:
         #placeholder 512-d vector until FashionCLIP is integrated, muskan le fashion clip ko integrate nagare samma
-        placeholder_embedding = np.random.rand(512).tolist()
+        result = analyze_garment(cutout_path)
 
         #storing in qdrant with metadata
         metadata = {
             "filename" : file.filename,
             "original_path" : file_path,
             "cutout_path" : cutout_path,
-            "dominant_colors" : colors
+            "dominant_colors" : colors,
+            "tags": result["tags"]
         }
-        garment_id = store_garment_vector(placeholder_embedding, metadata)
+        garment_id = store_garment_vector(result["embedding"], metadata)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to store garment: {str(e)}")
 
@@ -100,5 +102,6 @@ async def upload_grament(file: UploadFile = File(...), db: Session = Depends(get
         "garment_id": garment_id,
         "filename": file.filename,
         "cutout": cutout_path,
-        "dominant_colors": colors
+        "dominant_colors": colors,
+        "tags": result["tags"]
     }
