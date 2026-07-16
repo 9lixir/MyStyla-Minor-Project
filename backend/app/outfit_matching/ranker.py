@@ -1,7 +1,3 @@
-"""
-ranker.py – Generate outfit combinations and rank by score
-"""
-
 from typing import Any
 from app.outfit_matching.harmony import score_outfit_harmony
 from app.outfit_matching.compatibility import score_outfit_compatibility
@@ -11,19 +7,15 @@ from app.outfit_matching.config import OUTFIT_TEMPLATES, OPTIONAL_CATEGORIES, W_
 def _generate_combinations(
     buckets: dict[str, list[dict[str, Any]]]
 ) -> list[list[dict[str, Any]]]:
-    """Generate all valid outfit combinations using templates.
-    
-    For each template, generate the Cartesian product of garments in those
-    categories. Optionally append outerwear if it exists.
-    """
+    """generate valid outfit combinations"""
     candidates = []
     
     for template in OUTFIT_TEMPLATES:
-        # Check if all categories in template exist
+        # skip templates with missing categories
         if not all(cat in buckets for cat in template):
             continue
         
-        # Build Cartesian product for this template
+        # build combinations for this template
         def cartesian_product(cats):
             if not cats:
                 return [[]]
@@ -37,13 +29,13 @@ def _generate_combinations(
         
         template_combos = cartesian_product(template)
         
-        # Optionally append outerwear to each combo
+        # append optional outerwear variants
         if "outerwear" in buckets and "outerwear" not in template:
             expanded = []
             for combo in template_combos:
-                # add combo without outerwear
+                # keep base combo
                 expanded.append(combo)
-                # add combo with each outerwear
+                # add each outerwear option
                 for outer in buckets["outerwear"]:
                     expanded.append(combo + [outer])
             candidates.extend(expanded)
@@ -58,14 +50,14 @@ def rank_outfits(
     buckets: dict[str, list[dict[str, Any]]],
     top_k: int = 10,
 ) -> list[dict[str, Any]]:
-    """Generate all outfit combinations and rank by (harmony + compatibility)."""
+    """rank outfits by harmony and compatibility"""
     
     candidates = _generate_combinations(buckets)
     
     if not candidates:
         return []
     
-    # Score each outfit
+    # score each outfit
     ranked = []
     for outfit in candidates:
         harmony_score = score_outfit_harmony(outfit)
@@ -86,6 +78,6 @@ def rank_outfits(
             "final_score": final_score,
         })
     
-    # Sort by final score descending, return top K
+    # return top ranked outfits
     ranked.sort(key=lambda x: x["final_score"], reverse=True)
     return ranked[:top_k]

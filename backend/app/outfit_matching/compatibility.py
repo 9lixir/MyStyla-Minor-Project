@@ -1,15 +1,4 @@
-# compatibility.py – Layer 2: embedding cosine similarity scoring
-"""
-compatibility.py
------------------
-Layer 2 of the matching engine: combined visual + metadata compatibility
-scoring, per section 3.4.4.2 of the proposal.
-
-Each garment becomes a single vector: its L2-normalized 512-d FashionCLIP
-embedding, concatenated with an L2-normalized one/multi-hot metadata vector
-(formality, season, pattern, occasion) scaled by ALPHA. Compatibility
-between two garments is cosine similarity of these combined vectors.
-"""
+# visual and metadata compatibility scoring
 
 import math
 from typing import Any
@@ -25,10 +14,7 @@ def _l2_normalize(vec: list[float]) -> list[float]:
 
 
 def _metadata_vector(tags: dict[str, Any]) -> list[float]:
-    """Build the fixed-order metadata vector: one-hot formality, one-hot
-    season, one-hot pattern, multi-hot occasion. Order MUST be identical for
-    every garment, which is why the vocab lists live in config.py.
-    """
+    """build the fixed order metadata vector"""
     vec = []
     vec += [1.0 if tags["formality"] == f else 0.0 for f in FORMALITY]
     vec += [1.0 if tags["season"] == s else 0.0 for s in SEASON]
@@ -38,7 +24,7 @@ def _metadata_vector(tags: dict[str, Any]) -> list[float]:
 
 
 def build_combined_vector(garment: dict[str, Any], alpha: float = METADATA_WEIGHT_ALPHA) -> list[float]:
-    """Build the fused [visual_embedding | alpha * metadata] vector for one garment."""
+    """build the fused visual and metadata vector"""
     visual = _l2_normalize(garment["embedding"])
     metadata = _l2_normalize(_metadata_vector(garment["tags"]))
     metadata_scaled = [alpha * x for x in metadata]
@@ -62,7 +48,7 @@ def score_garment_pair(garment_a: dict[str, Any], garment_b: dict[str, Any]) -> 
 
 
 def score_outfit_compatibility(garments: list[dict[str, Any]]) -> float:
-    """Average pairwise compatibility across a candidate outfit's items."""
+    """average pairwise compatibility for an outfit"""
     if len(garments) < 2:
         return 1.0
 

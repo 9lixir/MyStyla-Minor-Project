@@ -10,3 +10,8 @@ qdrant_storage/
 documentation/
 /mystyla.db
 /frontend/mystyla.db
+/backend/mystyla.db
+/uploads/
+/processed/
+/backend/uploads/
+/backend/processed/

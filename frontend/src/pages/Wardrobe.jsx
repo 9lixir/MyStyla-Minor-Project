@@ -35,7 +35,7 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
               className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition"
               title="Generate outfit combinations"
             >
-              ✨ Match
+              Match
             </button>
           ) : null}
           <button
@@ -64,7 +64,14 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
             />
             </div>
             <div className="p-3">
-              <p className="text-sm font-medium text-gray-800 truncate">{garment.filename}</p>
+              <p className="text-sm font-medium text-gray-800 truncate capitalize">
+                {garment.tags?.category || garment.filename}
+              </p>
+              {garment.tags?.formality && (
+                <p className="text-xs text-gray-400 capitalize mt-0.5">
+                  {garment.tags.formality} · {garment.tags.occasion}
+                </p>
+              )}
               <div className="flex gap-1 mt-2">
                 {garment.dominant_colors?.map((color, i) => (
                   <div

@@ -1,21 +1,13 @@
-"""
-models.py – Data contracts
-Defines the exact schema a garment dict must have before it reaches the engine.
-If real data drifts from this schema, validate_garment() fails loudly.
-"""
-
 from typing import Any
 
 
 def validate_garment(garment: dict[str, Any]) -> None:
-    """Ensure the garment dict has all required keys with correct types.
-    Raises ValueError if validation fails.
-    """
+    """validate the garment dict contract"""
     required_keys = {
         "id": str,
         "category": str,
-        "colors": list,  # dominant colors in color_extract format
-        "tags": dict,    # must have formality, season, pattern, occasion
+        "colors": list,  # dominant colors from color_extract
+        "tags": dict,  # formality season pattern occasion
         "embedding": list,
     }
     
@@ -28,7 +20,7 @@ def validate_garment(garment: dict[str, Any]) -> None:
                 f"got {type(garment[key]).__name__}"
             )
     
-    # Validate tags structure
+    # validate tag shape
     required_tags = {"formality", "season", "pattern", "occasion"}
     if not isinstance(garment["tags"], dict):
         raise ValueError("Garment['tags'] must be a dict")
@@ -37,13 +29,13 @@ def validate_garment(garment: dict[str, Any]) -> None:
     if missing_tags:
         raise ValueError(f"Garment['tags'] missing: {missing_tags}")
     
-    # Validate embedding is 512-dimensional
+    # validate embedding size
     if len(garment["embedding"]) != 512:
         raise ValueError(
             f"Embedding must be 512-dim, got {len(garment['embedding'])}-dim"
         )
     
-    # Validate colors list format
+    # validate color shape
     for color in garment["colors"]:
         if not isinstance(color, dict) or "hsv" not in color:
             raise ValueError(

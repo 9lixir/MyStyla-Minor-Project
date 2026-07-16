@@ -18,19 +18,14 @@ export default function ReviewTags({ garment, onBack, onSave }) {
       occasion: ["Casual"],
     }
 
-    if (!garment?.suggested_classification) {
-      return fallback
-    }
+    const source = garment?.suggested_classification || garment?.tags || {}
 
     return {
-      category: garment.suggested_classification.category || fallback.category,
-      formality: garment.suggested_classification.formality || fallback.formality,
-      season: garment.suggested_classification.season || fallback.season,
-      pattern: garment.suggested_classification.pattern || fallback.pattern,
-      occasion:
-        garment.suggested_classification.occasion?.length > 0
-          ? garment.suggested_classification.occasion
-          : fallback.occasion,
+      category: source.category || fallback.category,
+      formality: source.formality || fallback.formality,
+      season: source.season || fallback.season,
+      pattern: source.pattern || fallback.pattern,
+      occasion: source.occasion?.length > 0 ? source.occasion : fallback.occasion,
     }
   }, [garment])
 
@@ -90,27 +85,24 @@ export default function ReviewTags({ garment, onBack, onSave }) {
 
   return (
     <div className="max-w-md mx-auto p-6">
-      {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <button onClick={onBack} className="text-gray-500 hover:text-gray-800">
-          ← Back
+          Back
         </button>
         <h1 className="text-2xl font-bold text-gray-800">Review Tags</h1>
       </div>
 
       <p className="text-gray-500 mb-4">Confirm or edit garment details</p>
 
-      {/* Cutout Preview */}
       <div className="bg-white rounded-xl shadow-sm p-4 mb-4 flex items-center justify-center h-48">
         <img
           src={`${API_BASE_URL}/${garment.cutout}`}
           alt="Garment cutout"
           className="h-full object-contain"
-          onError={(e) => { e.target.style.display = 'none' }}
+          onError={(e) => { e.target.style.display = "none" }}
         />
       </div>
 
-      {/* Dominant Colors */}
       <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
         <p className="text-sm font-medium text-gray-700 mb-2">Dominant Colors</p>
         <div className="flex gap-3">
@@ -126,14 +118,12 @@ export default function ReviewTags({ garment, onBack, onSave }) {
         </div>
       </div>
 
-      {/* Tags */}
       <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
         <p className="text-sm font-medium text-gray-700 mb-3">
-          Tags 
+          Tags
           <span className="text-xs text-gray-400 ml-2">(editable)</span>
         </p>
 
-        {/* Category */}
         <div className="mb-3">
           <p className="text-xs text-gray-500 mb-1">Category</p>
           <select
@@ -149,7 +139,6 @@ export default function ReviewTags({ garment, onBack, onSave }) {
           </select>
         </div>
 
-        {/* Formality */}
         <div className="mb-3">
           <p className="text-xs text-gray-500 mb-1">Formality</p>
           <select
@@ -165,7 +154,6 @@ export default function ReviewTags({ garment, onBack, onSave }) {
           </select>
         </div>
 
-        {/* Season */}
         <div className="mb-3">
           <p className="text-xs text-gray-500 mb-1">Season</p>
           <select
@@ -181,7 +169,6 @@ export default function ReviewTags({ garment, onBack, onSave }) {
           </select>
         </div>
 
-        {/* Pattern */}
         <div className="mb-3">
           <p className="text-xs text-gray-500 mb-1">Pattern</p>
           <select
@@ -197,7 +184,6 @@ export default function ReviewTags({ garment, onBack, onSave }) {
           </select>
         </div>
 
-        {/* Occasion */}
         <div>
           <p className="text-xs text-gray-500 mb-1">Occasion</p>
           <div className="flex gap-2 flex-wrap">
@@ -221,7 +207,6 @@ export default function ReviewTags({ garment, onBack, onSave }) {
 
       {error ? <p className="text-sm text-red-600 mb-3">{error}</p> : null}
 
-      {/* Save Button */}
       <button
         onClick={handleSave}
         disabled={saving}

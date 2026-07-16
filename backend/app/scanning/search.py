@@ -32,36 +32,48 @@ async def search_garments(request: SearchRequest):
         "results" : results
     }
 
-@router.get("/garments")
-async def get_all_garments(db: Session = Depends(get_db)):
+def _serialize_garments(db: Session) -> list[dict]:
     garments = db.query(Garment).all()
     classifications = db.query(GarmentClassification).all()
     classification_by_garment_id = {c.garment_id: c for c in classifications}
 
-    if not garments:
-        return{
-            "message": "No garments found",
-            "garments":[]
+    return [
+        {
+            "id": g.id,
+            "filename": g.filename,
+            "cutout_path": g.cutout_path,
+            "dominant_colors": g.dominant_colors,
+            "created_at": g.created_at,
+            "category": classification_by_garment_id[g.id].category if g.id in classification_by_garment_id else None,
+            "tags": {
+                "category": classification_by_garment_id[g.id].category,
+                "formality": classification_by_garment_id[g.id].formality,
+                "season": classification_by_garment_id[g.id].season,
+                "pattern": classification_by_garment_id[g.id].pattern,
+                "occasion": classification_by_garment_id[g.id].occasion,
+            } if g.id in classification_by_garment_id else None,
+            "user_id": classification_by_garment_id[g.id].user_id if g.id in classification_by_garment_id else None,
         }
-    
-    return{
+        for g in garments
+    ]
+
+
+@router.get("/garments")
+async def get_all_garments(db: Session = Depends(get_db)):
+    garments = _serialize_garments(db)
+
+    if not garments:
+        return {
+            "message": "No garments found",
+            "garments": []
+        }
+
+    return {
         "message": f"Found {len(garments)} garments",
-        "garments": [
-            {
-                "id": g.id,
-                "filename": g.filename,
-                "cutout_path": g.cutout_path,
-                "dominant_colors": g.dominant_colors,
-                "created_at": g.created_at,
-                "category": classification_by_garment_id[g.id].category if g.id in classification_by_garment_id else None,
-                "tags": {
-                    "formality": classification_by_garment_id[g.id].formality,
-                    "season": classification_by_garment_id[g.id].season,
-                    "pattern": classification_by_garment_id[g.id].pattern,
-                    "occasion": classification_by_garment_id[g.id].occasion,
-                } if g.id in classification_by_garment_id else None,
-                "user_id": classification_by_garment_id[g.id].user_id if g.id in classification_by_garment_id else None,
-            }
-            for g in garments
-        ]
+        "garments": garments
     }
+
+
+@router.get("/garments-with-tags")
+async def get_all_garments_with_tags(db: Session = Depends(get_db)):
+    return await get_all_garments(db)

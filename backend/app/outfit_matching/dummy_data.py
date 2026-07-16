@@ -1,9 +1,3 @@
-"""
-dummy_data.py
-Generates a fake wardrobe that matches the exact schema in models.py.
-THE SWAP POINT: Replace get_wardrobe() to query Postgres+Qdrant when ready.
-"""
-
 import random
 import numpy as np
 import cv2
@@ -14,14 +8,14 @@ from app.scanning.vector_store import client, COLLECTION_NAME
 
 
 def _random_embedding(dim: int = 512) -> list:
-    """Temporary: random unit vector. Replace with real Qdrant fetch later."""
+    """fallback random unit vector"""
     vec = [random.gauss(0, 1) for _ in range(dim)]
     mag = sum(x**2 for x in vec) ** 0.5
     return [x / mag for x in vec]
 
 
 def _color(r, g, b) -> dict:
-    """Helper to build a color entry matching color_extract.extract_colors() output."""
+    """build a color entry in extract_colors format"""
     bgr = np.array([[[b, g, r]]], dtype=np.uint8)
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)[0][0]
     return {
@@ -108,11 +102,7 @@ DUMMY_WARDROBE = [
 
 
 def get_wardrobe(user_id: str = None) -> list[dict]:
-    """
-    Returns a list of garment dicts for the given user.
-
-    When Postgres + Qdrant are ready, replace this with real data fetch.
-    """
+    """load wardrobe rows from sqlite and qdrant"""
     db = SessionLocal()
     try:
         garments = db.query(Garment).all()

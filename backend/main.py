@@ -4,8 +4,10 @@ from app.scanning.search import router as search_router
 from app.user_registration.auth_router import router as auth_router
 from app.database import engine
 from app import models
+from app.user_registration import user_models
 from app.outfit_matching.router import router as outfit_router
 from app.recommendation_router import router as recommendation_router
+from app.classification.routes import router as classification_router
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
@@ -41,6 +43,7 @@ app.include_router(search_router, prefix="/scanning")
 app.include_router(auth_router)
 app.include_router(outfit_router, prefix="/outfits")
 app.include_router(recommendation_router, prefix="/recommend")
+app.include_router(classification_router, prefix="/classification")
 
 @app.get("/")
 def root():

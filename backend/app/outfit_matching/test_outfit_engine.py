@@ -1,17 +1,10 @@
-"""
-test_outfit_engine.py
----------------------
-Quick test to see the engine output on dummy data.
-Run this from the backend/ directory: python -m app.outfit_matching.test_outfit_engine
-
-This writes JSON output to a file so you can inspect the results.
-"""
+# quick test for outfit generation output
 
 import json
 import sys
 from pathlib import Path
 
-# Add backend to path so imports work
+# add backend to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from app.outfit_matching.engine import generate_outfits
@@ -42,7 +35,7 @@ def main():
                   f"compat={outfit['compat_score']:.3f}, "
                   f"final={outfit['final_score']:.3f}")
     
-    # Write detailed JSON to file for inspection
+    # write detailed json output
     output_file = Path(__file__).parent / "test_output.json"
     with open(output_file, "w") as f:
         json.dump(all_results, f, indent=2)

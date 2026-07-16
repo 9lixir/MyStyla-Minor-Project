@@ -1,15 +1,4 @@
-# engine.py – core outfit generation pipeline
-"""
-engine.py
----------
-The single entry point. This is the function your FastAPI route imports
-and calls - it wires together every step:
-
-    get_wardrobe -> filter_by_occasion -> group_by_category -> rank_outfits
-
-Nobody outside this file needs to know about buckets, templates, or scoring
-internals - they just call generate_outfits(user_id, occasion).
-"""
+# core outfit generation pipeline
 
 from typing import Any
 
@@ -24,7 +13,7 @@ def generate_outfits(user_id: str, occasion: str, top_k: int = DEFAULT_TOP_K) ->
     wardrobe = get_wardrobe(user_id)
 
     for garment in wardrobe:
-        validate_garment(garment)  # fails loudly & early if the real data source drifts from the contract
+        validate_garment(garment)  # validate real data before scoring
 
     filtered = filter_by_occasion(wardrobe, occasion)
     if not filtered:

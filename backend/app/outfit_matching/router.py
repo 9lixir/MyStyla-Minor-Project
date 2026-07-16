@@ -1,8 +1,4 @@
-# router.py – FastAPI routes for outfit matching
-"""
-Exposes the outfit matching engine as HTTP endpoints.
-Clients (frontend or CLI) POST to /generate to get ranked outfit combinations.
-"""
+# fastapi routes for outfit matching
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -15,7 +11,7 @@ router = APIRouter()
 
 
 class GenerateOutfitsRequest(BaseModel):
-    """Request body for /generate endpoint."""
+    """request body for outfit generation"""
     user_id: str
     occasion: str
     top_k: Optional[int] = 10
@@ -23,36 +19,7 @@ class GenerateOutfitsRequest(BaseModel):
 
 @router.post("/generate")
 async def generate_outfits_endpoint(request: GenerateOutfitsRequest):
-    """
-    Generate ranked outfit combinations for a user + occasion.
-    
-    Example request:
-        POST /outfits/generate
-        {
-            "user_id": "user123",
-            "occasion": "Office",
-            "top_k": 5
-        }
-    
-    Returns: {
-        "message": "Generated 5 outfit(s) for occasion 'Office'",
-        "occasion": "Office",
-        "wardrobe_size_after_filter": 12,
-        "outfits": [
-            {
-                "garments": [
-                    {"id": "garment-002", "category": "top", "dominant_colors": [...]},
-                    {"id": "garment-004", "category": "bottom", "dominant_colors": [...]},
-                    ...
-                ],
-                "harmony_score": 0.85,
-                "compat_score": 0.72,
-                "final_score": 0.782
-            },
-            ...
-        ]
-    }
-    """
+    """generate ranked outfits for a user and occasion"""
     try:
         result = generate_outfits(
             user_id=request.user_id,
@@ -66,6 +33,6 @@ async def generate_outfits_endpoint(request: GenerateOutfitsRequest):
 
 @router.get("/health")
 async def health():
-    """Dummy endpoint for debugging."""
+    """check outfit matcher health"""
     return {"status": "outfit_matching engine is running"}
 
