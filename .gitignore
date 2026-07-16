@@ -8,3 +8,5 @@ build/
 .DS_Store
 qdrant_storage/
 documentation/
+/mystyla.db
+/frontend/mystyla.db

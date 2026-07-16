@@ -15,3 +15,16 @@ class Garment(Base):
     dominant_colors = Column(JSON, nullable=False)
     qdrant_id = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.now)
+
+
+class GarmentClassification(Base):
+    __tablename__ = "garment_classifications"
+
+    garment_id = Column(String, primary_key=True)
+    user_id = Column(String, nullable=True, index=True)
+    category = Column(String, nullable=False)
+    formality = Column(String, nullable=False)
+    season = Column(String, nullable=False)
+    pattern = Column(String, nullable=False)
+    occasion = Column(JSON, nullable=False)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)

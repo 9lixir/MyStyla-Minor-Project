@@ -3,7 +3,7 @@ from app.scanning.vector_store import search_similar
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import Garment
+from app.models import Garment, GarmentClassification
 
 router = APIRouter()
 
@@ -35,6 +35,8 @@ async def search_garments(request: SearchRequest):
 @router.get("/garments")
 async def get_all_garments(db: Session = Depends(get_db)):
     garments = db.query(Garment).all()
+    classifications = db.query(GarmentClassification).all()
+    classification_by_garment_id = {c.garment_id: c for c in classifications}
 
     if not garments:
         return{
@@ -45,11 +47,21 @@ async def get_all_garments(db: Session = Depends(get_db)):
     return{
         "message": f"Found {len(garments)} garments",
         "garments": [
-            {"id": g.id,
-            "filename": g.filename,
-            "cutout_path": g.cutout_path,
-            "dominant_colors": g.dominant_colors,
-            "created_at": g.created_at}
+            {
+                "id": g.id,
+                "filename": g.filename,
+                "cutout_path": g.cutout_path,
+                "dominant_colors": g.dominant_colors,
+                "created_at": g.created_at,
+                "category": classification_by_garment_id[g.id].category if g.id in classification_by_garment_id else None,
+                "tags": {
+                    "formality": classification_by_garment_id[g.id].formality,
+                    "season": classification_by_garment_id[g.id].season,
+                    "pattern": classification_by_garment_id[g.id].pattern,
+                    "occasion": classification_by_garment_id[g.id].occasion,
+                } if g.id in classification_by_garment_id else None,
+                "user_id": classification_by_garment_id[g.id].user_id if g.id in classification_by_garment_id else None,
+            }
             for g in garments
         ]
     }

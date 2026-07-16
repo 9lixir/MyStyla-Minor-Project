@@ -8,6 +8,10 @@ import random
 import numpy as np
 import cv2
 
+from app.database import SessionLocal
+from app.models import Garment, GarmentClassification
+from app.scanning.vector_store import client, COLLECTION_NAME
+
 
 def _random_embedding(dim: int = 512) -> list:
     """Temporary: random unit vector. Replace with real Qdrant fetch later."""
@@ -109,4 +113,62 @@ def get_wardrobe(user_id: str = None) -> list[dict]:
 
     When Postgres + Qdrant are ready, replace this with real data fetch.
     """
+    db = SessionLocal()
+    try:
+        garments = db.query(Garment).all()
+        classifications = db.query(GarmentClassification).all()
+    finally:
+        db.close()
+
+    if user_id:
+        classifications_for_user = [c for c in classifications if c.user_id == user_id]
+        if classifications_for_user:
+            classifications = classifications_for_user
+            classified_ids = {c.garment_id for c in classifications_for_user}
+            garments = [g for g in garments if g.id in classified_ids]
+
+    classification_by_id = {c.garment_id: c for c in classifications}
+    qdrant_ids = [g.qdrant_id for g in garments if g.qdrant_id]
+
+    vectors_by_id: dict[str, list[float]] = {}
+    if qdrant_ids:
+        try:
+            points = client.retrieve(
+                collection_name=COLLECTION_NAME,
+                ids=qdrant_ids,
+                with_vectors=True,
+                with_payload=False,
+            )
+            vectors_by_id = {str(point.id): point.vector for point in points if point.vector}
+        except Exception:
+            vectors_by_id = {}
+
+    wardrobe: list[dict] = []
+    for garment in garments:
+        classification = classification_by_id.get(garment.id)
+        if classification is None:
+            continue
+
+        embedding = vectors_by_id.get(garment.qdrant_id or "")
+        if not embedding:
+            embedding = _random_embedding()
+
+        wardrobe.append(
+            {
+                "id": garment.id,
+                "category": classification.category,
+                "colors": garment.dominant_colors,
+                "tags": {
+                    "formality": classification.formality,
+                    "season": classification.season,
+                    "pattern": classification.pattern,
+                    "occasion": classification.occasion,
+                },
+                "embedding": embedding,
+            }
+        )
+
+    if wardrobe:
+        return wardrobe
+
     return DUMMY_WARDROBE
