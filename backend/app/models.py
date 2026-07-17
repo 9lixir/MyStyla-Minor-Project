@@ -16,3 +16,12 @@ class Garment(Base):
     dominant_colors = Column(JSON, nullable = False)
     qdrant_id = Column(String, nullable = True)
     created_at = Column(DateTime, default = datetime.now)
+
+class TagCorrection(Base):
+    __tablename__ = "tag_corrections"
+    id = Column(String, primary_key=True)
+    garment_id = Column(String)
+    field = Column(String)          
+    predicted_value = Column(String)
+    corrected_value = Column(String)
+    created_at = Column(DateTime, default=datetime.now)

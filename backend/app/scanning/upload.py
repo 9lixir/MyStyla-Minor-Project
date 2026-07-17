@@ -103,5 +103,6 @@ async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get
         "filename": file.filename,
         "cutout": cutout_path,
         "dominant_colors": colors,
-        "tags": result["tags"]
+        "tags": result["tags"],
+        "flags": result["flags"]
     }

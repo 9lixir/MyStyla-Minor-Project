@@ -21,6 +21,12 @@ export default function ReviewTags({ garment, onBack, onSave }) {
   if (!garment) return null
 
   function selectTag(field, value) {
+    const predicted = garment.tags[field]
+    if (value !== predicted) 
+    {
+      fetch(`http://localhost:8000/classification/garments/${garment.garment_id}/correct-tag?field=${field}&predicted=${predicted}&corrected=${value}`, {
+        method: "POST"
+    })
     setSelectedTags((prev) => ({ ...prev, [field]: value }))
   }
 

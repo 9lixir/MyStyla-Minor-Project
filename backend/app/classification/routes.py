@@ -1,5 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from app.classification.classify import process_and_update, get_cutout_path
+import uuid
+from app.models import TagCorrection
 
 router = APIRouter()
 
@@ -11,3 +13,19 @@ def classify_garment(garment_id: str, original_filename: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Classification failed: {str(e)}")
     return {"garment_id": garment_id, "tags": result["tags"]}
+
+@router.post("/garments/{garment_id}/correct-tag")
+def correct_tag(garment_id: str, field:str, predicted: str,corrected:str, db: Session = Depends(get_db)):
+    if predicted != corrected:
+        entry = TagCorrection(
+            id = str(uuid.uuid4()),
+            garment_id = garment_id,
+            field = field,
+            predicted_value = predicted,
+            corrected_value = corrected
+
+        )
+        db.add(entry)
+        db.commit()
+       
+    return {"status": "logged" if predicted != corrected else "no change"}
