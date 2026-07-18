@@ -10,11 +10,17 @@ class UserRegisterRequest(BaseModel):
     @field_validator("username")
     @classmethod
     def username_length(cls, v: str) -> str:
+        v = v.strip()
         if len(v) < 3:
             raise ValueError("Username must be at least 3 characters")
         if len(v) > 30:
             raise ValueError("Username must be under 30 characters")
         return v
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, v: EmailStr) -> str:
+        return str(v).strip().lower()
 
     @field_validator("password")
     @classmethod
@@ -36,6 +42,11 @@ class UserRegisterRequest(BaseModel):
 class UserLoginRequest(BaseModel):
     email: EmailStr
     password: str
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, v: EmailStr) -> str:
+        return str(v).strip().lower()
 
 
 class UserResponse(BaseModel):

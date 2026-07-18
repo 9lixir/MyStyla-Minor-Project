@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import AbstractBackground from '@/components/AbstractBackground';
 
 export default function ForgotPassword({ onNavigate }) {
   const [email, setEmail] = useState('');
@@ -25,9 +26,10 @@ export default function ForgotPassword({ onNavigate }) {
 
   return (
     <div className="mystyla-auth-shell flex w-full min-h-screen items-center justify-center px-4 py-8">
+      <AbstractBackground />
       <div className="relative w-full max-w-md">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-white/60 bg-white/85 shadow-lg">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-[#2A3374] bg-[#F5F3FF] shadow-lg">
             <img src="/tlhlogo.png" alt="MyStyla logo" className="h-10 w-10 object-contain" />
           </div>
           <div className="mystyla-masthead inline-flex rounded-full mystyla-pill px-3 py-1 text-[10px] font-semibold">
@@ -38,16 +40,16 @@ export default function ForgotPassword({ onNavigate }) {
         <Card className="mystyla-auth-card border-0">
           <CardContent className="space-y-5 p-7 sm:p-8">
             <div className="text-center space-y-2">
-              <h1 className="mystyla-masthead text-[11px] font-semibold text-[#8e7c75]">Reset access</h1>
-              <h2 className="mystyla-display text-3xl leading-tight text-[#2c2421] sm:text-[34px]">Forgot your password?</h2>
-              <p className="text-sm leading-6 text-[#786962]">
+              <h1 className="mystyla-masthead text-[11px] font-semibold">Reset access</h1>
+              <h2 className="mystyla-display text-3xl leading-tight text-[#F5F3FF] sm:text-[34px]">Forgot your password?</h2>
+              <p className="text-sm leading-6 text-[#B9C0E8]">
                 Enter your email and we&apos;ll send you a reset link.
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="space-y-1">
-                <Label className="mystyla-masthead text-[10px] font-semibold text-[#8e7c75]">Email address</Label>
+                <Label className="mystyla-masthead text-[10px] font-semibold">Email address</Label>
                 <Input
                   type="email"
                   placeholder="example@gmail.com"
@@ -66,8 +68,8 @@ export default function ForgotPassword({ onNavigate }) {
               </Button>
             </form>
 
-            <div className="text-center text-xs text-[#8a7a72]">
-              <button type="button" onClick={() => onNavigate('login')} className="font-semibold text-teal-600 hover:underline">
+            <div className="text-center text-xs text-[#B9C0E8]">
+              <button type="button" onClick={() => onNavigate('login')} className="font-semibold text-[#FFD3EC] hover:text-[#FF6FB5] hover:underline">
                 ← Back to Login
               </button>
             </div>

@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8000";
+import { API_BASE_URL } from "../config";
 
 export async function getAccessoryRecommendations(formality, garments) {
   const response = await fetch(`${API_BASE_URL}/recommend/accessories`, {
@@ -23,57 +23,65 @@ export async function fetchWardrobeGarments() {
   return data.garments || [];
 }
 
-const FORMALITY_BY_OCCASION = {
-  Work: "Smart Casual",
-  Party: "Formal",
-  Wedding: "Formal",
+const OCCASION_MAP = {
+  Work: "Office",
   Everyday: "Casual",
+  Wedding: "Farewell",
 };
 
-export async function getOutfitSuggestions(occasion) {
-  const formality = FORMALITY_BY_OCCASION[occasion] || "Casual";
-
-  const wardrobeGarments = await fetchWardrobeGarments();
-
-  let garmentsForEngine;
-  let usedRealWardrobe;
-
-  if (wardrobeGarments.length > 0) {
-    garmentsForEngine = wardrobeGarments.slice(0, 3).map((g) => ({
-      dominant_colors: g.dominant_colors || [],
-    }));
-    usedRealWardrobe = true;
-  } else {
-    garmentsForEngine = [{ dominant_colors: [{ hex: "#4E8B8B" }, { hex: "#2C4A7C" }] }];
-    usedRealWardrobe = false;
-  }
-
-  const { accessories } = await getAccessoryRecommendations(formality, garmentsForEngine);
-
-  const avgConfidence = Math.round(
-    accessories.reduce((sum, a) => sum + a.confidence, 0) / accessories.length
-  );
+function toSuggestion(outfit, index) {
+  const accessories = outfit.accessories || [];
+  const garments = outfit.garments || [];
 
   return {
-    usedRealWardrobe,
-    suggestions: [
-      {
-        id: `${occasion}-1`,
-        rank: 1,
-        compatibility: avgConfidence,
-        items: [
-          { id: "top1", category: "top", label: "Top", isRecommendation: false },
-          { id: "bottom1", category: "bottom", label: "Bottom", isRecommendation: false },
-          ...accessories.map((a, i) => ({
-            id: `acc${i}`,
-            category: a.slot,
-            label: a.name,
-            reason: a.reason,
-            source: a.source,
-            isRecommendation: true,
-          })),
-        ],
-      },
+    id: `outfit-${index + 1}`,
+    rank: index + 1,
+    compatibility: Math.round((outfit.final_score || 0) * 100),
+    items: [
+      ...garments.map((g) => ({
+        id: g.id,
+        category: g.category,
+        label: g.filename || g.category,
+        imageUrl: g.cutout_path ? `${API_BASE_URL}/${g.cutout_path}` : null,
+        colors: g.dominant_colors || [],
+        isRecommendation: false,
+      })),
+      ...accessories.map((a, i) => ({
+        id: `${a.slot}-${i}`,
+        category: a.slot,
+        label: a.name,
+        reason: a.reason,
+        source: a.source,
+        isRecommendation: true,
+      })),
     ],
+  };
+}
+
+export async function getOutfitSuggestions(occasion, userId, topK = 5) {
+  if (!userId) {
+    throw new Error("User ID not found");
+  }
+
+  const backendOccasion = OCCASION_MAP[occasion] || occasion;
+  const response = await fetch(`${API_BASE_URL}/outfits/generate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user_id: userId,
+      occasion: backendOccasion,
+      top_k: topK,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch outfit suggestions: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  return {
+    ...data,
+    suggestions: (data.outfits || []).map(toSuggestion),
   };
 }

@@ -2,15 +2,15 @@ function CompatibilityBar({ score }) {
   return (
     <div data-cy="compatibility-bar">
       <div
-        className="flex items-center justify-between text-xs mb-1 text-[#211D1B]/70"
+        className="mb-1 flex items-center justify-between text-xs text-[#B9C0E8]"
         style={{ fontFamily: "Inter, sans-serif" }}
       >
         <span>Compatibility</span>
-        <span className="font-medium text-[#211D1B]">{score}%</span>
+        <span className="font-medium text-[#F5F3FF]">{score}%</span>
       </div>
-      <div className="w-full h-1.5 rounded-full bg-[#211D1B]/10 overflow-hidden">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#F5F3FF]/15">
         <div
-          className="h-full bg-[#7C2A35] rounded-full transition-all"
+          className="h-full rounded-full bg-[linear-gradient(90deg,#F5A9CE_0%,#FF7AB8_100%)] transition-all"
           style={{ width: `${score}%` }}
         />
       </div>

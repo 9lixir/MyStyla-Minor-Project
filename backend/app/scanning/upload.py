@@ -9,6 +9,7 @@ from app.models import Garment, GarmentClassification
 from app.outfit_matching.config import CATEGORIES, FORMALITY, SEASON, PATTERN, OCCASION
 from pydantic import BaseModel
 from app.classification.classify import analyze_garment
+from app.classification.normalization import normalize_pipeline_tags
 import os
 
 router = APIRouter()
@@ -27,60 +28,6 @@ class ClassificationUpdateRequest(BaseModel):
     season: str
     pattern: str
     occasion: list[str]
-
-
-def _normalize_pipeline_tags(tags: dict) -> dict:
-    category_map = {
-        "shirt": "top",
-        "t-shirt": "top",
-        "sweater": "top",
-        "jacket": "outerwear",
-        "dress": "dress",
-        "jeans": "bottom",
-        "skirt": "bottom",
-        "shorts": "bottom",
-    }
-    formality_map = {
-        "casual": "Casual",
-        "business casual": "Smart Casual",
-        "formal": "Formal",
-        "athletic": "Casual",
-    }
-    season_map = {
-        "spring": "Spring",
-        "summer": "Summer",
-        "autumn": "Autumn",
-        "winter": "Winter",
-        "all-season": "Summer",
-    }
-    pattern_map = {
-        "solid": "Solid",
-        "striped": "Striped",
-        "floral": "Floral",
-        "plaid": "Checked",
-        "polka dot": "Graphic",
-        "graphic print": "Graphic",
-    }
-    occasion_map = {
-        "everyday wear": "Casual",
-        "work": "Office",
-        "party": "Party",
-        "workout": "Casual",
-        "formal event": "Farewell",
-    }
-
-    raw_occasion = tags.get("occasion")
-    raw_occasions = raw_occasion if isinstance(raw_occasion, list) else [raw_occasion]
-    occasions = [occasion_map.get(str(value).lower(), value) for value in raw_occasions if value]
-    occasions = [value for value in occasions if value in OCCASION]
-
-    return {
-        "category": category_map.get(str(tags.get("category", "")).lower(), "top"),
-        "formality": formality_map.get(str(tags.get("formality", "")).lower(), "Casual"),
-        "season": season_map.get(str(tags.get("season", "")).lower(), "Summer"),
-        "pattern": pattern_map.get(str(tags.get("pattern", "")).lower(), "Solid"),
-        "occasion": occasions or ["Casual"],
-    }
 
 
 def _validate_classification(payload: ClassificationUpdateRequest) -> None:
@@ -147,7 +94,7 @@ async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get
     
     try:
         result = analyze_garment(cutout_path)
-        suggested_classification = _normalize_pipeline_tags(result["tags"])
+        suggested_classification = normalize_pipeline_tags(result["tags"])
 
         #storing in qdrant with metadata
         metadata = {

@@ -3,15 +3,15 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
-
 backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+dotenv_path = os.path.join(backend_dir, ".env")
+# Load backend/.env explicitly and override stale inherited vars.
+load_dotenv(dotenv_path=dotenv_path, override=True)
+
 default_db_path = os.path.join(backend_dir, "mystyla.db")
 default_database_url = f"sqlite:///{default_db_path.replace('\\', '/')}"
 
 DATABASE_URL = os.getenv("DATABASE_URL", default_database_url)
-
-# using sqlite for now instead of postgres (0 setup for now. if we have time we change it for the mid defense)
 
 is_sqlite = DATABASE_URL.startswith("sqlite")
 engine = create_engine(

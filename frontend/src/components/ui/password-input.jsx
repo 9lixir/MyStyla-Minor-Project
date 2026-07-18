@@ -20,7 +20,7 @@ export const PasswordInput = forwardRef(function PasswordInput(
       <button
         type="button"
         onClick={() => setVisible((v) => !v)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-pink-600"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9AA8E0] hover:text-[#FF6FB5]"
         tabIndex={-1}
       >
         {visible ? <EyeOff size={16} /> : <Eye size={16} />}

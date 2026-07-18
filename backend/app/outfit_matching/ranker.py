@@ -68,8 +68,11 @@ def rank_outfits(
             "garments": [
                 {
                     "id": g["id"],
+                    "filename": g.get("filename", g["id"]),
+                    "cutout_path": g.get("cutout_path", ""),
                     "category": g["category"],
                     "dominant_colors": g.get("colors", []),
+                    "tags": g.get("tags", {}),
                 }
                 for g in outfit
             ],

@@ -1,17 +1,19 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap");
 @import "tailwindcss";
 
 :root {
-	--mystyla-ink: #2a221f;
-	--mystyla-muted: #6f665f;
-	--mystyla-blush: #f7ece8;
-	--mystyla-cream: #fbf7f3;
-	--mystyla-surface: rgba(255, 250, 247, 0.86);
-	--mystyla-border: #eadad1;
-	--mystyla-pink: #db7f87;
-	--mystyla-pink-strong: #c96d77;
-	--mystyla-teal: #4f9d96;
-	--mystyla-teal-strong: #3f847f;
-	--mystyla-shadow: 0 24px 70px rgba(96, 63, 58, 0.12);
+	--mystyla-ink: #fff7fb;
+	--mystyla-muted: #d8c2cf;
+	--mystyla-placeholder: #b894a8;
+	--mystyla-bg: #1d1c22;
+	--mystyla-surface: rgba(34, 31, 40, 0.9);
+	--mystyla-surface-2: #2f2a35;
+	--mystyla-border: #52465a;
+	--mystyla-primary: #f3a3c7;
+	--mystyla-primary-soft: #ffd7e8;
+	--mystyla-accent: #ff78b7;
+	--mystyla-rose: #ff9cca;
+	--mystyla-shadow: 0 24px 70px rgba(18, 13, 20, 0.36);
 }
 
 html,
@@ -24,10 +26,11 @@ body {
 	margin: 0;
 	color: var(--mystyla-ink);
 	background:
-		radial-gradient(circle at top left, rgba(219, 127, 135, 0.18), transparent 36%),
-		radial-gradient(circle at top right, rgba(79, 157, 150, 0.16), transparent 30%),
-		linear-gradient(180deg, #fffaf8 0%, #f6eee9 100%);
-	font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+		radial-gradient(circle at 12% 8%, rgba(255, 178, 214, 0.34), transparent 34%),
+		radial-gradient(circle at 92% 14%, rgba(255, 212, 232, 0.24), transparent 30%),
+		radial-gradient(circle at 78% 82%, rgba(255, 140, 196, 0.2), transparent 30%),
+		linear-gradient(180deg, #17151c 0%, #1a1720 52%, #1c1822 100%);
+	font-family: "Manrope", "Segoe UI", sans-serif;
 }
 
 .mystyla-auth-shell {
@@ -49,7 +52,7 @@ body {
 	height: 26rem;
 	top: -10rem;
 	left: -7rem;
-	background: rgba(219, 127, 135, 0.18);
+	background: rgba(255, 178, 214, 0.32);
 }
 
 .mystyla-auth-shell::after {
@@ -57,7 +60,7 @@ body {
 	height: 20rem;
 	right: -6rem;
 	bottom: -8rem;
-	background: rgba(79, 157, 150, 0.16);
+	background: rgba(255, 140, 196, 0.22);
 }
 
 .mystyla-auth-card {
@@ -75,22 +78,22 @@ body {
 }
 
 .mystyla-display {
-	font-family: Georgia, "Times New Roman", serif;
+	font-family: "Fraunces", Georgia, "Times New Roman", serif;
 	letter-spacing: -0.03em;
 }
 
 .mystyla-accent {
-	color: var(--mystyla-pink-strong);
+	color: var(--mystyla-accent);
 }
 
 .mystyla-accent-teal {
-	color: var(--mystyla-teal);
+	color: var(--mystyla-primary-soft);
 }
 
 .mystyla-input {
 	width: 100%;
 	border: 0;
-	border-bottom: 1px solid rgba(120, 103, 96, 0.24);
+	border-bottom: 1px solid rgba(255, 171, 211, 0.4);
 	background: transparent;
 	padding: 0.8rem 0;
 	color: var(--mystyla-ink);
@@ -98,22 +101,22 @@ body {
 }
 
 .mystyla-input::placeholder {
-	color: rgba(111, 102, 95, 0.55);
+	color: var(--mystyla-placeholder);
 }
 
 .mystyla-input:focus {
 	outline: none;
-	border-bottom-color: var(--mystyla-teal);
-	box-shadow: 0 10px 0 -9px rgba(79, 157, 150, 0.8);
+	border-bottom-color: var(--mystyla-accent);
+	box-shadow: 0 10px 0 -9px rgba(255, 120, 183, 0.85);
 }
 
 .mystyla-button {
-	background: linear-gradient(135deg, var(--mystyla-pink) 0%, var(--mystyla-teal) 100%);
-	box-shadow: 0 16px 30px rgba(201, 109, 119, 0.24);
+	background: linear-gradient(135deg, #f3a3c7 0%, #ff93c2 54%, #ff72b1 100%);
+	box-shadow: 0 16px 30px rgba(255, 120, 183, 0.3);
 }
 
 .mystyla-button:hover {
-	background: linear-gradient(135deg, var(--mystyla-pink-strong) 0%, var(--mystyla-teal-strong) 100%);
+	background: linear-gradient(135deg, #ea93ba 0%, #ff83ba 52%, #ff62a8 100%);
 }
 
 .mystyla-subtle {
@@ -121,11 +124,11 @@ body {
 }
 
 .mystyla-pill {
-	background: rgba(219, 127, 135, 0.14);
-	color: var(--mystyla-pink-strong);
+	background: rgba(255, 93, 168, 0.16);
+	color: var(--mystyla-accent);
 }
 
 .mystyla-pill-teal {
-	background: rgba(79, 157, 150, 0.12);
-	color: var(--mystyla-teal-strong);
+	background: rgba(255, 171, 211, 0.2);
+	color: var(--mystyla-primary-soft);
 }

@@ -84,17 +84,20 @@ export default function ReviewTags({ garment, onBack, onSave }) {
   }
 
   return (
-    <div className="max-w-md mx-auto p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={onBack} className="text-gray-500 hover:text-gray-800">
+    <div className="mystyla-app-shell mx-auto max-w-md p-6 min-h-screen">
+      <div className="mb-6 flex items-center gap-3">
+        <button
+          onClick={onBack}
+          className="rounded-full border border-[#2A3374] bg-[#151A4D]/90 px-3 py-1.5 text-sm text-[#B9C0E8] transition hover:border-[#FF6FB5]/70 hover:text-[#FF6FB5]"
+        >
           Back
         </button>
-        <h1 className="text-2xl font-bold text-gray-800">Review Tags</h1>
+        <h1 className="text-2xl font-bold text-[#F5F3FF]">Review Tags</h1>
       </div>
 
-      <p className="text-gray-500 mb-4">Confirm or edit garment details</p>
+      <p className="mb-4 text-[#B9C0E8]">Confirm or edit garment details</p>
 
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-4 flex items-center justify-center h-48">
+      <div className="mb-4 flex h-48 items-center justify-center rounded-xl border border-[#2A3374] bg-[#151A4D]/90 p-4 shadow-sm">
         <img
           src={`${API_BASE_URL}/${garment.cutout}`}
           alt="Garment cutout"
@@ -103,33 +106,33 @@ export default function ReviewTags({ garment, onBack, onSave }) {
         />
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
-        <p className="text-sm font-medium text-gray-700 mb-2">Dominant Colors</p>
+      <div className="mb-4 rounded-xl border border-[#2A3374] bg-[#151A4D]/90 p-4 shadow-sm">
+        <p className="mb-2 text-sm font-medium text-[#F5F3FF]">Dominant Colors</p>
         <div className="flex gap-3">
           {garment.dominant_colors?.map((color, i) => (
             <div key={i} className="flex flex-col items-center gap-1">
               <div
-                className="w-10 h-10 rounded-full border border-gray-200"
+                className="h-10 w-10 rounded-full border border-[#2A3374]"
                 style={{ backgroundColor: color.hex }}
               />
-              <span className="text-xs text-gray-500">{color.hex}</span>
+              <span className="text-xs text-[#B9C0E8]">{color.hex}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-        <p className="text-sm font-medium text-gray-700 mb-3">
+      <div className="mb-6 rounded-xl border border-[#2A3374] bg-[#151A4D]/90 p-4 shadow-sm">
+        <p className="mb-3 text-sm font-medium text-[#F5F3FF]">
           Tags
-          <span className="text-xs text-gray-400 ml-2">(editable)</span>
+          <span className="ml-2 text-xs text-[#9AA8E0]">(editable)</span>
         </p>
 
         <div className="mb-3">
-          <p className="text-xs text-gray-500 mb-1">Category</p>
+          <p className="mb-1 text-xs text-[#B9C0E8]">Category</p>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+            className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm text-[#F5F3FF] focus:border-[#FF6FB5] focus:outline-none"
           >
             {CATEGORY_OPTIONS.map((value) => (
               <option key={value} value={value}>
@@ -140,11 +143,11 @@ export default function ReviewTags({ garment, onBack, onSave }) {
         </div>
 
         <div className="mb-3">
-          <p className="text-xs text-gray-500 mb-1">Formality</p>
+          <p className="mb-1 text-xs text-[#B9C0E8]">Formality</p>
           <select
             value={formality}
             onChange={(e) => setFormality(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+            className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm text-[#F5F3FF] focus:border-[#FF6FB5] focus:outline-none"
           >
             {FORMALITY_OPTIONS.map((value) => (
               <option key={value} value={value}>
@@ -155,11 +158,11 @@ export default function ReviewTags({ garment, onBack, onSave }) {
         </div>
 
         <div className="mb-3">
-          <p className="text-xs text-gray-500 mb-1">Season</p>
+          <p className="mb-1 text-xs text-[#B9C0E8]">Season</p>
           <select
             value={season}
             onChange={(e) => setSeason(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+            className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm text-[#F5F3FF] focus:border-[#FF6FB5] focus:outline-none"
           >
             {SEASON_OPTIONS.map((value) => (
               <option key={value} value={value}>
@@ -170,11 +173,11 @@ export default function ReviewTags({ garment, onBack, onSave }) {
         </div>
 
         <div className="mb-3">
-          <p className="text-xs text-gray-500 mb-1">Pattern</p>
+          <p className="mb-1 text-xs text-[#B9C0E8]">Pattern</p>
           <select
             value={pattern}
             onChange={(e) => setPattern(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+            className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm text-[#F5F3FF] focus:border-[#FF6FB5] focus:outline-none"
           >
             {PATTERN_OPTIONS.map((value) => (
               <option key={value} value={value}>
@@ -185,7 +188,7 @@ export default function ReviewTags({ garment, onBack, onSave }) {
         </div>
 
         <div>
-          <p className="text-xs text-gray-500 mb-1">Occasion</p>
+          <p className="mb-1 text-xs text-[#B9C0E8]">Occasion</p>
           <div className="flex gap-2 flex-wrap">
             {OCCASION_OPTIONS.map((value) => (
               <button
@@ -194,8 +197,8 @@ export default function ReviewTags({ garment, onBack, onSave }) {
                 onClick={() => toggleOccasion(value)}
                 className={`px-3 py-1 rounded-full text-xs border transition ${
                   occasion.includes(value)
-                    ? "bg-gray-900 text-white border-gray-900"
-                    : "bg-gray-100 text-gray-700 border-gray-200"
+                    ? "border-[#FF6FB5] bg-[#FF6FB5]/15 text-[#FF7AB8]"
+                    : "border-[#2A3374] bg-[#1E2560] text-[#B9C0E8] hover:border-[#FFD3EC]"
                 }`}
               >
                 {value}
@@ -205,12 +208,12 @@ export default function ReviewTags({ garment, onBack, onSave }) {
         </div>
       </div>
 
-      {error ? <p className="text-sm text-red-600 mb-3">{error}</p> : null}
+      {error ? <p className="mb-3 text-sm text-[#FF7AB8]">{error}</p> : null}
 
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full bg-black text-white py-3 rounded-xl font-medium hover:bg-gray-800 transition disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full rounded-xl bg-[linear-gradient(135deg,#F5A9CE_0%,#FF93C2_58%,#FF6FB5_100%)] py-3 font-medium text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {saving ? "Saving..." : "Save to Wardrobe"}
       </button>

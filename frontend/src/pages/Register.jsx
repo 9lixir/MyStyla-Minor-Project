@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
+import AbstractBackground from '@/components/AbstractBackground';
 
 export default function Register({ onNavigate }) {
   const [form, setForm] = useState({
@@ -58,7 +59,11 @@ export default function Register({ onNavigate }) {
     try {
       setError('');
       setLoading(true);
-      await registerUser(form);
+      await registerUser({
+        ...form,
+        username: form.username.trim(),
+        email: form.email.trim().toLowerCase(),
+      });
       useAuthStore.getState().clearAuth();
       toast.success('Account created successfully. You can log in now.');
       onNavigate('login');
@@ -88,9 +93,10 @@ export default function Register({ onNavigate }) {
 
   return (
     <div className="mystyla-auth-shell flex w-full min-h-screen items-center justify-center px-4 py-8">
+      <AbstractBackground />
       <div className="relative w-full max-w-md">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-white/60 bg-white/85 shadow-lg">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-[#2A3374] bg-[#151A4D] shadow-lg">
             <img src="/tlhlogo.png" alt="MyStyla logo" className="h-10 w-10 object-contain" />
           </div>
           <div className="mystyla-masthead inline-flex rounded-full mystyla-pill-teal px-3 py-1 text-[10px] font-semibold">
@@ -104,18 +110,18 @@ export default function Register({ onNavigate }) {
         <Card className="mystyla-auth-card w-full border-0">
           <CardContent className="space-y-6 p-7 sm:p-8">
             <div className="text-center space-y-2">
-              <h1 className="mystyla-masthead text-[11px] font-semibold text-[#8e7c75]">Create account</h1>
-              <h2 className="mystyla-display text-3xl leading-tight text-[#2c2421] sm:text-[34px]">
+              <h1 className="mystyla-masthead text-[11px] font-semibold">Create account</h1>
+              <h2 className="mystyla-display text-3xl leading-tight text-[#F5F3FF] sm:text-[34px]">
                 Start your MyStyla wardrobe
               </h2>
-              <p className="text-sm leading-6 text-[#786962]">
+              <p className="text-sm leading-6 text-[#B9C0E8]">
                 Register once to save garments, review uploads, and manage your wardrobe.
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="space-y-2">
-                <Label className="mystyla-masthead text-[10px] font-semibold text-[#8e7c75]">Username</Label>
+                <Label className="mystyla-masthead text-[10px] font-semibold">Username</Label>
                 <Input
                   type="text"
                   name="username"
@@ -127,7 +133,7 @@ export default function Register({ onNavigate }) {
               </div>
 
               <div className="space-y-1">
-                <Label className="mystyla-masthead text-[10px] font-semibold text-[#8e7c75]">Email address</Label>
+                <Label className="mystyla-masthead text-[10px] font-semibold">Email address</Label>
                 <Input
                   type="email"
                   name="email"
@@ -139,7 +145,7 @@ export default function Register({ onNavigate }) {
               </div>
 
               <div className="space-y-1">
-                <Label className="mystyla-masthead text-[10px] font-semibold text-[#8e7c75]">Password</Label>
+                <Label className="mystyla-masthead text-[10px] font-semibold">Password</Label>
                 <PasswordInput
                   name="password"
                   value={form.password}
@@ -147,13 +153,13 @@ export default function Register({ onNavigate }) {
                   placeholder="••••••••"
                   className="mystyla-input h-auto rounded-none border-0 px-0 text-[15px] shadow-none"
                 />
-                <div className="rounded-2xl bg-[#f7eeeb] px-3 py-2 text-[11px] leading-5 text-[#6f615a]">
+                <div className="rounded-2xl bg-[#1E2560] px-3 py-2 text-[11px] leading-5 text-[#B9C0E8]">
                   Password must be at least 8 characters.
                 </div>
               </div>
 
               <div className="space-y-1">
-                <Label className="mystyla-masthead text-[10px] font-semibold text-[#8e7c75]">Confirm password</Label>
+                <Label className="mystyla-masthead text-[10px] font-semibold">Confirm password</Label>
                 <PasswordInput
                   name="confirmPassword"
                   value={form.confirmPassword}
@@ -164,7 +170,7 @@ export default function Register({ onNavigate }) {
               </div>
 
               {error ? (
-                <div className="rounded-2xl border border-[#ebc6c9] bg-[#fff3f4] px-3 py-2 text-sm text-[#b04e5a]">
+                <div className="rounded-2xl border border-[#FF4FA0]/40 bg-[#FF4FA0]/10 px-3 py-2 text-sm text-[#FFCBE8]">
                   {error}
                 </div>
               ) : null}
@@ -178,9 +184,9 @@ export default function Register({ onNavigate }) {
               </Button>
             </form>
 
-            <div className="mt-1 text-center text-xs text-[#8a7a72]">
+            <div className="mt-1 text-center text-xs text-[#B9C0E8]">
               Already have an account?{' '}
-              <button type="button" onClick={() => onNavigate('login')} className="font-semibold text-[#4f9d96] hover:underline">
+              <button type="button" onClick={() => onNavigate('login')} className="font-semibold text-[#FFD3EC] hover:underline">
                 Log In
               </button>
             </div>

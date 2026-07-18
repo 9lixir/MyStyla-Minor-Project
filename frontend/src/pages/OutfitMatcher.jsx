@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/store/auth-store';
-import { checkOutfitHealth, generateOutfits } from '@/services/outfit.service';
+import {
+  buildAroundGarment,
+  checkOutfitHealth,
+  fetchWardrobeGarments,
+  generateOutfits,
+} from '@/services/outfit.service';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import CategoryIcon from '@/components/CategoryIcon';
+import { API_BASE_URL } from '@/config';
 
 const OCCASIONS = ['Casual', 'Office', 'Party', 'Date', 'Farewell'];
 
@@ -14,6 +21,10 @@ export default function OutfitMatcher({ onBack }) {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [engineHealthy, setEngineHealthy] = useState(true);
+  const [wardrobeGarments, setWardrobeGarments] = useState([]);
+  const [selectedGarmentId, setSelectedGarmentId] = useState('');
+  const [matchingItem, setMatchingItem] = useState(false);
+  const [matchResults, setMatchResults] = useState(null);
 
   useEffect(() => {
     checkOutfitHealth()
@@ -21,6 +32,17 @@ export default function OutfitMatcher({ onBack }) {
         setEngineHealthy(data?.status === 'outfit_matching engine is running');
       })
       .catch(() => setEngineHealthy(false));
+
+    fetchWardrobeGarments()
+      .then((garments) => {
+        const filteredForUser = garments.filter((garment) => garment.user_id === user?.id);
+        const source = filteredForUser.length > 0 ? filteredForUser : garments;
+        setWardrobeGarments(source);
+        if (source.length > 0) {
+          setSelectedGarmentId(source[0].id);
+        }
+      })
+      .catch(() => setWardrobeGarments([]));
   }, []);
 
   const handleGenerate = async () => {
@@ -53,40 +75,81 @@ export default function OutfitMatcher({ onBack }) {
     }
   };
 
+  const handleMatchItem = async () => {
+    if (!user?.id) {
+      toast.error('User ID not found. Please log in again.');
+      return;
+    }
+
+    if (!selectedGarmentId) {
+      toast.error('Select a garment to match first.');
+      return;
+    }
+
+    const parsedTopK = Number(topK);
+    const normalizedTopK = Number.isFinite(parsedTopK)
+      ? Math.min(20, Math.max(1, Math.floor(parsedTopK)))
+      : 5;
+
+    setTopK(normalizedTopK);
+    setMatchingItem(true);
+
+    try {
+      const payload = await buildAroundGarment(
+        user.id,
+        selectedGarmentId,
+        occasion || null,
+        normalizedTopK,
+      );
+      setMatchResults(payload);
+      if ((payload.matches || []).length === 0) {
+        toast.info('No compatible garments found for this item and occasion.');
+      } else {
+        toast.success(`Found ${payload.matches.length} compatible match(es).`);
+      }
+    } catch (error) {
+      toast.error(error.message || 'Failed to match this item');
+      console.error('Build around garment error:', error);
+    } finally {
+      setMatchingItem(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
+    <div className="mystyla-app-shell min-h-screen p-4 sm:p-6">
+      <div className="max-w-3xl mx-auto">
+        <div className="mb-7 flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Outfit Matcher</h1>
-            <p className="text-gray-600 mt-1">Generate perfect outfit combinations</p>
+            <p className="mystyla-masthead text-[10px] mb-2">match studio</p>
+            <h1 className="mystyla-display text-4xl text-[#F5F3FF]">Outfit Matcher</h1>
+            <p className="mt-2 text-sm text-[#B9C0E8]">
+              Pick an occasion and MyStyla will pair garments with finishing accessories
+            </p>
             {!engineHealthy ? (
-              <p className="mt-2 text-sm text-amber-700">
+              <p className="mt-3 rounded-xl border border-[#FFA8D4]/45 bg-[#FFA8D4]/12 px-3 py-2 text-sm text-[#FFD3EC]">
                 Outfit engine health check failed. Generate may still work if backend is starting.
               </p>
             ) : null}
           </div>
           <button
             onClick={onBack}
-            className="text-gray-600 hover:text-gray-900 text-lg font-medium"
+            className="rounded-full border border-[#2A3374] bg-[#151A4D]/90 px-4 py-2 text-sm font-medium text-[#F5F3FF]/80 hover:border-[#FFA8D4]/70 hover:text-[#FFD3EC] transition"
           >
-            ← Back
+            Back
           </button>
         </div>
 
-        {/* Controls */}
-        <Card className="mb-6 shadow-sm border-0">
+        <Card className="mb-6 border-[#2A3374] bg-[#151A4D]/90 shadow-sm">
           <CardContent className="p-6">
-            <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-[1fr_150px]">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-[#F5F3FF]">
                   Occasion
                 </label>
                 <select
                   value={occasion}
                   onChange={(e) => setOccasion(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-white"
+                  className="w-full rounded-xl border border-[#2A3374] bg-[#1E2560] px-4 py-2.5 text-[#F5F3FF] focus:border-[#FFA8D4] focus:outline-none focus:ring-2 focus:ring-[#FFA8D4]/30"
                 >
                   {OCCASIONS.map((occ) => (
                     <option key={occ} value={occ}>
@@ -97,7 +160,7 @@ export default function OutfitMatcher({ onBack }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="mb-2 block text-sm font-medium text-[#F5F3FF]">
                   Number of Outfits
                 </label>
                 <input
@@ -106,14 +169,14 @@ export default function OutfitMatcher({ onBack }) {
                   max="20"
                   value={topK}
                   onChange={(e) => setTopK(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                  className="w-full rounded-xl border border-[#2A3374] bg-[#1E2560] px-4 py-2.5 text-[#F5F3FF] focus:border-[#FFA8D4] focus:outline-none focus:ring-2 focus:ring-[#FFA8D4]/30"
                 />
               </div>
 
               <Button
                 onClick={handleGenerate}
                 disabled={loading}
-                className="w-full bg-black hover:bg-gray-800 text-white py-2 rounded-lg font-medium transition"
+                className="mystyla-button w-full rounded-xl py-2.5 font-medium text-white transition sm:col-span-2"
               >
                 {loading ? 'Generating...' : 'Generate Outfits'}
               </Button>
@@ -121,10 +184,54 @@ export default function OutfitMatcher({ onBack }) {
           </CardContent>
         </Card>
 
-        {/* Results */}
+        <Card className="mb-6 border-[#2A3374] bg-[#151A4D]/90 shadow-sm">
+          <CardContent className="p-6">
+            <div className="grid gap-4 sm:grid-cols-[1fr_150px]">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-[#F5F3FF]">
+                  Match This Item
+                </label>
+                <select
+                  value={selectedGarmentId}
+                  onChange={(e) => setSelectedGarmentId(e.target.value)}
+                  className="w-full rounded-xl border border-[#2A3374] bg-[#1E2560] px-4 py-2.5 text-[#F5F3FF] focus:border-[#FFA8D4] focus:outline-none focus:ring-2 focus:ring-[#FFA8D4]/30"
+                  disabled={wardrobeGarments.length === 0}
+                >
+                  {wardrobeGarments.length === 0 ? (
+                    <option value="">No garments available</option>
+                  ) : (
+                    wardrobeGarments.map((garment) => (
+                      <option key={garment.id} value={garment.id}>
+                        {(garment.filename || garment.category || 'garment').toString()}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-[#F5F3FF]">
+                  Occasion Filter
+                </label>
+                <p className="rounded-xl border border-[#2A3374] bg-[#1E2560] px-4 py-2.5 text-sm text-[#B9C0E8]">
+                  {occasion || 'None'}
+                </p>
+              </div>
+
+              <Button
+                onClick={handleMatchItem}
+                disabled={matchingItem || wardrobeGarments.length === 0}
+                className="mystyla-button w-full rounded-xl py-2.5 font-medium text-white transition sm:col-span-2"
+              >
+                {matchingItem ? 'Matching...' : 'Match This Item'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {results && (
           <div className="space-y-4">
-            <div className="text-sm text-gray-600 mb-4">
+            <div className="mb-4 rounded-2xl border border-[#2A3374] bg-[#151A4D]/90 px-4 py-3 text-sm text-[#B9C0E8]">
               {results.message}
               {typeof results.wardrobe_size_after_filter === 'number'
                 ? ` • ${results.wardrobe_size_after_filter} garments available`
@@ -132,67 +239,92 @@ export default function OutfitMatcher({ onBack }) {
             </div>
 
             {results.outfits.length === 0 ? (
-              <Card className="border-0 shadow-sm">
+              <Card className="border-[#2A3374] bg-[#151A4D]/90 shadow-sm">
                 <CardContent className="p-8 text-center">
-                  <p className="text-gray-500 text-lg">
+                  <p className="text-[#B9C0E8]">
                     No outfits found for {occasion}. Try another occasion or add more garments!
                   </p>
                 </CardContent>
               </Card>
             ) : (
               results.outfits.map((outfit, outfitIdx) => (
-                <Card key={outfitIdx} className="border-0 shadow-sm hover:shadow-md transition">
+                <Card key={outfitIdx} className="border-[#2A3374] bg-[#151A4D]/90 shadow-sm transition hover:shadow-md">
                   <CardContent className="p-6">
-                    {/* Scores */}
-                    <div className="mb-4 pb-4 border-b border-gray-200">
+                    <div className="mb-4 border-b border-[#2A3374] pb-4">
                       <div className="grid grid-cols-3 gap-4">
                         <div>
-                          <p className="text-xs text-gray-500 uppercase tracking-wider">
+                          <p className="text-xs uppercase tracking-wider text-[#B9C0E8]">
                             Color Harmony
                           </p>
-                          <p className="text-2xl font-bold text-gray-900 mt-1">
+                          <p className="mt-1 text-2xl font-bold text-[#F5F3FF]">
                             {(outfit.harmony_score * 100).toFixed(0)}%
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500 uppercase tracking-wider">
+                          <p className="text-xs uppercase tracking-wider text-[#B9C0E8]">
                             Compatibility
                           </p>
-                          <p className="text-2xl font-bold text-gray-900 mt-1">
+                          <p className="mt-1 text-2xl font-bold text-[#F5F3FF]">
                             {outfit.compat_score.toFixed(2)}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500 uppercase tracking-wider">
+                          <p className="text-xs uppercase tracking-wider text-[#B9C0E8]">
                             Overall Score
                           </p>
-                          <p className="text-2xl font-bold text-black mt-1">
+                          <p className="mt-1 text-2xl font-bold text-[#FFA8D4]">
                             {(outfit.final_score * 100).toFixed(0)}%
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Garments */}
+                    <div className="mb-4 rounded-xl border border-[#2A3374] bg-[#1E2560] p-3">
+                      <p className="mb-2 text-[11px] uppercase tracking-wide text-[#B9C0E8]">Outfit Preview</p>
+                      <div className="flex items-start gap-3 overflow-x-auto pb-1">
+                        {outfit.garments.map((garment, gIdx) => (
+                          <div key={gIdx} className="min-w-[90px] w-[90px]">
+                            <div className="h-24 w-full overflow-hidden rounded-lg border border-[#5B63A8] bg-[#0E1240]">
+                              {garment.cutout_path ? (
+                                <img
+                                  src={`${API_BASE_URL}/${garment.cutout_path}`}
+                                  alt={garment.filename || garment.category}
+                                  className="h-full w-full object-contain p-1.5"
+                                />
+                              ) : (
+                                <div className="flex h-full w-full items-center justify-center text-[#FFA8D4]">
+                                  <CategoryIcon category={garment.category} className="h-8 w-8" />
+                                </div>
+                              )}
+                            </div>
+                            <p className="mt-1.5 truncate text-[10px] text-[#F5F3FF]">{garment.filename || garment.category}</p>
+                            <p className="text-[9px] capitalize text-[#B9C0E8]">{garment.category}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
                     <div>
-                      <p className="text-sm font-semibold text-gray-700 mb-3">Garments:</p>
+                      <p className="mb-3 text-sm font-semibold text-[#F5F3FF]">Garments</p>
                       <div className="space-y-2">
                         {outfit.garments.map((garment, gIdx) => (
                           <div
                             key={gIdx}
-                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                            className="flex items-center justify-between rounded-xl bg-[#1E2560] p-3"
                           >
                             <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-900 capitalize">
+                              <p className="text-sm font-medium capitalize text-[#F5F3FF]">
+                                {garment.filename || garment.category}
+                              </p>
+                              <p className="mt-0.5 text-xs capitalize text-[#B9C0E8]">
                                 {garment.category}
                               </p>
-                              <p className="text-xs text-gray-500 mt-0.5">{garment.id}</p>
                             </div>
                             <div className="flex gap-2">
                               {garment.dominant_colors?.slice(0, 3).map((color, cIdx) => (
                                 <div
                                   key={cIdx}
-                                  className="w-6 h-6 rounded-full border border-gray-300 shadow-sm"
+                                  className="h-6 w-6 rounded-full border border-[#0E1240] shadow-sm ring-1 ring-[#2A3374]"
                                   style={{ backgroundColor: color.hex }}
                                   title={`RGB: ${color.rgb.join(',')}`}
                                 />
@@ -203,8 +335,32 @@ export default function OutfitMatcher({ onBack }) {
                       </div>
                     </div>
 
-                    {/* Breakdown */}
-                    <div className="mt-4 pt-4 border-t border-gray-200 text-xs text-gray-600 space-y-1">
+                    {outfit.accessories?.length > 0 ? (
+                      <div className="mt-4 border-t border-[#2A3374] pt-4">
+                        <p className="mb-3 text-sm font-semibold text-[#F5F3FF]">Accessories</p>
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                          {outfit.accessories.map((accessory) => (
+                            <div
+                              key={accessory.slot}
+                              className="rounded-xl border border-[#2A3374] bg-[#1E2560] p-3"
+                            >
+                              <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-md bg-[#FFA8D4]/12 text-[#FFA8D4]">
+                                <CategoryIcon category={accessory.slot} className="h-5 w-5" />
+                              </div>
+                              <p className="text-sm font-medium text-[#F5F3FF]">{accessory.name}</p>
+                              <p className="mt-1 text-xs capitalize text-[#B9C0E8]">
+                                {accessory.slot} · {accessory.source}
+                              </p>
+                              {accessory.reason ? (
+                                <p className="mt-2 text-xs leading-5 text-[#B9C0E8]">{accessory.reason}</p>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    <div className="mt-4 border-t border-[#2A3374] pt-4 text-xs text-[#B9C0E8]">
                       <p>
                         Score = 60% × {outfit.compat_score.toFixed(2)} + 40% ×{' '}
                         {outfit.harmony_score.toFixed(2)}
@@ -217,12 +373,92 @@ export default function OutfitMatcher({ onBack }) {
           </div>
         )}
 
-        {/* Empty State */}
+        {matchResults && (
+          <div className="mt-8 space-y-4">
+            <div className="rounded-2xl border border-[#2A3374] bg-[#151A4D]/90 px-4 py-3 text-sm text-[#B9C0E8]">
+              {matchResults.message}
+            </div>
+
+            <Card className="border-[#2A3374] bg-[#151A4D]/90 shadow-sm">
+              <CardContent className="p-5">
+                <p className="mb-2 text-xs uppercase tracking-wide text-[#B9C0E8]">Anchor Garment</p>
+                <div className="flex items-center gap-3 rounded-xl bg-[#1E2560] p-3">
+                  <div className="h-16 w-16 overflow-hidden rounded-lg border border-[#5B63A8] bg-[#0E1240]">
+                    {matchResults.anchor_garment?.cutout_path ? (
+                      <img
+                        src={`${API_BASE_URL}/${matchResults.anchor_garment.cutout_path}`}
+                        alt={matchResults.anchor_garment.filename || matchResults.anchor_garment.category}
+                        className="h-full w-full object-contain p-1"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-[#FFA8D4]">
+                        <CategoryIcon
+                          category={matchResults.anchor_garment?.category}
+                          className="h-7 w-7"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-[#F5F3FF]">
+                      {matchResults.anchor_garment?.filename || matchResults.anchor_garment?.category}
+                    </p>
+                    <p className="text-xs capitalize text-[#B9C0E8]">
+                      {matchResults.anchor_garment?.category}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {(matchResults.matches || []).length === 0 ? (
+              <Card className="border-[#2A3374] bg-[#151A4D]/90 shadow-sm">
+                <CardContent className="p-8 text-center">
+                  <p className="text-[#B9C0E8]">No matches found for the selected garment.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              (matchResults.matches || []).map((match) => (
+                <Card key={match.id} className="border-[#2A3374] bg-[#151A4D]/90 shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-16 w-16 overflow-hidden rounded-lg border border-[#5B63A8] bg-[#0E1240]">
+                        {match.cutout_path ? (
+                          <img
+                            src={`${API_BASE_URL}/${match.cutout_path}`}
+                            alt={match.filename || match.category}
+                            className="h-full w-full object-contain p-1"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-[#FFA8D4]">
+                            <CategoryIcon category={match.category} className="h-7 w-7" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-[#F5F3FF]">
+                          {match.filename || match.category}
+                        </p>
+                        <p className="text-xs capitalize text-[#B9C0E8]">{match.category}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs uppercase tracking-wide text-[#B9C0E8]">Compatibility</p>
+                        <p className="text-xl font-bold text-[#FFA8D4]">
+                          {(match.compatibility_score * 100).toFixed(0)}%
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        )}
+
         {!results && !loading && (
-          <Card className="border-0 shadow-sm">
+          <Card className="border-[#2A3374] bg-[#151A4D]/90 shadow-sm">
             <CardContent className="p-8 text-center">
-              <div className="text-gray-400 text-lg mb-2">👕</div>
-              <p className="text-gray-600">
+              <p className="text-[#B9C0E8]">
                 Select an occasion and click "Generate Outfits" to see AI-matched combinations
               </p>
             </CardContent>

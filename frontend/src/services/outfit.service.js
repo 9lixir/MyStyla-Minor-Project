@@ -45,3 +45,37 @@ export async function checkOutfitHealth() {
   const response = await fetch(`${API_BASE_URL}/outfits/health`);
   return await response.json();
 }
+
+export async function fetchWardrobeGarments() {
+  const response = await fetch(`${API_BASE_URL}/scanning/garments`);
+
+  if (!response.ok) {
+    throw new Error('Failed to load wardrobe garments');
+  }
+
+  const payload = await response.json();
+  return payload.garments || [];
+}
+
+export async function buildAroundGarment(userId, garmentId, occasion = null, topK = 5) {
+  const response = await fetch(`${API_BASE_URL}/outfits/build-around`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      user_id: userId,
+      garment_id: garmentId,
+      occasion,
+      top_k: topK,
+    }),
+  });
+
+  if (!response.ok) {
+    const contentType = response.headers.get('content-type') || '';
+    const payload = contentType.includes('application/json') ? await response.json() : null;
+    throw new Error(getErrorMessage(payload, 'Failed to match this item'));
+  }
+
+  return await response.json();
+}

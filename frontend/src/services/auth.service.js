@@ -44,7 +44,7 @@ export async function loginUser(credentials) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      email: credentials.email,
+      email: credentials.email.trim().toLowerCase(),
       password: credentials.password,
     }),
   });
@@ -59,8 +59,8 @@ export async function registerUser(credentials) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      email: credentials.email,
-      username: credentials.username,
+      email: credentials.email.trim().toLowerCase(),
+      username: credentials.username.trim(),
       password: credentials.password,
       confirm_password: credentials.confirmPassword,
     }),
