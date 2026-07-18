@@ -45,6 +45,8 @@ export default function OutfitMatcher({ onBack }) {
       .catch(() => setWardrobeGarments([]));
   }, []);
 
+  const selectedGarment = wardrobeGarments.find((g) => g.id === selectedGarmentId) || null;
+
   const handleGenerate = async () => {
     if (!user?.id) {
       toast.error('User ID not found. Please log in again.');
@@ -207,6 +209,30 @@ export default function OutfitMatcher({ onBack }) {
                     ))
                   )}
                 </select>
+
+                {selectedGarment && (
+                  <div className="mt-3 flex items-center gap-3 rounded-xl border border-[#2A3374] bg-[#1E2560] p-3">
+                    <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-[#5B63A8] bg-[#0E1240]">
+                      {selectedGarment.cutout_path ? (
+                        <img
+                          src={`${API_BASE_URL}/${selectedGarment.cutout_path}`}
+                          alt={selectedGarment.filename || selectedGarment.category}
+                          className="h-full w-full object-contain p-1"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-[#FFA8D4]">
+                          <CategoryIcon category={selectedGarment.category} className="h-7 w-7" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-[#F5F3FF]">
+                        {selectedGarment.filename || selectedGarment.category}
+                      </p>
+                      <p className="text-xs capitalize text-[#B9C0E8]">{selectedGarment.category}</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>

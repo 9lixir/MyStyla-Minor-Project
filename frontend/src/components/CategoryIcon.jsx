@@ -1,3 +1,5 @@
+import { iconForCategory } from "../lib/categories";
+
 const ICONS = {
   top: (
     <path d="M8 4l4-2 4 2 4 4-3 3-1-1v11H8V10l-1 1-3-3z" />
@@ -5,11 +7,23 @@ const ICONS = {
   bottom: (
     <path d="M7 3h10l1 18h-4l-1-10-1 10H8L7 3z" />
   ),
+  outerwear: (
+    <path d="M8 4l4-2 4 2 5 5-3 3-2-2v13H6V10l-2 2-3-3 5-5zM10 5v3M14 5v3" />
+  ),
+  dress: (
+    <path d="M10 2h4l1 5 3 12H6l3-12 1-5zM9 8h6" />
+  ),
   shoes: (
     <path d="M4 16c0-2 2-3 4-4l6-3c1-.5 2-.5 3 0l3 2c1 .5 2 1.5 2 3v2H4v-0z" />
   ),
   footwear: (
     <path d="M4 16c0-2 2-3 4-4l6-3c1-.5 2-.5 3 0l3 2c1 .5 2 1.5 2 3v2H4v-0z" />
+  ),
+  accessory: (
+    <>
+      <circle cx="12" cy="12" r="7" />
+      <path d="M12 8v4l2.5 2.5" />
+    </>
   ),
   belt: (
     <path d="M3 11h6v-1a2 2 0 012-2h2a2 2 0 012 2v1h6v2h-6v1a2 2 0 01-2 2h-2a2 2 0 01-2-2v-1H3v-2z" />
@@ -31,7 +45,8 @@ const ICONS = {
 };
 
 function CategoryIcon({ category, className = "w-8 h-8" }) {
-  const path = ICONS[category] || ICONS.default;
+  const key = category ? iconForCategory(category) : "default";
+  const path = ICONS[key] || ICONS.default;
   return (
     <svg
       viewBox="0 0 24 24"
