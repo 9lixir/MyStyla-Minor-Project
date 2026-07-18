@@ -1,10 +1,10 @@
 import { API_BASE_URL } from "../config";
 
-export async function getAccessoryRecommendations(formality, garments) {
+export async function getAccessoryRecommendations(formality, garments, season) {
   const response = await fetch(`${API_BASE_URL}/recommend/accessories`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ formality, garments }),
+    body: JSON.stringify({ formality, season, garments }),
   });
 
   if (!response.ok) {
@@ -12,15 +12,6 @@ export async function getAccessoryRecommendations(formality, garments) {
   }
 
   return response.json();
-}
-
-export async function fetchWardrobeGarments() {
-  const response = await fetch(`${API_BASE_URL}/scanning/garments`);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch wardrobe: ${response.status}`);
-  }
-  const data = await response.json();
-  return data.garments || [];
 }
 
 const OCCASION_MAP = {

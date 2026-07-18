@@ -18,7 +18,7 @@ function OutfitSuggestions({ onBack }) {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await getOutfitSuggestions(occasion, user?.id, 5);
+        const data = await getOutfitSuggestions(occasion, user?.id);
         if (!isCancelled) setSuggestions(data.suggestions);
       } catch (err) {
         if (!isCancelled) setError(err.message);

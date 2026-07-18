@@ -13,20 +13,58 @@ ACCESSORY_TYPES = {
         "footwear": "Loafers",
         "jewelry": "Simple Earrings",
         "watch": "Analog Watch",
+        "belt": "Leather Belt",
     },
     "Formal": {
         "bag": "Structured Handbag",
         "footwear": "Oxford Shoes",
         "jewelry": "Statement Jewelry",
         "watch": "Elegant Watch",
+        "belt": "Formal Belt",
     },
 }
+
+FOOTWEAR_BY_SEASON = {
+    "Casual": {
+        "Summer": "Sandals",
+        "Winter": "Boots",
+        "Spring": "Sneakers",
+        "Autumn": "Sneakers",
+    },
+    "Smart Casual": {
+        "Summer": "Low Heels",
+        "Winter": "Ankle Boots",
+        "Spring": "Loafers",
+        "Autumn": "Loafers",
+    },
+    "Formal": {
+        "Summer": "Heels",
+        "Winter": "Knee-High Boots",
+        "Spring": "Oxford Shoes",
+        "Autumn": "Oxford Shoes",
+    },
+}
+
+# Practical items (bag/footwear/belt/hat) are basics - they vary by outfit
+# brightness rather than hue, and stay consistent with each other within
+# one suggestion. Statement items (jewelry/watch) follow the color-harmony
+# hue logic instead.
+PRACTICAL_SLOTS = {"bag", "footwear", "belt", "hat"}
+STATEMENT_SLOTS = {"jewelry", "watch"}
 
 TONE_PREFIX = {
     "warm": "Gold",
     "cool": "Silver",
     "neutral": "Black",
     "accent": "Emerald",
+}
+
+# Light outfits get grounded with a dark neutral, dark outfits get lifted
+# with a light neutral, mid-tone outfits get an earthy brown.
+PRACTICAL_TONE_BY_BRIGHTNESS = {
+    "light_outfit": "Black",
+    "mid_outfit": "Brown",
+    "dark_outfit": "White",
 }
 
 
@@ -101,19 +139,39 @@ def get_accessory_tone(outfit_classification: str) -> str:
     }[outfit_classification]
 
 
+def get_average_brightness(garments: list[dict]) -> float:
+    """Average V (value/brightness) across all outfit colors, 0.0-1.0."""
+    hsv_values = collect_hsv(garments)
+    if not hsv_values:
+        return 0.5
+    return sum(v for h, s, v in hsv_values) / len(hsv_values)
+
+
+def classify_outfit_brightness(avg_value: float) -> str:
+    if avg_value >= 0.65:
+        return "light_outfit"
+    elif avg_value >= 0.35:
+        return "mid_outfit"
+    else:
+        return "dark_outfit"
+
+
 def check_wardrobe_for_accessory(slot: str, db=None) -> dict | None:
     """return a wardrobe accessory if accessory categories exist later"""
     return None
 
 
-def recommend_accessories(formality: str, garments: list[dict]) -> list[dict]:
+def recommend_accessories(formality: str, garments: list[dict], season: str | None = None) -> list[dict]:
     accessory_types = ACCESSORY_TYPES.get(formality)
     if accessory_types is None:
         raise ValueError(f"Unknown formality level: {formality}")
 
     outfit_classification = classify_outfit_tone(garments)
-    tone = get_accessory_tone(outfit_classification)
-    tone_prefix = TONE_PREFIX[tone]
+    statement_tone = get_accessory_tone(outfit_classification)
+
+    avg_brightness = get_average_brightness(garments)
+    brightness_class = classify_outfit_brightness(avg_brightness)
+    practical_tone_prefix = PRACTICAL_TONE_BY_BRIGHTNESS[brightness_class]
 
     results = []
     for slot, base_type in accessory_types.items():
@@ -127,13 +185,29 @@ def recommend_accessories(formality: str, garments: list[dict]) -> list[dict]:
                 "reason": f"You already own a compatible {slot} item",
                 "confidence": 100,
             })
+            continue
+
+        # Footwear varies by season, if season is known
+        if slot == "footwear" and season and season in FOOTWEAR_BY_SEASON.get(formality, {}):
+            base_type = FOOTWEAR_BY_SEASON[formality][season]
+
+        if slot in PRACTICAL_SLOTS:
+            tone_prefix = practical_tone_prefix
+            season_note = f" for {season}" if slot == "footwear" and season else ""
+            reason = (
+                f"{slot.capitalize()} in {practical_tone_prefix.lower()} - a versatile neutral "
+                f"that suits the outfit's {brightness_class.replace('_', ' ')} tone{season_note}"
+            )
         else:
-            results.append({
-                "slot": slot,
-                "name": f"{tone_prefix} {base_type}",
-                "source": "catalog",
-                "reason": f"Outfit is {outfit_classification} - a {tone}-toned {slot} complements it",
-                "confidence": 75,
-            })
+            tone_prefix = TONE_PREFIX[statement_tone]
+            reason = f"Outfit is {outfit_classification} - a {statement_tone}-toned {slot} complements it"
+
+        results.append({
+            "slot": slot,
+            "name": f"{tone_prefix} {base_type}",
+            "source": "catalog",
+            "reason": reason,
+            "confidence": 75,
+        })
 
     return results
