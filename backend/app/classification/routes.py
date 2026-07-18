@@ -8,7 +8,11 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 @router.post("/garments/{garment_id}/classify")
-def classify_garment(garment_id: str, original_filename: str):
+def classify_garment(garment_id: str, original_filename: str, db: Session = Depends(get_db)):
+    garment = db.query(Garment).filter(Garment.id == garment_id).first()
+    if not garment:
+        raise HTTPException(status_code=404, detail="Garment not found")
+
     cutout_path = get_cutout_path(original_filename)
     try:
         result = process_and_update(garment_id, cutout_path)

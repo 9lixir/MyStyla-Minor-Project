@@ -2,14 +2,16 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from sqlalchemy.orm import Session
 from app.scanning.remove_bg import remove_background
 from app.scanning.color_extract import extract_colors
-from app.scanning.vector_store import store_garment_vector
+from app.scanning.vector_store import store_garment_vector, update_garment_tags
 from app.scanning.preprocess import preprocess_image
 from app.database import get_db
-from app.models import Garment
+from app.models import Garment, GarmentClassification
+from app.outfit_matching.config import CATEGORIES, FORMALITY, SEASON, PATTERN, OCCASION
+from pydantic import BaseModel
 from app.classification.classify import analyze_garment
-import shutil
+from app.classification.normalization import normalize_pipeline_tags
 import os
-import numpy as np
+from app.scanning.vector_store import store_garment_vector, update_garment_tags, delete_garment_vector
 
 router = APIRouter()
 
@@ -18,6 +20,35 @@ os.makedirs(UPLOAD_DIR, exist_ok = True)
 
 ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"]
 MAX_FILE_SIZE = 10*1024*1024 #10mb
+
+
+class ClassificationUpdateRequest(BaseModel):
+    user_id: str | None = None
+    category: str
+    formality: str
+    season: str
+    pattern: str
+    occasion: list[str]
+
+
+def _validate_classification(payload: ClassificationUpdateRequest) -> None:
+    if payload.category not in CATEGORIES:
+        raise HTTPException(status_code=400, detail=f"Invalid category. Allowed: {CATEGORIES}")
+    if payload.formality not in FORMALITY:
+        raise HTTPException(status_code=400, detail=f"Invalid formality. Allowed: {FORMALITY}")
+    if payload.season not in SEASON:
+        raise HTTPException(status_code=400, detail=f"Invalid season. Allowed: {SEASON}")
+    if payload.pattern not in PATTERN:
+        raise HTTPException(status_code=400, detail=f"Invalid pattern. Allowed: {PATTERN}")
+    if not payload.occasion:
+        raise HTTPException(status_code=400, detail="Occasion must contain at least one value")
+
+    invalid_occasion = [value for value in payload.occasion if value not in OCCASION]
+    if invalid_occasion:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid occasion value(s): {invalid_occasion}. Allowed: {OCCASION}",
+        )
 
 @router.post("/upload")
 async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get_db)):
@@ -63,11 +94,14 @@ async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get
         raise HTTPException(status_code=500, detail=f"Color extraction failed: {str(e)}")
     
     try:
-        #placeholder 512-d vector until FashionCLIP is integrated, muskan le fashion clip ko integrate nagare samma
         result = analyze_garment(cutout_path)
+<<<<<<< HEAD
         embedding = result["embedding"]
         tags = result["tags"]
         flags = result["flags"] 
+=======
+        suggested_classification = normalize_pipeline_tags(result["tags"])
+>>>>>>> main
 
         #storing in qdrant with metadata
         metadata = {
@@ -75,7 +109,11 @@ async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get
             "original_path" : file_path,
             "cutout_path" : cutout_path,
             "dominant_colors" : colors,
+<<<<<<< HEAD
             "tags": tags
+=======
+            "tags": suggested_classification,
+>>>>>>> main
         }
         garment_id = store_garment_vector(embedding, metadata)
     except Exception as e:
@@ -92,6 +130,17 @@ async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get
             qdrant_id=garment_id
         )
         db.add(garment)
+        db.add(
+            GarmentClassification(
+                garment_id=garment_id,
+                user_id=None,
+                category=suggested_classification["category"],
+                formality=suggested_classification["formality"],
+                season=suggested_classification["season"],
+                pattern=suggested_classification["pattern"],
+                occasion=suggested_classification["occasion"],
+            )
+        )
         db.commit()
         db.refresh(garment)
     except Exception as e:
@@ -106,6 +155,98 @@ async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get
         "filename": file.filename,
         "cutout": cutout_path,
         "dominant_colors": colors,
+<<<<<<< HEAD
         "tags": tags ,
         "flags": flags
     }
+=======
+        "suggested_classification": suggested_classification,
+        "tags": suggested_classification,
+    }
+
+
+@router.put("/garments/{garment_id}/classification")
+async def save_garment_classification(
+    garment_id: str,
+    payload: ClassificationUpdateRequest,
+    db: Session = Depends(get_db),
+):
+    garment = db.query(Garment).filter(Garment.id == garment_id).first()
+    if not garment:
+        raise HTTPException(status_code=404, detail="Garment not found")
+
+    _validate_classification(payload)
+
+    existing = (
+        db.query(GarmentClassification)
+        .filter(GarmentClassification.garment_id == garment_id)
+        .first()
+    )
+
+    if existing:
+        existing.user_id = payload.user_id
+        existing.category = payload.category
+        existing.formality = payload.formality
+        existing.season = payload.season
+        existing.pattern = payload.pattern
+        existing.occasion = payload.occasion
+    else:
+        classification = GarmentClassification(
+            garment_id=garment_id,
+            user_id=payload.user_id,
+            category=payload.category,
+            formality=payload.formality,
+            season=payload.season,
+            pattern=payload.pattern,
+            occasion=payload.occasion,
+        )
+        db.add(classification)
+
+    db.commit()
+    update_garment_tags(
+        garment.qdrant_id,
+        {
+            "category": payload.category,
+            "formality": payload.formality,
+            "season": payload.season,
+            "pattern": payload.pattern,
+            "occasion": payload.occasion,
+        },
+    )
+
+    return {
+        "message": "Garment classification saved",
+        "garment_id": garment_id,
+    }
+
+
+@router.delete("/garments/{garment_id}")
+async def delete_garment(garment_id: str, db: Session = Depends(get_db)):
+    garment = db.query(Garment).filter(Garment.id == garment_id).first()
+    if not garment:
+        raise HTTPException(status_code=404, detail="Garment not found")
+
+    # Remove classification row(s) first (FK safety, in case cascade isn't set up)
+    db.query(GarmentClassification).filter(
+        GarmentClassification.garment_id == garment_id
+    ).delete()
+
+    # Remove image files from disk, best-effort
+    for path in (garment.original_path, garment.cutout_path):
+        if path and os.path.exists(path):
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+
+    db.delete(garment)
+    db.commit()
+
+    # Remove the vector/point from Qdrant, best-effort — don't fail the request if this errors
+    try:
+        delete_garment_vector(garment.qdrant_id)
+    except Exception:
+        pass
+
+    return {"message": "Garment deleted", "garment_id": garment_id}
+>>>>>>> main
