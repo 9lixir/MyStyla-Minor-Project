@@ -1,6 +1,5 @@
 import { useState } from "react"
 
-// Mirrors LABEL options in app/classification/multi_label_tagger.py
 const TAG_OPTIONS = {
   formality: ["casual", "business casual", "formal", "athletic"],
   season: ["summer", "winter", "spring", "autumn", "all-season"],
@@ -17,16 +16,18 @@ const FIELD_TITLES = {
 
 export default function ReviewTags({ garment, onBack, onSave }) {
   const [selectedTags, setSelectedTags] = useState(garment?.tags || {})
+  const flags = garment?.flags || {}
 
   if (!garment) return null
 
   function selectTag(field, value) {
     const predicted = garment.tags[field]
-    if (value !== predicted) 
-    {
-      fetch(`http://localhost:8000/classification/garments/${garment.garment_id}/correct-tag?field=${field}&predicted=${predicted}&corrected=${value}`, {
-        method: "POST"
-    })
+    if (value !== predicted) {
+      fetch(
+        `http://localhost:8000/classification/garments/${garment.garment_id}/correct-tag?field=${field}&predicted=${predicted}&corrected=${value}`,
+        { method: "POST" }
+      )
+    }
     setSelectedTags((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -73,34 +74,49 @@ export default function ReviewTags({ garment, onBack, onSave }) {
       )}
 
       <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-        <p className="text-sm font-medium text-gray-700 mb-3">
-          Tags
-      
-        </p>
+        <p className="text-sm font-medium text-gray-700 mb-3">Tags</p>
 
-        {Object.keys(FIELD_TITLES).map((field) => (
-          <div key={field} className="mb-3 last:mb-0">
-            <p className="text-xs text-gray-500 mb-1">{FIELD_TITLES[field]}</p>
-            <div className="flex gap-2 flex-wrap">
-              {TAG_OPTIONS[field].map((option) => {
-                const isSelected = selectedTags[field] === option
-                return (
-                  <button
-                    key={option}
-                    onClick={() => selectTag(field, option)}
-                    className={`px-3 py-1 rounded-full text-xs capitalize transition ${
-                      isSelected
-                        ? "bg-black text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
-                  >
-                    {option}
-                  </button>
-                )
-              })}
+        {Object.keys(FIELD_TITLES).map((field) => {
+          const isFlagged = flags[field]
+
+          return (
+            <div key={field} className="mb-4 last:mb-0">
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-xs text-gray-500">{FIELD_TITLES[field]}</p>
+                {isFlagged && (
+                  <span className="text-xs text-red-600 font-medium">
+                    ⚠ Low confidence — please review
+                  </span>
+                )}
+              </div>
+
+              {isFlagged ? (
+                <div className="flex gap-2 flex-wrap">
+                  {TAG_OPTIONS[field].map((option) => {
+                    const isSelected = selectedTags[field] === option
+                    return (
+                      <button
+                        key={option}
+                        onClick={() => selectTag(field, option)}
+                        className={`px-3 py-1 rounded-full text-xs capitalize transition border ${
+                          isSelected
+                            ? "bg-red-600 text-white border-red-600"
+                            : "bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : (
+                <span className="inline-block px-3 py-1 rounded-full text-xs capitalize bg-gray-100 text-gray-700">
+                  {selectedTags[field]}
+                </span>
+              )}
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       <button

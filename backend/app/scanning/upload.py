@@ -65,6 +65,9 @@ async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get
     try:
         #placeholder 512-d vector until FashionCLIP is integrated, muskan le fashion clip ko integrate nagare samma
         result = analyze_garment(cutout_path)
+        embedding = result["embedding"]
+        tags = result["tags"]
+        flags = result["flags"] 
 
         #storing in qdrant with metadata
         metadata = {
@@ -72,9 +75,9 @@ async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get
             "original_path" : file_path,
             "cutout_path" : cutout_path,
             "dominant_colors" : colors,
-            "tags": result["tags"]
+            "tags": tags
         }
-        garment_id = store_garment_vector(result["embedding"], metadata)
+        garment_id = store_garment_vector(embedding, metadata)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to store garment: {str(e)}")
 
@@ -103,6 +106,6 @@ async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get
         "filename": file.filename,
         "cutout": cutout_path,
         "dominant_colors": colors,
-        "tags": result["tags"],
-        "flags": result["flags"]
+        "tags": tags ,
+        "flags": flags
     }

@@ -1,7 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.classification.classify import process_and_update, get_cutout_path
 import uuid
 from app.models import TagCorrection
+from app.database import get_db
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 

@@ -8,8 +8,8 @@ from app.scanning.vector_store import update_garment_vector
 def analyze_garment(image_path: str) -> dict:
     image = Image.open(image_path).convert("RGB")
     embedding = embed_image(image)
-    result = tag_garment(embedding)
-    return {"tags": result["tags"], "flags": result["flags"], "embedding": embedding}
+    tags, flags = tag_garment(embedding)
+    return {"tags": tags, "flags": flags, "embedding": embedding}
 
 
 def get_cutout_path(original_filename: str, processed_dir: str = "processed") -> str:

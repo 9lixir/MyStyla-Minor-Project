@@ -6,11 +6,12 @@ import Wardrobe from "./pages/Wardrobe"
 function App() {
   const [currentPage, setCurrentPage] = useState("wardrobe")
   const [scannedGarment, setScannedGarment] = useState(null)
+  const [wardrobeKey, setWardrobeKey] = useState(0)
 
   return (
     <div className="min-h-screen bg-gray-50">
       {currentPage === "wardrobe" && (
-        <Wardrobe onAddGarment={() => setCurrentPage("addGarment")} />
+        <Wardrobe key={wardrobeKey} onAddGarment={() => setCurrentPage("addGarment")} />
       )}
       {currentPage === "addGarment" && (
         <AddGarment
@@ -25,7 +26,10 @@ function App() {
         <ReviewTags
           garment={scannedGarment}
           onBack={() => setCurrentPage("addGarment")}
-          onSave={() => setCurrentPage("wardrobe")}
+          onSave={() => {
+            setWardrobeKey((k) => k + 1)   // forces Wardrobe to remount and refetch
+            setCurrentPage("wardrobe")
+          }}
         />
       )}
     </div>
