@@ -15,8 +15,15 @@ LABEL_LISTS = {
     "occasion": OCCASION_LABELS,
 }
 
-# Computed ONCE when the server starts, not per-upload
-LABEL_EMBEDDINGS = {field: embed_texts(labels) for field, labels in LABEL_LISTS.items()}
+LABEL_EMBEDDINGS = None
+
+
+def _get_label_embeddings():
+    """cache label embeddings after first classification"""
+    global LABEL_EMBEDDINGS
+    if LABEL_EMBEDDINGS is None:
+        LABEL_EMBEDDINGS = {field: embed_texts(labels) for field, labels in LABEL_LISTS.items()}
+    return LABEL_EMBEDDINGS
 
 
 def cosine_similarity(a, b):
@@ -25,9 +32,10 @@ def cosine_similarity(a, b):
 
 
 def tag_garment(image_embedding: list) -> dict:
+    label_embeddings = _get_label_embeddings()
     tags = {}
     for field, label_list in LABEL_LISTS.items():
-        scores = [cosine_similarity(image_embedding, le) for le in LABEL_EMBEDDINGS[field]]
+        scores = [cosine_similarity(image_embedding, le) for le in label_embeddings[field]]
         best_idx = int(np.argmax(scores))
         tags[field] = label_list[best_idx]
     return tags

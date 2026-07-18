@@ -2,6 +2,7 @@ import os
 from PIL import Image
 from app.classification.fashion_clip_model import embed_image
 from app.classification.multi_label_tagger import tag_garment
+from app.classification.normalization import normalize_pipeline_tags
 from app.scanning.vector_store import update_garment_vector
 
 
@@ -20,5 +21,6 @@ def get_cutout_path(original_filename: str, processed_dir: str = "processed") ->
 def process_and_update(garment_id: str, cutout_path: str) -> dict:
     """Full flow: classify + embed a cutout, then push results into the existing Qdrant point."""
     result = analyze_garment(cutout_path)
+    result["tags"] = normalize_pipeline_tags(result["tags"])
     update_garment_vector(garment_id, result["embedding"], result["tags"])
     return result
