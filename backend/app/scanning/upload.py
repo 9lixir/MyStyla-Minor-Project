@@ -95,7 +95,13 @@ async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get
     
     try:
         result = analyze_garment(cutout_path)
+<<<<<<< HEAD
+        embedding = result["embedding"]
+        tags = result["tags"]
+        flags = result["flags"] 
+=======
         suggested_classification = normalize_pipeline_tags(result["tags"])
+>>>>>>> main
 
         #storing in qdrant with metadata
         metadata = {
@@ -103,9 +109,13 @@ async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get
             "original_path" : file_path,
             "cutout_path" : cutout_path,
             "dominant_colors" : colors,
+<<<<<<< HEAD
+            "tags": tags
+=======
             "tags": suggested_classification,
+>>>>>>> main
         }
-        garment_id = store_garment_vector(result["embedding"], metadata)
+        garment_id = store_garment_vector(embedding, metadata)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to store garment: {str(e)}")
 
@@ -145,6 +155,11 @@ async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get
         "filename": file.filename,
         "cutout": cutout_path,
         "dominant_colors": colors,
+<<<<<<< HEAD
+        "tags": tags ,
+        "flags": flags
+    }
+=======
         "suggested_classification": suggested_classification,
         "tags": suggested_classification,
     }
@@ -234,3 +249,4 @@ async def delete_garment(garment_id: str, db: Session = Depends(get_db)):
         pass
 
     return {"message": "Garment deleted", "garment_id": garment_id}
+>>>>>>> main

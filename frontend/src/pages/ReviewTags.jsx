@@ -2,6 +2,37 @@ import { useMemo, useState } from "react"
 import { API_BASE_URL } from "../config"
 import { useAuthStore } from "@/store/auth-store"
 
+<<<<<<< HEAD
+const TAG_OPTIONS = {
+  formality: ["casual", "business casual", "formal", "athletic"],
+  season: ["summer", "winter", "spring", "autumn", "all-season"],
+  pattern: ["solid", "striped", "floral", "plaid", "polka dot", "graphic print"],
+  occasion: ["everyday wear", "work", "party", "workout", "formal event"],
+}
+
+const FIELD_TITLES = {
+  formality: "Formality",
+  season: "Season",
+  pattern: "Pattern",
+  occasion: "Occasion",
+}
+
+export default function ReviewTags({ garment, onBack, onSave }) {
+  const [selectedTags, setSelectedTags] = useState(garment?.tags || {})
+  const flags = garment?.flags || {}
+
+  if (!garment) return null
+
+  function selectTag(field, value) {
+    const predicted = garment.tags[field]
+    if (value !== predicted) {
+      fetch(
+        `http://localhost:8000/classification/garments/${garment.garment_id}/correct-tag?field=${field}&predicted=${predicted}&corrected=${value}`,
+        { method: "POST" }
+      )
+    }
+    setSelectedTags((prev) => ({ ...prev, [field]: value }))
+=======
 const CATEGORY_OPTIONS = ["top", "bottom", "dress", "outerwear"]
 const FORMALITY_OPTIONS = ["Casual", "Smart Casual", "Formal"]
 const SEASON_OPTIONS = ["Spring", "Summer", "Autumn", "Winter"]
@@ -81,6 +112,7 @@ export default function ReviewTags({ garment, onBack, onSave }) {
     } finally {
       setSaving(false)
     }
+>>>>>>> main
   }
 
   return (
@@ -121,6 +153,59 @@ export default function ReviewTags({ garment, onBack, onSave }) {
         </div>
       </div>
 
+<<<<<<< HEAD
+      {selectedTags.category && (
+        <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+          <p className="text-xs text-gray-500 mb-1">Category</p>
+          <p className="text-sm font-medium text-gray-800 capitalize">{selectedTags.category}</p>
+        </div>
+      )}
+
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+        <p className="text-sm font-medium text-gray-700 mb-3">Tags</p>
+
+        {Object.keys(FIELD_TITLES).map((field) => {
+          const isFlagged = flags[field]
+
+          return (
+            <div key={field} className="mb-4 last:mb-0">
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-xs text-gray-500">{FIELD_TITLES[field]}</p>
+                {isFlagged && (
+                  <span className="text-xs text-red-600 font-medium">
+                    ⚠ Low confidence — please review
+                  </span>
+                )}
+              </div>
+
+              {isFlagged ? (
+                <div className="flex gap-2 flex-wrap">
+                  {TAG_OPTIONS[field].map((option) => {
+                    const isSelected = selectedTags[field] === option
+                    return (
+                      <button
+                        key={option}
+                        onClick={() => selectTag(field, option)}
+                        className={`px-3 py-1 rounded-full text-xs capitalize transition border ${
+                          isSelected
+                            ? "bg-red-600 text-white border-red-600"
+                            : "bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : (
+                <span className="inline-block px-3 py-1 rounded-full text-xs capitalize bg-gray-100 text-gray-700">
+                  {selectedTags[field]}
+                </span>
+              )}
+            </div>
+          )
+        })}
+=======
       <div className="mb-6 rounded-xl border border-[#2A3374] bg-[#151A4D]/90 p-4 shadow-sm">
         <p className="mb-3 text-sm font-medium text-[#F5F3FF]">
           Tags
@@ -206,6 +291,7 @@ export default function ReviewTags({ garment, onBack, onSave }) {
             ))}
           </div>
         </div>
+>>>>>>> main
       </div>
 
       {error ? <p className="mb-3 text-sm text-[#FF7AB8]">{error}</p> : null}

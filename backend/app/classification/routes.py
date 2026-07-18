@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException, Depends
 from app.classification.classify import process_and_update, get_cutout_path
-from app.classification.normalization import normalize_pipeline_tags
+import uuid
+from app.models import TagCorrection
 from app.database import get_db
-from app.models import Garment, GarmentClassification
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -18,20 +18,20 @@ def classify_garment(garment_id: str, original_filename: str, db: Session = Depe
         result = process_and_update(garment_id, cutout_path)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Classification failed: {str(e)}")
+    return {"garment_id": garment_id, "tags": result["tags"]}
 
-    tags = normalize_pipeline_tags(result["tags"])
-    existing = db.query(GarmentClassification).filter(
-        GarmentClassification.garment_id == garment_id
-    ).first()
+@router.post("/garments/{garment_id}/correct-tag")
+def correct_tag(garment_id: str, field:str, predicted: str,corrected:str, db: Session = Depends(get_db)):
+    if predicted != corrected:
+        entry = TagCorrection(
+            id = str(uuid.uuid4()),
+            garment_id = garment_id,
+            field = field,
+            predicted_value = predicted,
+            corrected_value = corrected
 
-    if existing:
-        existing.category = tags["category"]
-        existing.formality = tags["formality"]
-        existing.season = tags["season"]
-        existing.pattern = tags["pattern"]
-        existing.occasion = tags["occasion"]
-    else:
-        db.add(GarmentClassification(garment_id=garment_id, user_id=None, **tags))
-
-    db.commit()
-    return {"garment_id": garment_id, "tags": tags}
+        )
+        db.add(entry)
+        db.commit()
+       
+    return {"status": "logged" if predicted != corrected else "no change"}
