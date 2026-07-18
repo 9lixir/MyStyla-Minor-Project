@@ -5,7 +5,7 @@ export default function Wardrobe({ onAddGarment, onShowOutfitSuggestions }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("http://localhost:8000/scanning/garments")
+    fetch("http://localhost:8000/scanning/garments-with-tags")
       .then(res => res.json())
       .then(data => {
         setGarments(data.garments || [])
@@ -51,7 +51,14 @@ export default function Wardrobe({ onAddGarment, onShowOutfitSuggestions }) {
             />
             </div>
             <div className="p-3">
-              <p className="text-sm font-medium text-gray-800 truncate">{garment.filename}</p>
+              <p className="text-sm font-medium text-gray-800 truncate capitalize">
+                {garment.tags?.category || garment.filename}
+              </p>
+              {garment.tags?.formality && (
+                <p className="text-xs text-gray-400 capitalize mt-0.5">
+                  {garment.tags.formality} · {garment.tags.occasion}
+                </p>
+              )}
               <div className="flex gap-1 mt-2">
                 {garment.dominant_colors?.map((color, i) => (
                   <div

@@ -6,6 +6,7 @@ from app import models
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.recommendation_router import router as recommendation_router
+from app.classification.routes import router as classification_router
 
 models.Base.metadata.create_all(bind = engine)
 
@@ -27,6 +28,7 @@ app.mount("/processed", StaticFiles(directory="processed"), name="processed")
 app.include_router(scanning_router, prefix="/scanning")
 app.include_router(search_router, prefix="/scanning")
 app.include_router(recommendation_router, prefix="/recommend")
+app.include_router(classification_router, prefix="/classification")
 
 @app.get("/")
 def root():
