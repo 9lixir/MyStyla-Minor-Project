@@ -117,3 +117,9 @@ def update_garment_tags(garment_id: str, tags: dict):
         payload={"tags": tags},
         points=[garment_id],
     )
+
+def delete_garment_vector(garment_id: str) -> None:
+    client.delete(
+        collection_name=COLLECTION_NAME,
+        points_selector=[garment_id],
+    )

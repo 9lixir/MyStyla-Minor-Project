@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from app.classification.classify import analyze_garment
 from app.classification.normalization import normalize_pipeline_tags
 import os
+from app.scanning.vector_store import store_garment_vector, update_garment_tags, delete_garment_vector
 
 router = APIRouter()
 
@@ -202,3 +203,34 @@ async def save_garment_classification(
         "message": "Garment classification saved",
         "garment_id": garment_id,
     }
+
+
+@router.delete("/garments/{garment_id}")
+async def delete_garment(garment_id: str, db: Session = Depends(get_db)):
+    garment = db.query(Garment).filter(Garment.id == garment_id).first()
+    if not garment:
+        raise HTTPException(status_code=404, detail="Garment not found")
+
+    # Remove classification row(s) first (FK safety, in case cascade isn't set up)
+    db.query(GarmentClassification).filter(
+        GarmentClassification.garment_id == garment_id
+    ).delete()
+
+    # Remove image files from disk, best-effort
+    for path in (garment.original_path, garment.cutout_path):
+        if path and os.path.exists(path):
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+
+    db.delete(garment)
+    db.commit()
+
+    # Remove the vector/point from Qdrant, best-effort — don't fail the request if this errors
+    try:
+        delete_garment_vector(garment.qdrant_id)
+    except Exception:
+        pass
+
+    return {"message": "Garment deleted", "garment_id": garment_id}
