@@ -1,7 +1,35 @@
 import numpy as np
 from app.classification.fashion_clip_model import embed_texts
 
-CATEGORY_LABELS = ["shirt", "t-shirt", "jacket", "dress", "jeans", "skirt", "sweater", "shorts"]
+# CATEGORY_LABELS = ["shirt", "t-shirt", "jacket", "dress", "jeans", "skirt", "sweater", "shorts"]
+# FORMALITY_LABELS = ["casual", "formal", "business casual", "athletic"]
+# SEASON_LABELS = ["summer", "winter", "spring", "autumn", "all-season"]
+# PATTERN_LABELS = ["solid", "striped", "floral", "plaid", "polka dot", "graphic print"]
+# OCCASION_LABELS = ["everyday wear", "party", "work", "workout", "formal event"]
+
+# Mirror of frontend/src/lib/categories.js -- keep both in sync.
+
+CATEGORY_LABELS = [
+    # Tops
+    "t-shirt", "shirt", "blouse", "tank top", "polo", "crop top", "tube top", "bodysuit",
+    # Sweaters & Knits
+    "sweater", "cardigan", "hoodie", "sweatshirt", "turtleneck",
+    # Outerwear
+    "jacket", "denim jacket", "leather jacket", "blazer", "coat", "parka", "windbreaker", "vest",
+    # Bottoms
+    "jeans", "trousers", "chinos", "cargo pants", "joggers", "leggings", "shorts",
+    # Skirts
+    "skirt", "mini skirt", "maxi skirt", "pleated skirt",
+    # Dresses & Sets
+    "dress", "jumpsuit", "romper", "co-ord set",
+    # Formalwear
+    "suit", "tuxedo", "gown",
+    # Footwear
+    "sneakers", "boots", "sandals", "heels", "flats", "loafers",
+    # Accessories
+    "belt", "hat", "scarf", "gloves", "tie", "bag", "sunglasses", "jewelry", "watch",
+]
+
 FORMALITY_LABELS = ["casual", "formal", "business casual", "athletic"]
 SEASON_LABELS = ["summer", "winter", "spring", "autumn", "all-season"]
 PATTERN_LABELS = ["solid", "striped", "floral", "plaid", "polka dot", "graphic print"]
