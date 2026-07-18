@@ -5,19 +5,27 @@ import os
 
 OUTPUT_DIR = "processed"
 os.makedirs(OUTPUT_DIR, exist_ok = True)
+MAX_REMBG_SIZE = int(os.getenv("REMBG_MAX_SIZE", "1024"))
+REMBG_MODEL = os.getenv("REMBG_MODEL", "isnet-general-use")
+
+
+def _prepare_for_rembg(image_path: str) -> bytes:
+    image = Image.open(image_path).convert("RGBA")
+    image.thumbnail((MAX_REMBG_SIZE, MAX_REMBG_SIZE), Image.LANCZOS)
+
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    return buffer.getvalue()
+
 
 def remove_background(image_path: str) -> str:
-    # opening the uploaded image
-    with open(image_path, "rb") as f:
-        input_data = f.read()
+    input_data = _prepare_for_rembg(image_path)
 
-    # removing bg using birefnet-general to prevent fragmentation in pants legs
     output_data = remove(
         input_data,
-        session = new_session("birefnet-general")
+        session = new_session(REMBG_MODEL)
     )
 
-    #saving the clean cutout as png
     filename = os.path.splitext(os.path.basename(image_path))[0]
     output_path = os.path.join(OUTPUT_DIR, f"{filename}_cutout.png")
 

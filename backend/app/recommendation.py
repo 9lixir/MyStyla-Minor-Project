@@ -1,21 +1,3 @@
-"""
-Rule-based Accessory Recommendation Engine
---------------------------------------------
-Implements a* = R(f, h_bar) using Table 3.2.
-
-Inputs: formality f in {Casual, Smart Casual, Formal}, and the outfit's HSV
-color profile (computed from garment dominant_colors).
-
-Color-harmony rule (3-way, matches the outfit engine's HSV logic):
-  - warm-dominant outfit      -> cool-toned accessory
-  - cool-dominant outfit      -> warm-toned accessory
-  - multicolored/patterned    -> neutral-toned accessory   (high hue spread)
-  - neutral outfit (low sat)  -> accent-colored accessory  (low saturation)
-
-Before suggesting a generic catalog accessory, the engine checks whether the
-user already owns a compatible accessory in their scanned wardrobe.
-"""
-
 import colorsys
 import math
 
@@ -49,7 +31,7 @@ TONE_PREFIX = {
 
 
 def hex_to_hsv(hex_color: str) -> tuple[float, float, float]:
-    """Converts hex (e.g. '#a13f2c') to (hue in degrees, saturation, value)."""
+    """convert hex to hsv"""
     hex_color = hex_color.lstrip("#")
     r = int(hex_color[0:2], 16) / 255.0
     g = int(hex_color[2:4], 16) / 255.0
@@ -61,7 +43,8 @@ def hex_to_hsv(hex_color: str) -> tuple[float, float, float]:
 def collect_hsv(garments: list[dict]) -> list[tuple[float, float, float]]:
     hsv_values = []
     for garment in garments:
-        for color in garment.get("dominant_colors", []):
+        colors = garment.get("dominant_colors") or garment.get("colors") or []
+        for color in colors:
             hex_value = color.get("hex") if isinstance(color, dict) else color
             if hex_value:
                 hsv_values.append(hex_to_hsv(hex_value))
@@ -69,11 +52,7 @@ def collect_hsv(garments: list[dict]) -> list[tuple[float, float, float]]:
 
 
 def circular_mean_and_spread(hues: list[float]) -> tuple[float, float]:
-    """
-    Returns (mean_hue_degrees, resultant_length).
-    resultant_length near 1 = hues tightly clustered; near 0 = spread out
-    (multicolored/patterned).
-    """
+    """return mean hue and circular spread"""
     if not hues:
         return 0.0, 1.0
     radians = [math.radians(h) for h in hues]
@@ -94,7 +73,7 @@ MULTICOLOR_SPREAD_THRESHOLD = 0.5
 
 
 def classify_outfit_tone(garments: list[dict]) -> str:
-    """Returns "warm-dominant", "cool-dominant", "multicolored", or "neutral"."""
+    """classify outfit color tone"""
     hsv_values = collect_hsv(garments)
     if not hsv_values:
         return "neutral"
@@ -123,12 +102,7 @@ def get_accessory_tone(outfit_classification: str) -> str:
 
 
 def check_wardrobe_for_accessory(slot: str, db=None) -> dict | None:
-    """
-    STUB - depends on the Garment model's `category` field, which doesn't
-    exist yet (Ayushma/Muskan's pipeline). Once it does:
-        match = db.query(Garment).filter(Garment.category == slot).first()
-        return {"name": match.filename, "source": "wardrobe"} if match else None
-    """
+    """return a wardrobe accessory if accessory categories exist later"""
     return None
 
 
