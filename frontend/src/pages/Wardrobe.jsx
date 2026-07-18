@@ -3,9 +3,51 @@ import { API_BASE_URL } from "../config"
 import CategoryIcon from "../components/CategoryIcon"
 import { CATEGORY_GROUPS, groupForCategory } from "../lib/categories"
 
-function GarmentCard({ garment }) {
+function GarmentCard({ garment, onDelete }) {
+  const [confirming, setConfirming] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  const handleDeleteClick = (e) => {
+    e.stopPropagation()
+    if (deleting) return
+    if (!confirming) {
+      setConfirming(true)
+      return
+    }
+    setDeleting(true)
+    onDelete(garment.id).finally(() => {
+      setDeleting(false)
+      setConfirming(false)
+    })
+  }
+
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#2A3374] bg-[#151A4D]/90 shadow-sm transition hover:border-[#FF6FB5]/50 hover:shadow-md">
+    <div className="group relative overflow-hidden rounded-2xl border border-[#2A3374] bg-[#151A4D]/90 shadow-sm transition hover:border-[#FF6FB5]/50 hover:shadow-md">
+      <button
+        onClick={handleDeleteClick}
+        onMouseLeave={() => setConfirming(false)}
+        disabled={deleting}
+        title={confirming ? "Click again to confirm delete" : "Delete garment"}
+        className={`absolute right-2 top-2 z-10 flex h-7 items-center gap-1 rounded-full border px-2 text-[10px] font-medium shadow-sm transition-all ${
+          confirming
+            ? "border-red-400 bg-red-500 text-white opacity-100"
+            : "border-[#2A3374] bg-[#0E1240]/90 text-[#B9C0E8] opacity-0 hover:border-red-400 hover:text-red-300 group-hover:opacity-100"
+        }`}
+      >
+        {deleting ? (
+          <span className="px-1">…</span>
+        ) : confirming ? (
+          <span className="px-1">Confirm?</span>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+            <path d="M10 11v6" />
+            <path d="M14 11v6" />
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+          </svg>
+        )}
+      </button>
       <div className="flex h-40 items-center justify-center bg-[#1E2560]">
         {garment.cutout_path ? (
           <img
@@ -50,6 +92,7 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
   const [garments, setGarments] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeGroup, setActiveGroup] = useState("all")
+  const [deleteError, setDeleteError] = useState(null)
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/scanning/garments`)
@@ -60,6 +103,23 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
       })
       .catch(() => setLoading(false))
   }, [])
+
+  const handleDeleteGarment = async (garmentId) => {
+    setDeleteError(null)
+    const previous = garments
+    // Optimistically remove from UI
+    setGarments(prev => prev.filter(g => g.id !== garmentId))
+    try {
+      const res = await fetch(`${API_BASE_URL}/scanning/garments/${garmentId}`, {
+        method: "DELETE",
+      })
+      if (!res.ok) throw new Error("Delete failed")
+    } catch (err) {
+      // Roll back on failure
+      setGarments(previous)
+      setDeleteError("Couldn't delete that item. Please try again.")
+    }
+  }
 
   // Bucket garments by category group, in taxonomy order, with an "Other" catch-all.
   const sections = useMemo(() => {
@@ -130,6 +190,15 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
         </div>
       </div>
 
+      {deleteError && (
+        <div className="mb-4 flex items-center justify-between rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-2.5 text-sm text-red-200">
+          <span>{deleteError}</span>
+          <button onClick={() => setDeleteError(null)} className="ml-4 text-red-200/70 hover:text-red-100">
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {loading && (
         <div className="rounded-2xl border border-[#2A3374] bg-[#151A4D]/90 py-16 text-center text-[#B9C0E8]">
           Loading your wardrobe...
@@ -175,7 +244,7 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                 </div>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                   {section.garments.map(garment => (
-                    <GarmentCard key={garment.id} garment={garment} />
+                    <GarmentCard key={garment.id} garment={garment} onDelete={handleDeleteGarment} />
                   ))}
                 </div>
               </div>
