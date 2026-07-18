@@ -10,7 +10,7 @@ OCCASION_LABELS = ["everyday wear", "party", "work", "workout", "formal event"]
 
 #temperature matches fashionCLIP pretraining temperature, which is 0.07. This is used in the softmax function to scale the logits before computing probabilities.
 GAMMA = 0.07
-CONFIDENCE_THRESHOLD = 0.70
+CONFIDENCE_THRESHOLD = 0.35
 
 LABEL_LISTS = {
     "category": CATEGORY_LABELS,
