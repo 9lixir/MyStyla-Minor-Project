@@ -74,7 +74,14 @@ def build_around_garment(
     if anchor is None:
         raise ValueError(f"Garment '{garment_id}' not found in wardrobe")
 
-    candidates = [g for g in wardrobe if g["id"] != garment_id]
+    # changed: Filter out garments that have the exact same category as the anchor
+    anchor_category = anchor.get("category", "").lower()
+    
+    candidates = [
+        g for g in wardrobe 
+        if g["id"] != garment_id and g.get("category", "").lower() != anchor_category
+    ]
+
     if occasion:
         candidates = filter_by_occasion(candidates, occasion)
 
