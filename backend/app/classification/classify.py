@@ -9,7 +9,22 @@ from app.scanning.vector_store import update_garment_vector
 def analyze_garment(image_path: str) -> dict:
     image = Image.open(image_path).convert("RGB")
     embedding = embed_image(image)
-    tags, flags = tag_garment(embedding)
+    
+    # catches whatever tag_garment returns
+    unpacked = tag_garment(embedding)
+    
+    # handles both tuple returns and single dictionary/string returns safely
+    if isinstance(unpacked, tuple):
+        tags = unpacked[0]
+        flags = unpacked[1] if len(unpacked) > 1 else {}
+    else:
+        tags = unpacked
+        flags = {}
+
+    # changed: wrapping in a dict so .get() doesnt crash
+    if isinstance(tags, str):
+        tags = {"category": tags}
+        
     return {"tags": tags, "flags": flags, "embedding": embedding}
 
 

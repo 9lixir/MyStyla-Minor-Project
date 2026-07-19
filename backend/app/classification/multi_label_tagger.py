@@ -73,19 +73,18 @@ def tag_garment(image_embedding: list) -> dict:
     label_embeddings = _get_label_embeddings()
     tags = {}
     flags = {}
+    
     for field, label_list in LABEL_LISTS.items():
-<<<<<<< HEAD
-        raw_scores = [cosine_similarity(image_embedding, le) for le in LABEL_EMBEDDINGS[field]]
-        probs = softmax(raw_scores)
-        best_idx = int(np.argmax(probs))
-        confidence = float(probs[best_idx])
-
-        tags[field] = label_list[best_idx]
-        flags[field] = confidence < CONFIDENCE_THRESHOLD
-    return tags, flags
-=======
+        #  Compute similarity scores
         scores = [cosine_similarity(image_embedding, le) for le in label_embeddings[field]]
         best_idx = int(np.argmax(scores))
         tags[field] = label_list[best_idx]
-    return tags
->>>>>>> main
+        
+        #  Missing Threshold Logic: Calculate confidence probability
+        probabilities = softmax(scores)
+        highest_confidence = float(probabilities[best_idx])
+        
+        #  Flag it as True if it's lower than  0.35 threshold
+        flags[field] = highest_confidence < CONFIDENCE_THRESHOLD
+        
+    return tags, flags  # Return both so classify.py can read them!

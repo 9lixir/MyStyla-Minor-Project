@@ -11,15 +11,15 @@ from pydantic import BaseModel
 from app.classification.classify import analyze_garment
 from app.classification.normalization import normalize_pipeline_tags
 import os
-from app.scanning.vector_store import store_garment_vector, update_garment_tags, delete_garment_vector
+from app.scanning.vector_store import delete_garment_vector
 
 router = APIRouter()
 
 UPLOAD_DIR = "uploads"
-os.makedirs(UPLOAD_DIR, exist_ok = True)
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"]
-MAX_FILE_SIZE = 10*1024*1024 #10mb
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10mb
 
 
 class ClassificationUpdateRequest(BaseModel):
@@ -50,24 +50,25 @@ def _validate_classification(payload: ClassificationUpdateRequest) -> None:
             detail=f"Invalid occasion value(s): {invalid_occasion}. Allowed: {OCCASION}",
         )
 
+
 @router.post("/upload")
 async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get_db)):
-    #only allowing images on here
+    # only allowing images on here
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(
-            status_code = 400, 
-            detail = "Invalid file type. Allowed: JPEG, PNG, WEBP"
-            )
+            status_code=400, 
+            detail="Invalid file type. Allowed: JPEG, PNG, WEBP"
+        )
     
-    #file size
+    # file size checking
     contents = await file.read()
     if len(contents) > MAX_FILE_SIZE:
         raise HTTPException(
-            status_code = 400,
-            detail = "File too large. Maximum size is 10 MB"
+            status_code=400,
+            detail="File too large. Maximum size is 10 MB"
         )
     
-    #saving the uploaded file as
+    # saving the uploaded file
     file_path = os.path.join(UPLOAD_DIR, file.filename)
     try:
         with open(file_path, "wb") as buffer:
@@ -81,13 +82,13 @@ async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Background removal failed: {str(e)}")
 
-    #preprocessing by resizing
+    # preprocessing by resizing
     try:
         cutout_path = preprocess_image(cutout_path)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to preprocess image: {str(e)}")
 
-    #extracting dominant colors
+    # extracting dominant colors
     try:
         colors = extract_colors(cutout_path)
     except Exception as e:
@@ -95,35 +96,29 @@ async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get
     
     try:
         result = analyze_garment(cutout_path)
-<<<<<<< HEAD
+        
+        # Merged changes: extraction of vectors/flags alongside normalization logic
         embedding = result["embedding"]
-        tags = result["tags"]
-        flags = result["flags"] 
-=======
+        flags = result["flags"]
         suggested_classification = normalize_pipeline_tags(result["tags"])
->>>>>>> main
 
-        #storing in qdrant with metadata
+        # storing in qdrant with metadata
         metadata = {
-            "filename" : file.filename,
-            "original_path" : file_path,
-            "cutout_path" : cutout_path,
-            "dominant_colors" : colors,
-<<<<<<< HEAD
-            "tags": tags
-=======
+            "filename": file.filename,
+            "original_path": file_path,
+            "cutout_path": cutout_path,
+            "dominant_colors": colors,
             "tags": suggested_classification,
->>>>>>> main
         }
         garment_id = store_garment_vector(embedding, metadata)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to store garment: {str(e)}")
 
-    #save to database
+    # save to database
     try:
         garment = Garment(
-            id = garment_id,
-            filename = file.filename,
+            id=garment_id,
+            filename=file.filename,
             original_path=file_path,
             cutout_path=cutout_path,
             dominant_colors=colors,
@@ -145,23 +140,19 @@ async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get
         db.refresh(garment)
     except Exception as e:
         raise HTTPException(
-            status_code = 500,
-            detail = f"Failed to save to database:{str(e)}"
+            status_code=500,
+            detail=f"Failed to save to database: {str(e)}"
         )
 
     return {
-        "message": "Image uploaded and processed succesfully",
+        "message": "Image uploaded and processed successfully",
         "garment_id": garment_id,
         "filename": file.filename,
         "cutout": cutout_path,
         "dominant_colors": colors,
-<<<<<<< HEAD
-        "tags": tags ,
-        "flags": flags
-    }
-=======
         "suggested_classification": suggested_classification,
         "tags": suggested_classification,
+        "flags": flags
     }
 
 
@@ -226,7 +217,7 @@ async def delete_garment(garment_id: str, db: Session = Depends(get_db)):
     if not garment:
         raise HTTPException(status_code=404, detail="Garment not found")
 
-    # Remove classification row(s) first (FK safety, in case cascade isn't set up)
+    # Remove classification row(s) first (FK safety)
     db.query(GarmentClassification).filter(
         GarmentClassification.garment_id == garment_id
     ).delete()
@@ -242,11 +233,10 @@ async def delete_garment(garment_id: str, db: Session = Depends(get_db)):
     db.delete(garment)
     db.commit()
 
-    # Remove the vector/point from Qdrant, best-effort — don't fail the request if this errors
+    # Remove the vector/point from Qdrant, best-effort
     try:
         delete_garment_vector(garment.qdrant_id)
     except Exception:
         pass
 
     return {"message": "Garment deleted", "garment_id": garment_id}
->>>>>>> main

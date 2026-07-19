@@ -18,10 +18,16 @@ def classify_garment(garment_id: str, original_filename: str, db: Session = Depe
         result = process_and_update(garment_id, cutout_path)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Classification failed: {str(e)}")
-    return {"garment_id": garment_id, "tags": result["tags"]}
+        
+    # FIX HERE: Send both tags AND flags down to your React frontend app!
+    return {
+        "garment_id": garment_id, 
+        "tags": result["tags"],
+        "flags": result.get("flags", {})
+    }
 
 @router.post("/garments/{garment_id}/correct-tag")
-def correct_tag(garment_id: str, field:str, predicted: str,corrected:str, db: Session = Depends(get_db)):
+def correct_tag(garment_id: str, field: str, predicted: str, corrected: str, db: Session = Depends(get_db)):
     if predicted != corrected:
         entry = TagCorrection(
             id = str(uuid.uuid4()),
@@ -29,9 +35,10 @@ def correct_tag(garment_id: str, field:str, predicted: str,corrected:str, db: Se
             field = field,
             predicted_value = predicted,
             corrected_value = corrected
-
         )
         db.add(entry)
         db.commit()
-       
-    return {"status": "logged" if predicted != corrected else "no change"}
+        db.refresh(entry)
+        return {"status": "success", "id": entry.id}
+        
+    return {"status": "ignored", "message": "Predicted and corrected values match"}
