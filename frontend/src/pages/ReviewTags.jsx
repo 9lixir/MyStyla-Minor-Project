@@ -2,11 +2,11 @@ import { useMemo, useState } from "react"
 import { API_BASE_URL } from "../config"
 import { useAuthStore } from "@/store/auth-store"
 
-const CATEGORY_OPTIONS = ["top", "bottom", "dress", "outerwear"]
-const FORMALITY_OPTIONS = ["casual", "formal", "business casual", "athletic"]
-const SEASON_OPTIONS = ["summer", "winter", "spring", "autumn", "all-season"]
-const PATTERN_OPTIONS = ["solid", "striped", "floral", "plaid", "polka dot", "graphic print"]
-const OCCASION_OPTIONS = ["everyday wear", "party", "work", "workout", "formal event"]
+const CATEGORY_OPTIONS = ["Top", "Bottom", "Dress", "Outerwear"]
+const FORMALITY_OPTIONS = ["Casual", "Smart Casual", "Formal"]
+const SEASON_OPTIONS = ["Spring", "Summer", "Autumn", "Winter"]
+const PATTERN_OPTIONS = ["Solid", "Striped", "Checked", "Graphic", "Floral"]
+const OCCASION_OPTIONS = ["Casual", "Office", "Party", "Date", "Farewell"]
 
 export default function ReviewTags({ garment, onBack, onSave }) {
   // Read flags populated by multi_label_tagger.py threshold checks
