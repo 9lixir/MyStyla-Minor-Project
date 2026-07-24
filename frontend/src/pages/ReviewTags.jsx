@@ -2,19 +2,56 @@ import { useMemo, useState } from "react"
 import { API_BASE_URL } from "../config"
 import { useAuthStore } from "@/store/auth-store"
 
-const CATEGORY_OPTIONS = ["Top", "Bottom", "Dress", "Outerwear"]
-const FORMALITY_OPTIONS = ["Casual", "Smart Casual", "Formal"]
-const SEASON_OPTIONS = ["Spring", "Summer", "Autumn", "Winter"]
-const PATTERN_OPTIONS = ["Solid", "Striped", "Checked", "Graphic", "Floral"]
-const OCCASION_OPTIONS = ["Casual", "Office", "Party", "Date", "Farewell"]
+// Synced with backend CATEGORY_LABELS
+const CATEGORY_GROUPS = [
+  {
+    label: "Western Wear",
+    options: [
+      { label: "T-Shirt", value: "t-shirt" },
+      { label: "Shirt", value: "shirt" },
+      { label: "Blouse", value: "blouse" },
+      { label: "Crop Top", value: "crop top" },
+      { label: "Sweater", value: "sweater" },
+      { label: "Hoodie", value: "hoodie" },
+      { label: "Jacket", value: "jacket" },
+      { label: "Blazer", value: "blazer" },
+      { label: "Coat", value: "coat" },
+      { label: "Jeans", value: "jeans" },
+      { label: "Trousers", value: "trousers" },
+      { label: "Shorts", value: "shorts" },
+      { label: "Skirt", value: "skirt" },
+      { label: "Dress", value: "dress" },
+      { label: "Jumpsuit", value: "jumpsuit" },
+      { label: "Suit", value: "suit" },
+    ],
+  },
+  {
+    label: "South Asian Wear",
+    options: [
+      { label: "Kurti", value: "kurti" },
+      { label: "Kurta", value: "kurta" },
+      { label: "Saree", value: "saree" },
+      { label: "Lehenga", value: "lehenga" },
+      { label: "Sherwani", value: "sherwani" },
+      { label: "Salwar Suit", value: "salwar suit" },
+      { label: "Anarkali", value: "anarkali" },
+      { label: "Dhoti", value: "dhoti" },
+    ],
+  },
+]
+
+// Lowercase string lists matching backend predictions
+const FORMALITY_OPTIONS = ["casual", "formal", "business casual", "athletic"]
+const SEASON_OPTIONS = ["summer", "winter", "spring", "autumn", "all-season"]
+const PATTERN_OPTIONS = ["solid", "striped", "floral", "plaid", "polka dot", "graphic print"]
+const OCCASION_OPTIONS = ["everyday wear", "party", "work", "workout", "formal event"]
 
 export default function ReviewTags({ garment, onBack, onSave }) {
-  // Read flags populated by multi_label_tagger.py threshold checks
   const flags = garment?.flags || {}
 
   const initialClassification = useMemo(() => {
     const fallback = {
-      category: "top",
+      category: "t-shirt",
       formality: "casual",
       season: "summer",
       pattern: "solid",
@@ -24,11 +61,16 @@ export default function ReviewTags({ garment, onBack, onSave }) {
     const source = garment?.suggested_classification || garment?.tags || {}
 
     return {
-      category: source.category || fallback.category,
-      formality: source.formality || fallback.formality,
-      season: source.season || fallback.season,
-      pattern: source.pattern || fallback.pattern,
-      occasion: source.occasion?.length > 0 ? source.occasion : fallback.occasion,
+      category: source.category ? String(source.category).toLowerCase() : fallback.category,
+      formality: source.formality ? String(source.formality).toLowerCase() : fallback.formality,
+      season: source.season ? String(source.season).toLowerCase() : fallback.season,
+      pattern: source.pattern ? String(source.pattern).toLowerCase() : fallback.pattern,
+      occasion:
+        Array.isArray(source.occasion) && source.occasion.length > 0
+          ? source.occasion.map((o) => String(o).toLowerCase())
+          : typeof source.occasion === "string"
+          ? [source.occasion.toLowerCase()]
+          : fallback.occasion,
     }
   }, [garment])
 
@@ -67,7 +109,7 @@ export default function ReviewTags({ garment, onBack, onSave }) {
         },
         body: JSON.stringify({
           user_id: userId,
-          category,
+          category: String(category).toLowerCase(),
           formality,
           season,
           pattern,
@@ -151,12 +193,18 @@ export default function ReviewTags({ garment, onBack, onSave }) {
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className={`w-full rounded-lg border bg-[#1E2560] px-3 py-2 text-sm text-[#F5F3FF] focus:border-[#FF6FB5] focus:outline-none transition-colors capitalize ${
+            className={`w-full rounded-lg border bg-[#1E2560] px-3 py-2 text-sm text-[#F5F3FF] focus:border-[#FF6FB5] focus:outline-none transition-colors ${
               flags.category ? "border-[#FF6FB5]" : "border-[#2A3374]"
             }`}
           >
-            {CATEGORY_OPTIONS.map((value) => (
-              <option key={value} value={value}>{value}</option>
+            {CATEGORY_GROUPS.map((group) => (
+              <optgroup key={group.label} label={group.label} className="bg-[#151A4D] text-[#FF6FB5] font-semibold">
+                {group.options.map((opt) => (
+                  <option key={opt.value} value={opt.value} className="bg-[#1E2560] text-[#F5F3FF] font-normal">
+                    {opt.label}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </div>
@@ -177,7 +225,7 @@ export default function ReviewTags({ garment, onBack, onSave }) {
             }`}
           >
             {FORMALITY_OPTIONS.map((value) => (
-              <option key={value} value={value}>{value}</option>
+              <option key={value} value={value} className="capitalize">{value}</option>
             ))}
           </select>
         </div>
@@ -198,7 +246,7 @@ export default function ReviewTags({ garment, onBack, onSave }) {
             }`}
           >
             {SEASON_OPTIONS.map((value) => (
-              <option key={value} value={value}>{value}</option>
+              <option key={value} value={value} className="capitalize">{value}</option>
             ))}
           </select>
         </div>
@@ -219,7 +267,7 @@ export default function ReviewTags({ garment, onBack, onSave }) {
             }`}
           >
             {PATTERN_OPTIONS.map((value) => (
-              <option key={value} value={value}>{value}</option>
+              <option key={value} value={value} className="capitalize">{value}</option>
             ))}
           </select>
         </div>

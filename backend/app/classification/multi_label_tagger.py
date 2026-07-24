@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.special import softmax
-from app.classification.fashion_clip_model import embed_texts
+from app.classification.fashion_clip_model import embed_texts, predict_indofashion
 
 # CATEGORY_LABELS = ["shirt", "t-shirt", "jacket", "dress", "jeans", "skirt", "sweater", "shorts"]
 # FORMALITY_LABELS = ["casual", "formal", "business casual", "athletic"]
@@ -29,6 +29,8 @@ CATEGORY_LABELS = [
     "sneakers", "boots", "sandals", "heels", "flats", "loafers",
     # Accessories
     "belt", "hat", "scarf", "gloves", "tie", "bag", "sunglasses", "jewelry", "watch",
+    #south asian
+    "kurti", "kurta", "saree", "lehenga", "sherwani", "salwar suit", "anarkali", "dhoti"
 ]
 
 FORMALITY_LABELS = ["casual", "formal", "business casual", "athletic"]
@@ -41,7 +43,6 @@ GAMMA = 0.07
 CONFIDENCE_THRESHOLD = 0.35
 
 LABEL_LISTS = {
-    "category": CATEGORY_LABELS,
     "formality": FORMALITY_LABELS,
     "season": SEASON_LABELS,
     "pattern": PATTERN_LABELS,
@@ -69,22 +70,37 @@ def softmax(scores,gamma=GAMMA):
     exp_scores = np.exp(scores)
     return exp_scores / np.sum(exp_scores)
 
-def tag_garment(image_embedding: list) -> dict:
+def tag_garment(image_embedding: list, image= None) -> tuple[dict,dict]:
     label_embeddings = _get_label_embeddings()
     tags = {}
     flags = {}
     
+    if image is not None:
+        try:
+            indofashion_res = predict_indofashion(image)
+            tags["category"] = indofashion_res["prediction"]
+            flags["category"] = indofashion_res.get("flagged_low_confidence", False)
+        except Exception:
+            # Fallback to zero-shot CLIP if the head fails for any reason
+            cat_embeddings = embed_texts(CATEGORY_LABELS)
+            scores = [cosine_similarity(image_embedding, le) for le in cat_embeddings]
+            best_idx = int(np.argmax(scores))
+            tags["category"] = CATEGORY_LABELS[best_idx]
+            probs = softmax(scores)
+            flags["category"] = float(probs[best_idx]) < CONFIDENCE_THRESHOLD
+
+    # 2. Other Metadata via Zero-Shot CLIP
+    label_embeddings = _get_label_embeddings()
     for field, label_list in LABEL_LISTS.items():
-        #  Compute similarity scores
         scores = [cosine_similarity(image_embedding, le) for le in label_embeddings[field]]
         best_idx = int(np.argmax(scores))
         tags[field] = label_list[best_idx]
-        
-        #  Missing Threshold Logic: Calculate confidence probability
+
         probabilities = softmax(scores)
         highest_confidence = float(probabilities[best_idx])
-        
-        #  Flag it as True if it's lower than  0.35 threshold
         flags[field] = highest_confidence < CONFIDENCE_THRESHOLD
-        
-    return tags, flags  # Return both so classify.py can read them!
+
+    return {
+        "tags": tags,
+        "flags": flags
+    }

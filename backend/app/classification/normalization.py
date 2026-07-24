@@ -4,14 +4,38 @@ from app.outfit_matching.config import OCCASION
 def normalize_pipeline_tags(tags: dict) -> dict:
     """map classifier labels into matcher tags"""
     category_map = {
-        "shirt": "top",
-        "t-shirt": "top",
-        "sweater": "top",
-        "jacket": "outerwear",
-        "dress": "dress",
-        "jeans": "bottom",
-        "skirt": "bottom",
-        "shorts": "bottom",
+        #south asian garments
+        "saree": "dress",
+        "women_kurta": "top",
+        "kurti" :"top",
+        "men_kurta": "top",
+        "lehenga": "dress",
+        "dhoti": "bottom",
+        "sherwani": "outerwear",
+        "palazzo": "bottom",
+        "dupatta": "outerwear",
+        "petticoat": "bottom",
+
+        # Tops
+        "t-shirt": "top", "shirt": "top", "blouse": "top", "tank top": "top",
+        "polo": "top", "crop top": "top", "tube top": "top", "bodysuit": "top",
+        "sweater": "top", "cardigan": "top", "hoodie": "top", "sweatshirt": "top",
+        "turtleneck": "top",
+        
+        # Outerwear
+        "jacket": "outerwear", "denim jacket": "outerwear", "leather jacket": "outerwear",
+        "blazer": "outerwear", "coat": "outerwear", "parka": "outerwear",
+        "windbreaker": "outerwear", "vest": "outerwear",
+        
+        # Bottoms
+        "jeans": "bottom", "trousers": "bottom", "chinos": "bottom",
+        "cargo pants": "bottom", "joggers": "bottom", "leggings": "bottom",
+        "shorts": "bottom", "skirt": "bottom", "mini skirt": "bottom",
+        "maxi skirt": "bottom", "pleated skirt": "bottom",
+        
+        # Dresses & Sets
+        "dress": "dress", "jumpsuit": "dress", "romper": "dress",
+        "co-ord set": "dress", "gown": "dress", "suit": "dress", "tuxedo": "dress",
     }
     formality_map = {
         "casual": "Casual",
