@@ -11,7 +11,7 @@ def analyze_garment(image_path: str) -> dict:
     embedding = embed_image(image)
     
     # catches whatever tag_garment returns
-    unpacked = tag_garment(embedding)
+    unpacked = tag_garment(embedding, image= image)
     
     # handles both tuple returns and single dictionary/string returns safely
     if isinstance(unpacked, tuple):
@@ -22,6 +22,12 @@ def analyze_garment(image_path: str) -> dict:
         flags = {}
 
     # changed: wrapping in a dict so .get() doesnt crash
+    if isinstance(tags, str):
+        tags = {"category": tags}
+    else:
+        tags = unpacked
+        flags = {}
+
     if isinstance(tags, str):
         tags = {"category": tags}
         

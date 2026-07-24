@@ -166,6 +166,22 @@ async def save_garment_classification(
     if not garment:
         raise HTTPException(status_code=404, detail="Garment not found")
 
+    # Normalize the incoming user payload so fine-grained tags (e.g., "Kurti") map to core CATEGORIES ("top")
+    normalized_tags = normalize_pipeline_tags({
+        "category": payload.category,
+        "formality": payload.formality,
+        "season": payload.season,
+        "pattern": payload.pattern,
+        "occasion": payload.occasion,
+    })
+
+    # Update payload with normalized values before validating
+    payload.category = normalized_tags["category"]
+    payload.formality = normalized_tags["formality"]
+    payload.season = normalized_tags["season"]
+    payload.pattern = normalized_tags["pattern"]
+    payload.occasion = normalized_tags["occasion"]
+
     _validate_classification(payload)
 
     existing = (

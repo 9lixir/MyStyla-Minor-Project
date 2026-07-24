@@ -1,11 +1,19 @@
-# narrow wardrobe by selected occasion
 from typing import Any
 
 
 def filter_by_occasion(wardrobe: list[dict[str, Any]], occasion: str) -> list[dict[str, Any]]:
-    """return garments tagged for the selected occasion"""
-    occasion = occasion.strip()
-    filtered = [g for g in wardrobe if occasion in g["tags"]["occasion"]]
+    """return garments tagged for the selected occasion safely"""
+    target = occasion.strip().lower()
+    filtered = []
+    
+    for g in wardrobe:
+        occ = g.get("tags", {}).get("occasion", [])
+        # Support both string and list representations
+        if isinstance(occ, str):
+            occ = [occ]
+        if any(target == str(o).lower() for o in occ):
+            filtered.append(g)
+            
     return filtered
 
 
