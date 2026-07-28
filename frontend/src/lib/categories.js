@@ -67,15 +67,27 @@ export const CATEGORY_LABELS = [
   "sunglasses",
   "jewelry",
   "watch",
+  // South Asian
+  "kurti",
+  "kurta",
+  "saree",
+  "lehenga",
+  "sherwani",
+  "salwar suit",
+  "anarkali",
+  "dhoti",
 ];
 
 // Same labels, organized into display groups for the Wardrobe grid.
+// South Asian garments are folded into the group that matches how the outfit
+// matcher treats them (kurti -> top, lehenga -> dress, dhoti -> bottom, ...)
+// so each one inherits a sensible icon without needing a new icon key.
 export const CATEGORY_GROUPS = [
   {
     id: "tops",
     label: "Tops",
     icon: "top",
-    categories: ["t-shirt", "shirt", "blouse", "tank top", "polo", "crop top", "tube top", "bodysuit"],
+    categories: ["t-shirt", "shirt", "blouse", "tank top", "polo", "crop top", "tube top", "bodysuit", "kurti", "kurta"],
   },
   {
     id: "knitwear",
@@ -87,13 +99,13 @@ export const CATEGORY_GROUPS = [
     id: "outerwear",
     label: "Outerwear",
     icon: "outerwear",
-    categories: ["jacket", "denim jacket", "leather jacket", "blazer", "coat", "parka", "windbreaker", "vest"],
+    categories: ["jacket", "denim jacket", "leather jacket", "blazer", "coat", "parka", "windbreaker", "vest", "sherwani"],
   },
   {
     id: "bottoms",
     label: "Bottoms",
     icon: "bottom",
-    categories: ["jeans", "trousers", "chinos", "cargo pants", "joggers", "leggings", "shorts"],
+    categories: ["jeans", "trousers", "chinos", "cargo pants", "joggers", "leggings", "shorts", "dhoti"],
   },
   {
     id: "skirts",
@@ -105,7 +117,7 @@ export const CATEGORY_GROUPS = [
     id: "dresses",
     label: "Dresses & Sets",
     icon: "dress",
-    categories: ["dress", "jumpsuit", "romper", "co-ord set"],
+    categories: ["dress", "jumpsuit", "romper", "co-ord set", "saree", "lehenga", "salwar suit", "anarkali"],
   },
   {
     id: "formalwear",
@@ -143,9 +155,6 @@ export const CATEGORY_TO_ICON = CATEGORY_GROUPS.reduce((map, group) => {
   return map;
 }, {});
 
-// Garments tagged under the old, broader 8-category scheme (before this
-// taxonomy expanded) still carry labels like "top" or "bottom". Map those
-// straight to a group so old data doesn't get stranded in "Other".
 const LEGACY_ALIASES = {
   top: "tops",
   bottom: "bottoms",
@@ -159,10 +168,21 @@ const LEGACY_ALIASES = {
   bag: "accessories",
   accessory: "accessories",
   dress: "dresses",
+  women_kurta: "tops",
+  kurta_men: "tops",
+  sherwanis: "outerwear",
+  dhoti_pants: "bottoms",
+  leggings_and_salwars: "bottoms",
+  palazzos: "bottoms",
+  petticoats: "skirts",
+  dupattas: "accessories",
+  nehru_jackets: "outerwear",
+  mojaris_men: "footwear",
+  mojaris_women: "footwear",
+  gowns: "formalwear",
 };
 
-// Case/whitespace-insensitive lookup with legacy fallback. Always prefer
-// this over indexing CATEGORY_TO_GROUP directly.
+
 export function groupForCategory(category) {
   if (!category) return undefined;
   const key = category.trim().toLowerCase();
@@ -172,7 +192,7 @@ export function groupForCategory(category) {
 export function iconForCategory(category) {
   if (!category) return "default";
   const key = category.trim().toLowerCase();
-  return CATEGORY_TO_ICON[key] || key; // old labels (top/bottom/...) already match CategoryIcon's own keys
+  return CATEGORY_TO_ICON[key] || key; 
 }
 
 export const FORMALITY_LABELS = ["casual", "formal", "business casual", "athletic"];
