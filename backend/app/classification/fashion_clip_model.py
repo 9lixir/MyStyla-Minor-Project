@@ -33,14 +33,17 @@ def _load_model():
     return model, processor
 
 def _load_indofashion_service():
-    """Lazy load fine-tuned IndoFashion classification head"""
     global indofashion_service
     if indofashion_service is not None:
         return indofashion_service
 
+    import torch                                    
     from ml_experiments.indofashion_service import IndoFashionService
 
     weights_path = ROOT_DIR / "ml_experiments" / "indofashion_head.pth"
+    if not weights_path.exists():                   
+        raise FileNotFoundError(f"weights not found at {weights_path}")
+
     device = "cuda" if torch.cuda.is_available() else "cpu"
     indofashion_service = IndoFashionService(model_path=str(weights_path), device=device)
     return indofashion_service

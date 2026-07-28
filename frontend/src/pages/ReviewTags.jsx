@@ -1,57 +1,42 @@
 import { useMemo, useState } from "react"
 import { API_BASE_URL } from "../config"
 import { useAuthStore } from "@/store/auth-store"
+import {
+  CATEGORY_GROUPS,
+  FORMALITY_LABELS,
+  SEASON_LABELS,
+  PATTERN_LABELS,
+  OCCASION_LABELS,
+} from "@/lib/categories"
 
-// Synced with backend CATEGORY_LABELS
-const CATEGORY_GROUPS = [
-  {
-    label: "Western Wear",
-    options: [
-      { label: "T-Shirt", value: "t-shirt" },
-      { label: "Shirt", value: "shirt" },
-      { label: "Blouse", value: "blouse" },
-      { label: "Crop Top", value: "crop top" },
-      { label: "Sweater", value: "sweater" },
-      { label: "Hoodie", value: "hoodie" },
-      { label: "Jacket", value: "jacket" },
-      { label: "Blazer", value: "blazer" },
-      { label: "Coat", value: "coat" },
-      { label: "Jeans", value: "jeans" },
-      { label: "Trousers", value: "trousers" },
-      { label: "Shorts", value: "shorts" },
-      { label: "Skirt", value: "skirt" },
-      { label: "Dress", value: "dress" },
-      { label: "Jumpsuit", value: "jumpsuit" },
-      { label: "Suit", value: "suit" },
-    ],
-  },
-  {
-    label: "South Asian Wear",
-    options: [
-      { label: "Kurti", value: "kurti" },
-      { label: "Kurta", value: "kurta" },
-      { label: "Saree", value: "saree" },
-      { label: "Lehenga", value: "lehenga" },
-      { label: "Sherwani", value: "sherwani" },
-      { label: "Salwar Suit", value: "salwar suit" },
-      { label: "Anarkali", value: "anarkali" },
-      { label: "Dhoti", value: "dhoti" },
-    ],
-  },
-]
+// Option lists are DERIVED from the shared taxonomy in lib/categories.js --
+// never hardcoded here. A hardcoded copy silently drifted from the backend and
+// caused every unlisted category (e.g. "leather jacket") to render as the first
+// option, "T-Shirt", because a <select> with an unmatched value falls back to
+// selectedIndex 0.
+const titleCase = (value) =>
+  String(value)
+    .split(/([\s-])/)
+    .map((part) => (/^[\s-]$/.test(part) ? part : part.charAt(0).toUpperCase() + part.slice(1)))
+    .join("")
 
-// Lowercase string lists matching backend predictions
-const FORMALITY_OPTIONS = ["casual", "formal", "business casual", "athletic"]
-const SEASON_OPTIONS = ["summer", "winter", "spring", "autumn", "all-season"]
-const PATTERN_OPTIONS = ["solid", "striped", "floral", "plaid", "polka dot", "graphic print"]
-const OCCASION_OPTIONS = ["everyday wear", "party", "work", "workout", "formal event"]
+const CATEGORY_OPTION_GROUPS = CATEGORY_GROUPS.map((group) => ({
+  label: group.label,
+  options: group.categories.map((value) => ({ value, label: titleCase(value) })),
+}))
+
+const KNOWN_CATEGORY_VALUES = new Set(
+  CATEGORY_GROUPS.flatMap((group) => group.categories)
+)
 
 export default function ReviewTags({ garment, onBack, onSave }) {
   const flags = garment?.flags || {}
 
   const initialClassification = useMemo(() => {
     const fallback = {
-      category: "t-shirt",
+      // Deliberately empty, not "t-shirt": a missing category should be visible,
+      // not disguised as a confident prediction.
+      category: "",
       formality: "casual",
       season: "summer",
       pattern: "solid",
@@ -86,6 +71,10 @@ export default function ReviewTags({ garment, onBack, onSave }) {
 
   const hasAnyWarnings = Object.values(flags).some(Boolean)
 
+  // The backend sent a category this UI has no option for -- surface it loudly
+  // instead of quietly showing the wrong garment type.
+  const categoryUnrecognized = Boolean(category) && !KNOWN_CATEGORY_VALUES.has(category)
+
   const toggleOccasion = (value) => {
     setOccasion((prev) => {
       if (prev.includes(value)) {
@@ -97,6 +86,11 @@ export default function ReviewTags({ garment, onBack, onSave }) {
   }
 
   const handleSave = async () => {
+    if (!category) {
+      setError("Please choose a category before saving")
+      return
+    }
+
     setSaving(true)
     setError("")
 
@@ -182,6 +176,13 @@ export default function ReviewTags({ garment, onBack, onSave }) {
           </div>
         )}
 
+        {categoryUnrecognized && (
+          <div className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-2.5 text-xs text-amber-200">
+            ⚠️ <strong>Unrecognized category from server:</strong> "{category}". This UI has no matching
+            option — the taxonomy in <code>lib/categories.js</code> is out of sync with the backend.
+          </div>
+        )}
+
         {/* Category */}
         <div className="mb-3">
           <div className="flex justify-between items-center mb-1">
@@ -191,13 +192,18 @@ export default function ReviewTags({ garment, onBack, onSave }) {
             )}
           </div>
           <select
-            value={category}
+            value={categoryUnrecognized ? "" : category}
             onChange={(e) => setCategory(e.target.value)}
             className={`w-full rounded-lg border bg-[#1E2560] px-3 py-2 text-sm text-[#F5F3FF] focus:border-[#FF6FB5] focus:outline-none transition-colors ${
-              flags.category ? "border-[#FF6FB5]" : "border-[#2A3374]"
+              flags.category || categoryUnrecognized ? "border-[#FF6FB5]" : "border-[#2A3374]"
             }`}
           >
-            {CATEGORY_GROUPS.map((group) => (
+            {(categoryUnrecognized || !category) && (
+              <option value="" disabled className="bg-[#1E2560] text-[#9AA8E0]">
+                {categoryUnrecognized ? `— unrecognized: ${category} —` : "— select a category —"}
+              </option>
+            )}
+            {CATEGORY_OPTION_GROUPS.map((group) => (
               <optgroup key={group.label} label={group.label} className="bg-[#151A4D] text-[#FF6FB5] font-semibold">
                 {group.options.map((opt) => (
                   <option key={opt.value} value={opt.value} className="bg-[#1E2560] text-[#F5F3FF] font-normal">
@@ -224,7 +230,7 @@ export default function ReviewTags({ garment, onBack, onSave }) {
               flags.formality ? "border-[#FF6FB5]" : "border-[#2A3374]"
             }`}
           >
-            {FORMALITY_OPTIONS.map((value) => (
+            {FORMALITY_LABELS.map((value) => (
               <option key={value} value={value} className="capitalize">{value}</option>
             ))}
           </select>
@@ -245,7 +251,7 @@ export default function ReviewTags({ garment, onBack, onSave }) {
               flags.season ? "border-[#FF6FB5]" : "border-[#2A3374]"
             }`}
           >
-            {SEASON_OPTIONS.map((value) => (
+            {SEASON_LABELS.map((value) => (
               <option key={value} value={value} className="capitalize">{value}</option>
             ))}
           </select>
@@ -266,7 +272,7 @@ export default function ReviewTags({ garment, onBack, onSave }) {
               flags.pattern ? "border-[#FF6FB5]" : "border-[#2A3374]"
             }`}
           >
-            {PATTERN_OPTIONS.map((value) => (
+            {PATTERN_LABELS.map((value) => (
               <option key={value} value={value} className="capitalize">{value}</option>
             ))}
           </select>
@@ -281,7 +287,7 @@ export default function ReviewTags({ garment, onBack, onSave }) {
             )}
           </div>
           <div className="flex gap-2 flex-wrap">
-            {OCCASION_OPTIONS.map((value) => (
+            {OCCASION_LABELS.map((value) => (
               <button
                 type="button"
                 key={value}
