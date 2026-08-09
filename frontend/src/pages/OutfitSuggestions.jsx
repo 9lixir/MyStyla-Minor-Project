@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import OccasionTabs from "../components/OccasionTabs";
 import OutfitSuggestionCard from "../components/OutfitSuggestionCard";
 import { getOutfitSuggestions } from "../services/recommendationApi";
+import { fetchCurrentWeather } from "../services/outfit.service";
 import { useAuthStore } from "@/store/auth-store";
 
 function OutfitSuggestions({ onBack }) {
@@ -10,6 +11,9 @@ function OutfitSuggestions({ onBack }) {
   const [suggestions, setSuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [weatherMode, setWeatherMode] = useState(false);
+  const [weather, setWeather] = useState(null);
+  const [weatherError, setWeatherError] = useState("");
 
   useEffect(() => {
     let isCancelled = false;
@@ -18,7 +22,7 @@ function OutfitSuggestions({ onBack }) {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await getOutfitSuggestions(occasion, user?.id, 5);
+        const data = await getOutfitSuggestions(occasion, user?.id, 5, weatherMode ? weather : null);
         if (!isCancelled) setSuggestions(data.suggestions);
       } catch (err) {
         if (!isCancelled) setError(err.message);
@@ -29,7 +33,37 @@ function OutfitSuggestions({ onBack }) {
 
     fetchSuggestions();
     return () => { isCancelled = true; };
-  }, [occasion, user?.id]);
+  }, [occasion, user?.id, weatherMode, weather]);
+
+  const handleWeatherSuggestions = () => {
+    if (!navigator.geolocation) {
+      setWeatherError("Location is not supported in this browser.");
+      return;
+    }
+
+    setIsLoading(true);
+    setWeatherError("");
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const currentWeather = await fetchCurrentWeather(
+            position.coords.latitude,
+            position.coords.longitude,
+          );
+          setWeather(currentWeather);
+          setWeatherMode(true);
+        } catch (err) {
+          setWeatherError(err.message || "Couldn't load weather.");
+          setIsLoading(false);
+        }
+      },
+      () => {
+        setWeatherError("Location permission was denied.");
+        setIsLoading(false);
+      },
+      { enableHighAccuracy: false, timeout: 10000 },
+    );
+  };
 
   return (
     <div className="mystyla-app-shell min-h-screen p-6" data-cy="outfit-suggestions-page">
@@ -55,6 +89,37 @@ function OutfitSuggestions({ onBack }) {
         <p className="text-sm text-[#B9C0E8] mb-5" style={{ fontFamily: "Inter, sans-serif" }}>
           Matched from your saved tags, colors, and accessory rules
         </p>
+
+        <div className="mb-5 flex flex-wrap gap-2">
+          <button
+            onClick={() => setWeatherMode(false)}
+            className={`rounded-full px-4 py-2 text-sm transition ${
+              weatherMode
+                ? "border border-[#2A3374] bg-[#151A4D]/90 text-[#B9C0E8]"
+                : "bg-[#FF6FB5] text-white"
+            }`}
+          >
+            Standard Suggest
+          </button>
+          <button
+            onClick={handleWeatherSuggestions}
+            className={`rounded-full px-4 py-2 text-sm transition ${
+              weatherMode
+                ? "bg-[#FF6FB5] text-white"
+                : "border border-[#2A3374] bg-[#151A4D]/90 text-[#B9C0E8]"
+            }`}
+          >
+            Suggest by Weather
+          </button>
+        </div>
+        {weatherMode && weather ? (
+          <p className="mb-4 text-xs capitalize text-[#B9C0E8]">
+            Weather filter: {Math.round(weather.temperature_c)}°C, {weather.condition}
+          </p>
+        ) : null}
+        {weatherError ? (
+          <p className="mb-4 text-xs text-[#FF4FA0]">{weatherError}</p>
+        ) : null}
 
         <div className="mb-6">
           <p className="text-xs uppercase tracking-[0.2em] text-[#FF6FB5] mb-2">

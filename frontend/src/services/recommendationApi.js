@@ -58,7 +58,7 @@ function toSuggestion(outfit, index) {
   };
 }
 
-export async function getOutfitSuggestions(occasion, userId, topK = 5) {
+export async function getOutfitSuggestions(occasion, userId, topK = 5, weather = null) {
   if (!userId) {
     throw new Error("User ID not found");
   }
@@ -71,6 +71,7 @@ export async function getOutfitSuggestions(occasion, userId, topK = 5) {
       user_id: userId,
       occasion: backendOccasion,
       top_k: topK,
+      weather,
     }),
   });
 
