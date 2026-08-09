@@ -8,6 +8,7 @@ from app.user_registration import user_models
 from app.outfit_matching.router import router as outfit_router
 from app.recommendation_router import router as recommendation_router
 from app.classification.routes import router as classification_router
+from app.weather.router import router as weather_router
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
@@ -47,6 +48,7 @@ app.include_router(auth_router)
 app.include_router(outfit_router, prefix="/outfits")
 app.include_router(recommendation_router, prefix="/recommend")
 app.include_router(classification_router, prefix="/classification")
+app.include_router(weather_router, prefix="/weather")
 
 @app.get("/")
 def root():
