@@ -4,7 +4,7 @@ from app.scanning.vector_store import client, COLLECTION_NAME
 
 
 def get_wardrobe(user_id: str = None) -> list[dict]:
-    """Load wardrobe rows from DB + classification + qdrant vectors only."""
+    """Load real wardrobe rows with joined tags and Qdrant vectors."""
     db = SessionLocal()
     try:
         garments = db.query(Garment).all()
