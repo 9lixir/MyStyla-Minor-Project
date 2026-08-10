@@ -21,9 +21,10 @@ def classify_garment(garment_id: str, original_filename: str, db: Session = Depe
         
     # FIX HERE: Send both tags AND flags down to your React frontend app!
     return {
-        "garment_id": garment_id, 
+        "garment_id": garment_id,
         "tags": result["tags"],
-        "flags": result.get("flags", {})
+        "matcher_tags": result["matcher_tags"],
+        "flags": result.get("flags", {}),
     }
 
 @router.post("/garments/{garment_id}/correct-tag")

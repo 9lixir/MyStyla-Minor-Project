@@ -25,9 +25,22 @@ CATEGORY_LABELS = [
     "belt", "hat", "scarf", "gloves", "tie", "bag", "sunglasses", "jewelry", "watch",
     # South Asian
     "kurti", "kurta", "saree", "lehenga", "sherwani", "salwar suit", "anarkali", "dhoti",
+    # Nepali
+    "daura suruwal", "gunyu cholo", "haku patasi", "labeda suruwal", "dhaka topi",
 ]
 
 SOUTH_ASIAN_SET = {"kurti", "kurta", "saree", "lehenga", "sherwani", "salwar suit", "anarkali", "dhoti"}
+
+NEPALI_SET = {"daura suruwal", "gunyu cholo", "haku patasi", "labeda suruwal", "dhaka topi"}
+
+# clip doesn't know these words, so the prompt is describing the garment as:
+NEPALI_PROMPTS = {
+    "daura suruwal": "a photo of a daura suruwal, traditional Nepali men's outfit with a closed-neck double-breasted wrap-around top and matching narrow trousers",
+    "gunyu cholo":   "a photo of a gunyu cholo, traditional Nepali women's outfit with a fitted blouse and a wrapped sari skirt",
+    "haku patasi":   "a photo of a haku patasi, traditional Newari black cotton sari with a red border",
+    "labeda suruwal":"a photo of a labeda suruwal, traditional Nepali long kurta-style tunic with loose trousers",
+    "dhaka topi":    "a photo of a dhaka topi, a traditional Nepali patterned brimless cap worn by men",
+}
 
 FORMALITY_LABELS = ["casual", "formal", "business casual", "athletic"]
 SEASON_LABELS = ["summer", "winter", "spring", "autumn", "all-season"]
@@ -80,21 +93,19 @@ LABEL_EMBEDDINGS = None
 
 
 def _get_label_embeddings():
-    """Cache label embeddings after first classification.
-
-    "category" uses its own prompt template and must NOT be rebuilt by the
-    generic loop below.
-    """
     global LABEL_EMBEDDINGS
     if LABEL_EMBEDDINGS is None:
         LABEL_EMBEDDINGS = {}
 
-        category_prompts = [
-            f"a photo of traditional South Asian {cat}" if cat in SOUTH_ASIAN_SET
-            else f"a photo of a {cat}"
-            for cat in CATEGORY_LABELS
-        ]
-        LABEL_EMBEDDINGS["category"] = embed_texts(category_prompts)
+        def _category_prompt(cat):
+            if cat in NEPALI_PROMPTS:
+                return NEPALI_PROMPTS[cat]
+            if cat in SOUTH_ASIAN_SET:
+                return f"a photo of traditional South Asian {cat}"
+            return f"a photo of a {cat}"
+
+        category_prompts = [_category_prompt(cat) for cat in CATEGORY_LABELS]
+        LABEL_EMBEDDINGS["category"] = embed_texts(category_prompts)   # <-- the line that was likely missing
 
         for field, labels in LABEL_LISTS.items():
             if field == "category":
