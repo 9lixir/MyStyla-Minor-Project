@@ -36,6 +36,13 @@ def normalize_pipeline_tags(tags: dict) -> dict:
         # Dresses & Sets
         "dress": "dress", "jumpsuit": "dress", "romper": "dress",
         "co-ord set": "dress", "gown": "dress", "suit": "dress", "tuxedo": "dress",
+        
+        # Nepali garments (standalone full outfits)
+        "daura suruwal": "dress",
+        "gunyu cholo": "dress",
+        "haku patasi": "dress",
+        "labeda suruwal": "dress",
+
     }
     formality_map = {
         "casual": "Casual",

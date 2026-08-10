@@ -12,7 +12,9 @@ from app.classification.classify import analyze_garment
 from app.classification.normalization import normalize_pipeline_tags
 import os
 from app.scanning.vector_store import delete_garment_vector
+import logging
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 UPLOAD_DIR = "uploads"
@@ -112,6 +114,7 @@ async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get
         }
         garment_id = store_garment_vector(embedding, metadata)
     except Exception as e:
+        logger.exception("upload store failed")
         raise HTTPException(status_code=500, detail=f"Failed to store garment: {str(e)}")
 
     # save to database
