@@ -2,14 +2,15 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+
 import { API_BASE_URL } from "./config";
 
-// ngrok free tier shows an interstitial HTML page unless this header is present.
-// Inject it on every request to our backend so responses come back as real JSON.
 const _origFetch = window.fetch;
 window.fetch = (input, init = {}) => {
   const url = typeof input === "string" ? input : input?.url ?? "";
-  if (url.startsWith(API_BASE_URL)) {
+  // Only add the header to real API endpoints, NOT to image/static files.
+  const isApiCall = url.startsWith(API_BASE_URL) && !url.includes("/processed/") && !url.includes("/uploads/");
+  if (isApiCall) {
     init = {
       ...init,
       headers: { ...(init.headers || {}), "ngrok-skip-browser-warning": "true" },
