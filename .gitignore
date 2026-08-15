@@ -15,3 +15,5 @@ documentation/
 /processed/
 /backend/uploads/
 /backend/processed/
+data/
+*.pt
