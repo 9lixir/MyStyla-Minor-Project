@@ -28,3 +28,12 @@ class GarmentClassification(Base):
     pattern = Column(String, nullable=False)
     occasion = Column(JSON, nullable=False)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+class TagCorrection(Base):
+    __tablename__ = "tag_corrections"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    garment_id = Column(String, nullable=False, index=True)
+    tag_type = Column(String, nullable=False)  # e.g., 'category', 'season'
+    corrected_value = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.now)

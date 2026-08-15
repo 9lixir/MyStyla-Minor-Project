@@ -19,7 +19,7 @@ function getErrorMessage(payload, fallbackMessage) {
   return fallbackMessage;
 }
 
-export async function generateOutfits(userId, occasion, topK = 10) {
+export async function generateOutfits(userId, occasion, topK = 10, weather = null) {
   const response = await fetch(`${API_BASE_URL}/outfits/generate`, {
     method: 'POST',
     headers: {
@@ -29,6 +29,7 @@ export async function generateOutfits(userId, occasion, topK = 10) {
       user_id: userId,
       occasion: occasion,
       top_k: topK,
+      weather,
     }),
   });
 
@@ -46,6 +47,23 @@ export async function checkOutfitHealth() {
   return await response.json();
 }
 
+export async function fetchCurrentWeather(latitude, longitude) {
+  const params = new URLSearchParams({
+    latitude: String(latitude),
+    longitude: String(longitude),
+  });
+
+  const response = await fetch(`${API_BASE_URL}/weather/current?${params.toString()}`);
+
+  if (!response.ok) {
+    const contentType = response.headers.get('content-type') || '';
+    const payload = contentType.includes('application/json') ? await response.json() : null;
+    throw new Error(getErrorMessage(payload, 'Failed to load weather'));
+  }
+
+  return await response.json();
+}
+
 export async function fetchWardrobeGarments() {
   const response = await fetch(`${API_BASE_URL}/scanning/garments`);
 
@@ -57,7 +75,7 @@ export async function fetchWardrobeGarments() {
   return payload.garments || [];
 }
 
-export async function buildAroundGarment(userId, garmentId, occasion = null, topK = 5) {
+export async function buildAroundGarment(userId, garmentId, occasion = null, topK = 5, weather = null) {
   const response = await fetch(`${API_BASE_URL}/outfits/build-around`, {
     method: 'POST',
     headers: {
@@ -68,6 +86,7 @@ export async function buildAroundGarment(userId, garmentId, occasion = null, top
       garment_id: garmentId,
       occasion,
       top_k: topK,
+      weather,
     }),
   });
 

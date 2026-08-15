@@ -1,27 +1,29 @@
-import { useEffect, useState } from 'react';
-import { Toaster } from 'sonner';
+import { useEffect, useState } from "react";
+import { Toaster } from "sonner";
 
-import { LogoutButton } from '@/components/LogoutButton';
-import AddGarment from '@/pages/AddGarment';
-import ForgotPassword from '@/pages/ForgotPassword';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import ReviewTags from '@/pages/ReviewTags';
-import Wardrobe from '@/pages/Wardrobe';
-import OutfitMatcher from '@/pages/OutfitMatcher';
-import OutfitSuggestions from '@/pages/OutfitSuggestions';
-import { useAuthStore } from '@/store/auth-store';
+import { LogoutButton } from "@/components/LogoutButton";
+import AddGarment from "@/pages/AddGarment";
+import ForgotPassword from "@/pages/ForgotPassword";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import ReviewTags from "@/pages/ReviewTags";
+import Wardrobe from "@/pages/Wardrobe";
+import OutfitMatcher from "@/pages/OutfitMatcher";
+import OutfitSuggestions from "@/pages/OutfitSuggestions";
+import { useAuthStore } from "@/store/auth-store";
 
-const AUTH_PAGES = new Set(['login', 'register', 'forgot-password']);
+const AUTH_PAGES = new Set(["login", "register", "forgot-password"]);
 
 function getInitialPage() {
   const { user, token } = useAuthStore.getState();
-  return user && token ? 'wardrobe' : 'login';
+  return user && token ? "wardrobe" : "login";
 }
 
 export default function App() {
   const [page, setPage] = useState(getInitialPage);
   const [pendingGarment, setPendingGarment] = useState(null);
+  const [wardrobeKey, setWardrobeKey] = useState(0);
+
   const [authState, setAuthState] = useState(() => {
     const { user, token } = useAuthStore.getState();
     return { user, token };
@@ -32,15 +34,15 @@ export default function App() {
   useEffect(() => {
     if (!authState.user || !authState.token) {
       if (!AUTH_PAGES.has(page)) {
-        setPage('login');
+        setPage("login");
       }
       return;
     }
 
     if (AUTH_PAGES.has(page)) {
-      setPage('wardrobe');
+      setPage("wardrobe");
     }
-  }, [authState.token, authState.user, page]);
+  }, [authState.user, authState.token, page]);
 
   const handleNavigate = (nextPage) => {
     setPage(nextPage);
@@ -48,12 +50,13 @@ export default function App() {
 
   const handleUploadSuccess = (garment) => {
     setPendingGarment(garment);
-    setPage('review-tags');
+    setPage("review-tags");
   };
 
   const handleSaveGarment = () => {
     setPendingGarment(null);
-    setPage('wardrobe');
+    setWardrobeKey((k) => k + 1);
+    setPage("wardrobe");
   };
 
   const isAuthenticated = Boolean(authState.user && authState.token);
@@ -62,38 +65,63 @@ export default function App() {
     <>
       <Toaster position="top-right" richColors />
 
-      {isAuthenticated && !AUTH_PAGES.has(page) ? (
+      {isAuthenticated && !AUTH_PAGES.has(page) && (
         <div className="absolute right-4 top-4 z-10 sm:right-6 sm:top-6">
           <LogoutButton onNavigate={handleNavigate} />
         </div>
-      ) : null}
+      )}
 
-      {page === 'login' ? <Login onNavigate={handleNavigate} /> : null}
-      {page === 'register' ? <Register onNavigate={handleNavigate} /> : null}
-      {page === 'forgot-password' ? <ForgotPassword onNavigate={handleNavigate} /> : null}
-      {page === 'wardrobe' ? (
-        <Wardrobe 
-          onAddGarment={() => handleNavigate('add-garment')} 
-          onShowOutfitSuggestions={() => handleNavigate('outfit-suggestions')}
-          onMatchOutfits={() => handleNavigate('outfit-matcher')}
+      {page === "login" && (
+        <Login onNavigate={handleNavigate} />
+      )}
+
+      {page === "register" && (
+        <Register onNavigate={handleNavigate} />
+      )}
+
+      {page === "forgot-password" && (
+        <ForgotPassword onNavigate={handleNavigate} />
+      )}
+
+      {page === "wardrobe" && (
+        <Wardrobe
+          key={wardrobeKey}
+          onAddGarment={() => handleNavigate("add-garment")}
+          onShowOutfitSuggestions={() =>
+            handleNavigate("outfit-suggestions")
+          }
+          onMatchOutfits={() =>
+            handleNavigate("outfit-matcher")
+          }
         />
-      ) : null}
-      {page === 'add-garment' ? (
-        <AddGarment onBack={() => handleNavigate('wardrobe')} onSuccess={handleUploadSuccess} />
-      ) : null}
-      {page === 'review-tags' ? (
+      )}
+
+      {page === "add-garment" && (
+        <AddGarment
+          onBack={() => handleNavigate("wardrobe")}
+          onSuccess={handleUploadSuccess}
+        />
+      )}
+
+      {page === "review-tags" && (
         <ReviewTags
           garment={pendingGarment}
-          onBack={() => handleNavigate('add-garment')}
+          onBack={() => handleNavigate("add-garment")}
           onSave={handleSaveGarment}
         />
-      ) : null}
-      {page === 'outfit-matcher' ? (
-        <OutfitMatcher onBack={() => handleNavigate('wardrobe')} />
-      ) : null}
-      {page === 'outfit-suggestions' ? (
-        <OutfitSuggestions onBack={() => handleNavigate('wardrobe')} />
-      ) : null}
+      )}
+
+      {page === "outfit-matcher" && (
+        <OutfitMatcher
+          onBack={() => handleNavigate("wardrobe")}
+        />
+      )}
+
+      {page === "outfit-suggestions" && (
+        <OutfitSuggestions
+          onBack={() => handleNavigate("wardrobe")}
+        />
+      )}
     </>
   );
 }

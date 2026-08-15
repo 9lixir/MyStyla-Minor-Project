@@ -59,9 +59,6 @@ export default function Login({ onNavigate }) {
       <AbstractBackground />
       <div className="relative w-full max-w-md">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-[#2A3374] bg-[#151A4D] shadow-lg">
-            <img src="/tlhlogo.png" alt="MyStyla logo" className="h-10 w-10 object-contain" />
-          </div>
           <div className="mystyla-masthead inline-flex rounded-full mystyla-pill px-3 py-1 text-[10px] font-semibold">
             MyStyla
           </div>

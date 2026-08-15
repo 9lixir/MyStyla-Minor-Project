@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from app.outfit_matching.dummy_data import get_wardrobe
+from app.outfit_matching.wardrobe_repository import get_wardrobe
 from app.outfit_matching.occasion_filter import filter_by_occasion, group_by_category
 from app.outfit_matching.ranker import rank_outfits
 from app.outfit_matching.models import validate_garment
@@ -19,13 +19,38 @@ def _outfit_formality(garments: list[dict[str, Any]]) -> str:
     return max(values, key=lambda value: order.get(value, 0), default="Casual")
 
 
-def generate_outfits(user_id: str, occasion: str, top_k: int = DEFAULT_TOP_K) -> dict[str, Any]:
+def _weather_filtered(garments: list[dict[str, Any]], weather: dict[str, Any] | None) -> list[dict[str, Any]]:
+    if not weather:
+        return garments
+
+    profile = str(weather.get("style_profile") or "").lower()
+    temperature = weather.get("temperature_c")
+    if profile.startswith("hot") or (temperature is not None and temperature >= 27):
+        seasons = {"summer", "spring"}
+    elif profile.startswith("cold") or (temperature is not None and temperature <= 10):
+        seasons = {"winter", "autumn"}
+    else:
+        seasons = {"spring", "autumn", "summer"}
+
+    filtered = [
+        garment for garment in garments
+        if str(garment.get("tags", {}).get("season", "")).lower() in seasons
+    ]
+    return filtered or garments
+
+
+def generate_outfits(
+    user_id: str,
+    occasion: str,
+    top_k: int = DEFAULT_TOP_K,
+    weather: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     wardrobe = get_wardrobe(user_id)
 
     for garment in wardrobe:
         validate_garment(garment)  # validate real data before scoring
 
-    filtered = filter_by_occasion(wardrobe, occasion)
+    filtered = _weather_filtered(filter_by_occasion(wardrobe, occasion), weather)
     if not filtered:
         return {
             "message": f"No garments tagged for occasion '{occasion}'",
@@ -43,6 +68,7 @@ def generate_outfits(user_id: str, occasion: str, top_k: int = DEFAULT_TOP_K) ->
     return {
         "message": f"Generated {len(outfits)} outfit(s) for occasion '{occasion}'",
         "occasion": occasion,
+        "weather": weather,
         "wardrobe_size_after_filter": len(filtered),
         "outfits": outfits,
     }
@@ -65,6 +91,7 @@ def build_around_garment(
     garment_id: str,
     occasion: str | None = None,
     top_k: int = DEFAULT_TOP_K,
+    weather: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     wardrobe = get_wardrobe(user_id)
     for garment in wardrobe:
@@ -74,15 +101,24 @@ def build_around_garment(
     if anchor is None:
         raise ValueError(f"Garment '{garment_id}' not found in wardrobe")
 
-    candidates = [g for g in wardrobe if g["id"] != garment_id]
+    # changed: Filter out garments that have the exact same category as the anchor
+    anchor_category = anchor.get("category", "").lower()
+    
+    candidates = [
+        g for g in wardrobe 
+        if g["id"] != garment_id and g.get("category", "").lower() != anchor_category
+    ]
+
     if occasion:
         candidates = filter_by_occasion(candidates, occasion)
+    candidates = _weather_filtered(candidates, weather)
 
     if not candidates:
         return {
             "message": "No compatible garments found for the selected filters",
             "anchor_garment": _serialize_match(anchor, 1.0),
             "occasion": occasion,
+            "weather": weather,
             "matches": [],
         }
 
@@ -120,6 +156,7 @@ def build_around_garment(
         "message": f"Found {len(matches)} wardrobe match(es) for '{anchor.get('filename', garment_id)}'",
         "anchor_garment": _serialize_match(anchor, 1.0),
         "occasion": occasion,
+        "weather": weather,
         "matches": matches,
     }
 

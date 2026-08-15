@@ -6,7 +6,7 @@ import os
 OUTPUT_DIR = "processed"
 os.makedirs(OUTPUT_DIR, exist_ok = True)
 MAX_REMBG_SIZE = int(os.getenv("REMBG_MAX_SIZE", "1024"))
-REMBG_MODEL = os.getenv("REMBG_MODEL", "isnet-general-use")
+REMBG_MODEL = os.getenv("REMBG_MODEL", "birefnet-general")
 
 
 def _prepare_for_rembg(image_path: str) -> bytes:

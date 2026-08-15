@@ -1,6 +1,8 @@
 import colorsys
 import math
 
+# --- Dictionary Mappings ---
+
 ACCESSORY_TYPES = {
     "Casual": {
         "bag": "Canvas Tote",
@@ -55,7 +57,7 @@ STATEMENT_SLOTS = {"jewelry", "watch"}
 TONE_PREFIX = {
     "warm": "Gold",
     "cool": "Silver",
-    "neutral": "Black",
+    "neutral": "Emerald",
     "accent": "Emerald",
 }
 
@@ -69,7 +71,7 @@ PRACTICAL_TONE_BY_BRIGHTNESS = {
 
 
 def hex_to_hsv(hex_color: str) -> tuple[float, float, float]:
-    """convert hex to hsv"""
+    """Convert hex string to standard HSV tuple (0-360, 0-1, 0-1)."""
     hex_color = hex_color.lstrip("#")
     r = int(hex_color[0:2], 16) / 255.0
     g = int(hex_color[2:4], 16) / 255.0
@@ -79,18 +81,27 @@ def hex_to_hsv(hex_color: str) -> tuple[float, float, float]:
 
 
 def collect_hsv(garments: list[dict]) -> list[tuple[float, float, float]]:
+    """Safely extract HSV tuples regardless of input data structure."""
     hsv_values = []
     for garment in garments:
         colors = garment.get("dominant_colors") or garment.get("colors") or []
         for color in colors:
-            hex_value = color.get("hex") if isinstance(color, dict) else color
-            if hex_value:
-                hsv_values.append(hex_to_hsv(hex_value))
+            # Handle dictionary formats (hex or opencv hsv)
+            if isinstance(color, dict):
+                if "hex" in color and color["hex"]:
+                    hsv_values.append(hex_to_hsv(color["hex"]))
+                elif "hsv" in color and len(color["hsv"]) == 3:
+                    h_opencv, s, v = color["hsv"]
+                    # Convert OpenCV HSV (0-180, 0-255, 0-255) to standard float tuple
+                    hsv_values.append((h_opencv * 2.0, s / 255.0, v / 255.0))
+            # Handle direct string hex values
+            elif isinstance(color, str):
+                hsv_values.append(hex_to_hsv(color))
     return hsv_values
 
 
 def circular_mean_and_spread(hues: list[float]) -> tuple[float, float]:
-    """return mean hue and circular spread"""
+    """Calculate directional circular mean and spread for hue degrees."""
     if not hues:
         return 0.0, 1.0
     radians = [math.radians(h) for h in hues]
@@ -106,12 +117,10 @@ def is_warm_hue(hue: float) -> bool:
     return hue < 90 or hue >= 270
 
 
-NEUTRAL_SATURATION_THRESHOLD = 0.20
-MULTICOLOR_SPREAD_THRESHOLD = 0.5
-
+# --- Outfit Analysis ---
 
 def classify_outfit_tone(garments: list[dict]) -> str:
-    """classify outfit color tone"""
+    """Classify overall outfit tone into warm, cool, neutral, or multicolored."""
     hsv_values = collect_hsv(garments)
     if not hsv_values:
         return "neutral"
@@ -131,6 +140,7 @@ def classify_outfit_tone(garments: list[dict]) -> str:
 
 
 def get_accessory_tone(outfit_classification: str) -> str:
+    """Map outfit classification to complementary accessory tone target."""
     return {
         "warm-dominant": "cool",
         "cool-dominant": "warm",
@@ -157,7 +167,7 @@ def classify_outfit_brightness(avg_value: float) -> str:
 
 
 def check_wardrobe_for_accessory(slot: str, db=None) -> dict | None:
-    """return a wardrobe accessory if accessory categories exist later"""
+    """Placeholder for wardrobe accessory lookups."""
     return None
 
 

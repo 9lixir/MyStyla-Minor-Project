@@ -15,6 +15,7 @@ class GenerateOutfitsRequest(BaseModel):
     user_id: str
     occasion: str
     top_k: Optional[int] = 10
+    weather: Optional[dict] = None
 
 
 class BuildAroundRequest(BaseModel):
@@ -22,6 +23,7 @@ class BuildAroundRequest(BaseModel):
     garment_id: str
     occasion: Optional[str] = None
     top_k: Optional[int] = 5
+    weather: Optional[dict] = None
 
 
 @router.post("/generate")
@@ -32,6 +34,7 @@ async def generate_outfits_endpoint(request: GenerateOutfitsRequest):
             user_id=request.user_id,
             occasion=request.occasion,
             top_k=request.top_k,
+            weather=request.weather,
         )
         return result
     except Exception as e:
@@ -46,6 +49,7 @@ async def build_around_endpoint(request: BuildAroundRequest):
             garment_id=request.garment_id,
             occasion=request.occasion,
             top_k=request.top_k or 5,
+            weather=request.weather,
         )
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc

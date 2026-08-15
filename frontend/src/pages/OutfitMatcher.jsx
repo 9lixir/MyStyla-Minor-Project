@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/auth-store';
 import {
   buildAroundGarment,
   checkOutfitHealth,
+  fetchCurrentWeather,
   fetchWardrobeGarments,
   generateOutfits,
 } from '@/services/outfit.service';
@@ -13,6 +14,11 @@ import CategoryIcon from '@/components/CategoryIcon';
 import { API_BASE_URL } from '@/config';
 
 const OCCASIONS = ['Casual', 'Office', 'Party', 'Date', 'Farewell'];
+const DEFAULT_LOCATION = {
+  label: 'Kathmandu',
+  latitude: 27.7172,
+  longitude: 85.324,
+};
 
 export default function OutfitMatcher({ onBack }) {
   const { user } = useAuthStore.getState();
@@ -25,6 +31,10 @@ export default function OutfitMatcher({ onBack }) {
   const [selectedGarmentId, setSelectedGarmentId] = useState('');
   const [matchingItem, setMatchingItem] = useState(false);
   const [matchResults, setMatchResults] = useState(null);
+  const [weather, setWeather] = useState(null);
+  const [weatherLocation, setWeatherLocation] = useState(DEFAULT_LOCATION);
+  const [weatherLoading, setWeatherLoading] = useState(false);
+  const [weatherError, setWeatherError] = useState('');
 
   useEffect(() => {
     checkOutfitHealth()
@@ -45,6 +55,50 @@ export default function OutfitMatcher({ onBack }) {
       .catch(() => setWardrobeGarments([]));
   }, []);
 
+  useEffect(() => {
+    loadWeather(DEFAULT_LOCATION);
+  }, []);
+
+  const selectedGarment = wardrobeGarments.find((g) => g.id === selectedGarmentId) || null;
+
+  const loadWeather = async (location) => {
+    setWeatherLoading(true);
+    setWeatherError('');
+    try {
+      const data = await fetchCurrentWeather(location.latitude, location.longitude);
+      setWeather(data);
+      setWeatherLocation(location);
+    } catch (error) {
+      setWeatherError(error.message || 'Failed to load weather');
+    } finally {
+      setWeatherLoading(false);
+    }
+  };
+
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setWeatherError('Location is not supported in this browser.');
+      return;
+    }
+
+    setWeatherLoading(true);
+    setWeatherError('');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        loadWeather({
+          label: 'Current location',
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+      },
+      () => {
+        setWeatherLoading(false);
+        setWeatherError('Location permission was denied. Showing Kathmandu weather.');
+      },
+      { enableHighAccuracy: false, timeout: 10000 },
+    );
+  };
+
   const handleGenerate = async () => {
     if (!user?.id) {
       toast.error('User ID not found. Please log in again.');
@@ -59,7 +113,7 @@ export default function OutfitMatcher({ onBack }) {
     setTopK(normalizedTopK);
     setLoading(true);
     try {
-      const data = await generateOutfits(user.id, occasion, normalizedTopK);
+      const data = await generateOutfits(user.id, occasion, normalizedTopK, weather);
       setResults(data);
       
       if (data.outfits.length === 0) {
@@ -100,6 +154,7 @@ export default function OutfitMatcher({ onBack }) {
         selectedGarmentId,
         occasion || null,
         normalizedTopK,
+        weather,
       );
       setMatchResults(payload);
       if ((payload.matches || []).length === 0) {
@@ -141,6 +196,36 @@ export default function OutfitMatcher({ onBack }) {
 
         <Card className="mb-6 border-[#2A3374] bg-[#151A4D]/90 shadow-sm">
           <CardContent className="p-6">
+            <div className="mb-6 rounded-xl border border-[#2A3374] bg-[#1E2560] p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-[#B9C0E8]">Current Weather</p>
+                  <p className="mt-1 text-sm text-[#F5F3FF]">
+                    {weatherLoading
+                      ? 'Loading weather...'
+                      : weather
+                      ? `${weatherLocation.label}: ${Math.round(weather.temperature_c)}°C, ${weather.condition}`
+                      : 'Weather not loaded'}
+                  </p>
+                  {weather ? (
+                    <p className="mt-1 text-xs capitalize text-[#B9C0E8]">
+                      Feels like {Math.round(weather.feels_like_c)}°C · Wind {Math.round(weather.wind_kph)} km/h · {weather.style_profile.replace('_', ' ')}
+                    </p>
+                  ) : null}
+                  {weatherError ? (
+                    <p className="mt-1 text-xs text-[#FF7AB8]">{weatherError}</p>
+                  ) : null}
+                </div>
+                <Button
+                  onClick={handleUseCurrentLocation}
+                  disabled={weatherLoading}
+                  className="rounded-xl border border-[#2A3374] bg-[#151A4D] px-4 py-2 text-sm text-[#F5F3FF] hover:border-[#FFA8D4]/70 hover:text-[#FFD3EC]"
+                >
+                  {weatherLoading ? 'Checking...' : 'Use My Location'}
+                </Button>
+              </div>
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-[1fr_150px]">
               <div>
                 <label className="mb-2 block text-sm font-medium text-[#F5F3FF]">
@@ -207,6 +292,30 @@ export default function OutfitMatcher({ onBack }) {
                     ))
                   )}
                 </select>
+
+                {selectedGarment && (
+                  <div className="mt-3 flex items-center gap-3 rounded-xl border border-[#2A3374] bg-[#1E2560] p-3">
+                    <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-[#5B63A8] bg-[#0E1240]">
+                      {selectedGarment.cutout_path ? (
+                        <img
+                          src={`${API_BASE_URL}/${selectedGarment.cutout_path}`}
+                          alt={selectedGarment.filename || selectedGarment.category}
+                          className="h-full w-full object-contain p-1"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-[#FFA8D4]">
+                          <CategoryIcon category={selectedGarment.category} className="h-7 w-7" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-[#F5F3FF]">
+                        {selectedGarment.filename || selectedGarment.category}
+                      </p>
+                      <p className="text-xs capitalize text-[#B9C0E8]">{selectedGarment.category}</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
