@@ -16,4 +16,15 @@ documentation/
 /backend/uploads/
 /backend/processed/
 data/
+
+# ML artifacts
 *.pt
+*.pth
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment
+.env
+venv/
+.venv/
