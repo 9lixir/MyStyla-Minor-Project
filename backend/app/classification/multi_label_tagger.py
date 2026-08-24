@@ -20,26 +20,43 @@ CATEGORY_LABELS = [
     # Formalwear
     "suit", "tuxedo", "gown",
     # Footwear
-        "sneakers", "boots", "sandals", "heels", "flats", "loafers", "mojari",
+    "sneakers", "boots", "sandals", "heels", "flats", "loafers", "mojari",
     # Accessories
     "belt", "hat", "scarf", "gloves", "tie", "bag", "sunglasses", "jewelry", "watch",
     # South Asian
     "kurti", "kurta", "saree", "lehenga", "sherwani", "salwar suit", "anarkali", "dhoti",
     # Nepali
     "daura suruwal", "gunyu cholo", "haku patasi", "labeda suruwal", "dhaka topi",
+    # Nepali — Magar
+    "phariya", "cholo", "patuka", "ghalek", "mujetro",
+    # Nepali — Himalayan / Gurung
+    "bakkhu", "gurung dress",
 ]
 
 SOUTH_ASIAN_SET = {"kurti", "kurta", "saree", "lehenga", "sherwani", "salwar suit", "anarkali", "dhoti"}
 
-NEPALI_SET = {"daura suruwal", "gunyu cholo", "haku patasi", "labeda suruwal", "dhaka topi"}
+NEPALI_SET = {"daura suruwal", "gunyu cholo", "haku patasi", "labeda suruwal", "dhaka topi",
+              "phariya", "cholo", "patuka", "ghalek", "mujetro", "bakkhu", "gurung dress"}
 
-# clip doesn't know these words, so the prompt is describing the garment as:
+
 NEPALI_PROMPTS = {
-    "daura suruwal": "a photo of a daura suruwal, traditional Nepali men's outfit with a closed-neck double-breasted wrap-around top and matching narrow trousers",
-    "gunyu cholo":   "a photo of a gunyu cholo, traditional Nepali women's outfit with a fitted blouse and a wrapped sari skirt",
-    "haku patasi":   "a photo of a haku patasi, traditional Newari attire, a fitted cropped blouse and black sari with a deep red border",
-    "labeda suruwal":"a photo of a labeda suruwal, traditional Nepali long kurta-style tunic with loose trousers",
-    "dhaka topi":    "a photo of a dhaka topi, a traditional Nepali patterned brimless cap worn by men",
+    # Bahun / Chhetri & pan-Nepali
+    "daura suruwal": "a photo of a cream-coloured men's outfit with a closed-neck double-breasted long shirt fastened by cloth ties, worn with snug tapered trousers (daura suruwal)",
+    "gunyu cholo":   "a photo of a young woman's outfit with a red cloth wrapped and draped like a skirt over a fitted blouse and a shoulder sash (gunyu cholo)",
+    "labeda suruwal":"a photo of a men's outfit with a long straight knee-length tunic worn over loose wide trousers (labeda suruwal)",
+    "dhaka topi":    "a photo of a stiff brimless cap with a woven geometric black-and-white or multicoloured pattern (dhaka topi)",
+    # Newar
+    "haku patasi":   "a photo of a black cotton sari with a wide deep-red border, wrapped with a matching fitted cropped blouse (haku patasi)",
+    # Magar women's outfit components
+    "phariya":  "a photo of a colourful floral-printed cloth wrapped and draped as a long skirt (phariya)",
+    "cholo":    "a photo of a plain fitted closed-neck long-sleeved women's blouse in a solid dark colour (cholo)",
+    "patuka":   "a photo of a wide cloth sash wound tightly several times around the waist (patuka)",
+    "ghalek":   "a photo of a patterned rectangular cloth draped diagonally across one shoulder and tucked at the waist (ghalek)",
+    "mujetro":  "a photo of a light shawl or scarf draped loosely over the head and shoulders (mujetro)",
+    # Sherpa / Himalayan
+    "bakkhu":       "a photo of a long floor-length dark wrap-around robe gathered and tied at the waist with a wide sash, worn as an outer layer (bakkhu)",
+    # Gurung
+    "gurung dress": "a photo of a woman's outfit with a dark velvet blouse, a wrapped patterned skirt, and a bright red or gold sash across the shoulder (Gurung dress)",
 }
 
 FORMALITY_LABELS = ["casual", "formal", "business casual", "athletic"]
@@ -47,8 +64,6 @@ SEASON_LABELS = ["summer", "winter", "spring", "autumn", "all-season"]
 PATTERN_LABELS = ["solid", "striped", "floral", "plaid", "polka dot", "graphic print"]
 OCCASION_LABELS = ["everyday wear", "party", "work", "workout", "formal event"]
 
-# Per-field abstention thresholds. A 55-way choice needs a higher bar than a
-# 4-way one. THESE ARE STARTING GUESSES -- tune them against labelled examples.
 CONFIDENCE_THRESHOLDS = {
     "category": 0.55,
     "formality": 0.45,
@@ -105,7 +120,7 @@ def _get_label_embeddings():
             return f"a photo of a {cat}"
 
         category_prompts = [_category_prompt(cat) for cat in CATEGORY_LABELS]
-        LABEL_EMBEDDINGS["category"] = embed_texts(category_prompts)   # <-- the line that was likely missing
+        LABEL_EMBEDDINGS["category"] = embed_texts(category_prompts)
 
         for field, labels in LABEL_LISTS.items():
             if field == "category":
@@ -149,7 +164,7 @@ def tag_garment(image_embedding: list, image=None) -> dict:
     tags = {}
     flags = {}
 
-    # ---- Stage 1: open-set router (zero-shot CLIP across all 55 categories) ----
+    # ---- Stage 1: open-set router (zero-shot CLIP across all categories) ----
     cat_scores = [cosine_similarity(image_embedding, le) for le in label_embeddings["category"]]
     cat_probs = softmax(cat_scores)
     best_idx = int(np.argmax(cat_probs))

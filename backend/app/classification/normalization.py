@@ -3,9 +3,12 @@ from app.outfit_matching.config import OCCASION
 # normalization.py — add near the top, alongside category_map
 
 STYLE_FAMILY_MAP = {
-    # nepali
+        # nepali
     "daura suruwal": "nepali", "gunyu cholo": "nepali", "haku patasi": "nepali",
     "labeda suruwal": "nepali", "dhaka topi": "nepali",
+    "bakkhu": "nepali", "gurung dress": "nepali",
+    "phariya": "nepali", "cholo": "nepali", "patuka": "nepali",
+    "ghalek": "nepali", "mujetro": "nepali",
     # south Asian
     "saree": "south_asian", "kurti": "south_asian", "kurta": "south_asian",
     "lehenga": "south_asian", "sherwani": "south_asian", "dhoti": "south_asian",
@@ -59,6 +62,12 @@ def normalize_pipeline_tags(tags: dict) -> dict:
         "gunyu cholo": "dress",
         "haku patasi": "dress",
         "labeda suruwal": "dress",
+        "bakkhu": "dress",
+        "gurung dress": "dress",
+
+        # Nepali — Magar pieces
+        "phariya": "bottom",     # wrap-skirt
+        "cholo": "top",          # blouse
 
     }
     formality_map = {

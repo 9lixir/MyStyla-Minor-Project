@@ -83,6 +83,15 @@ export const CATEGORY_LABELS = [
   "haku patasi",
   "labeda suruwal",
   "dhaka topi",
+  // Nepali — Magar
+  "phariya",
+  "cholo",
+  "patuka",
+  "ghalek",
+  "mujetro",
+   // Nepali — Himalayan / Gurung
+  "bakkhu",
+  "gurung dress",
 ];
 
 // Same labels, organized into display groups for the Wardrobe grid.
@@ -94,7 +103,7 @@ export const CATEGORY_GROUPS = [
     id: "tops",
     label: "Tops",
     icon: "top",
-    categories: ["t-shirt", "shirt", "blouse", "tank top", "polo", "crop top", "tube top", "bodysuit", "kurti", "kurta"],
+    categories: ["t-shirt", "shirt", "blouse", "tank top", "polo", "crop top", "tube top", "bodysuit", "kurti", "kurta", "cholo"],
   },
   {
     id: "knitwear",
@@ -112,7 +121,7 @@ export const CATEGORY_GROUPS = [
     id: "bottoms",
     label: "Bottoms",
     icon: "bottom",
-    categories: ["jeans", "trousers", "chinos", "cargo pants", "joggers", "leggings", "shorts", "dhoti"],
+    categories: ["jeans", "trousers", "chinos", "cargo pants", "joggers", "leggings", "shorts", "dhoti", "phariya"],
   },
   {
     id: "skirts",
@@ -124,7 +133,7 @@ export const CATEGORY_GROUPS = [
     id: "dresses",
     label: "Dresses & Sets",
     icon: "dress",
-    categories: ["dress", "jumpsuit", "romper", "co-ord set", "saree", "lehenga", "salwar suit", "anarkali", "daura suruwal", "gunyu cholo", "haku patasi", "labeda suruwal"],
+    categories: ["dress", "jumpsuit", "romper", "co-ord set", "saree", "lehenga", "salwar suit", "anarkali", "daura suruwal", "gunyu cholo", "haku patasi", "labeda suruwal", "bakkhu", "gurung dress"],
   },
   {
     id: "formalwear",
@@ -142,7 +151,7 @@ export const CATEGORY_GROUPS = [
     id: "accessories",
     label: "Accessories",
     icon: "accessory",
-    categories: ["belt", "hat", "scarf", "gloves", "tie", "bag", "sunglasses", "jewelry", "watch", "dhaka topi"],
+    categories: ["belt", "hat", "scarf", "gloves", "tie", "bag", "sunglasses", "jewelry", "watch", "dhaka topi", "patuka", "ghalek", "mujetro"],
   },
 ];
 
