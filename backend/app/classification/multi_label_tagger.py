@@ -29,10 +29,13 @@ CATEGORY_LABELS = [
 
 SOUTH_ASIAN_SET = {"kurti", "kurta", "saree", "lehenga", "sherwani", "salwar suit", "anarkali", "dhoti"}
 
-FORMALITY_LABELS = ["casual", "formal", "business casual", "athletic"]
+FORMALITY_LABELS = ["casual", "formal", "business casual", "athletic", "festive/traditional"]
 SEASON_LABELS = ["summer", "winter", "spring", "autumn", "all-season"]
 PATTERN_LABELS = ["solid", "striped", "floral", "plaid", "polka dot", "graphic print"]
-OCCASION_LABELS = ["everyday wear", "party", "work", "workout", "formal event"]
+OCCASION_LABELS = [
+    "everyday wear", "work", "party", "date night", "formal event",
+    "wedding guest outfit", "puja or religious ceremony outfit", "festival celebration outfit",
+]
 
 # Per-field abstention thresholds. A 55-way choice needs a higher bar than a
 # 4-way one. THESE ARE STARTING GUESSES -- tune them against labelled examples.

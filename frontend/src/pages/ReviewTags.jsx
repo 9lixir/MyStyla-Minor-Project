@@ -38,7 +38,7 @@ export default function ReviewTags({ garment, onBack, onSave }) {
       // not disguised as a confident prediction.
       category: "",
       formality: "casual",
-      season: "summer",
+      season: "all-season",
       pattern: "solid",
       occasion: ["everyday wear"],
     }

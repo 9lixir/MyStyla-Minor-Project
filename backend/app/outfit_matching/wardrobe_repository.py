@@ -25,17 +25,20 @@ def get_wardrobe(user_id: str = None) -> list[dict]:
     qdrant_ids = [g.qdrant_id for g in garments if g.qdrant_id]
 
     vectors_by_id: dict[str, list[float]] = {}
+    payloads_by_id: dict[str, dict] = {}
     if qdrant_ids:
         try:
             points = client.retrieve(
                 collection_name=COLLECTION_NAME,
                 ids=qdrant_ids,
                 with_vectors=True,
-                with_payload=False,
+                with_payload=True,
             )
             vectors_by_id = {str(point.id): point.vector for point in points if point.vector}
+            payloads_by_id = {str(point.id): point.payload or {} for point in points}
         except Exception:
             vectors_by_id = {}
+            payloads_by_id = {}
 
     wardrobe: list[dict] = []
     for garment in garments:
@@ -48,19 +51,24 @@ def get_wardrobe(user_id: str = None) -> list[dict]:
             # Keep matching fully real-data based: skip garments without stored vectors.
             continue
 
+        db_tags = {
+            "category": classification.category,
+            "formality": classification.formality,
+            "season": classification.season,
+            "pattern": classification.pattern,
+            "occasion": classification.occasion,
+        }
+        vector_tags = payloads_by_id.get(garment.qdrant_id or "", {}).get("tags") or {}
+        tags = {**vector_tags, **db_tags}
+
         wardrobe.append(
             {
                 "id": garment.id,
                 "filename": garment.filename,
                 "cutout_path": garment.cutout_path,
-                "category": classification.category,
+                "category": tags.get("category", classification.category),
                 "colors": garment.dominant_colors,
-                "tags": {
-                    "formality": classification.formality,
-                    "season": classification.season,
-                    "pattern": classification.pattern,
-                    "occasion": classification.occasion,
-                },
+                "tags": tags,
                 "embedding": embedding,
             }
         )

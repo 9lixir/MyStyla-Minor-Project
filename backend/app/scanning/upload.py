@@ -2,7 +2,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from sqlalchemy.orm import Session
 from app.scanning.remove_bg import remove_background
 from app.scanning.color_extract import extract_colors
-from app.scanning.vector_store import store_garment_vector, update_garment_tags
+from app.scanning.vector_store import store_garment_vector, update_garment_metadata, update_garment_tags
 from app.scanning.preprocess import preprocess_image
 from app.database import get_db
 from app.models import Garment, GarmentClassification
@@ -29,6 +29,10 @@ class ClassificationUpdateRequest(BaseModel):
     season: str
     pattern: str
     occasion: list[str]
+
+
+class GarmentDetailsUpdateRequest(ClassificationUpdateRequest):
+    filename: str | None = None
 
 
 def _validate_classification(payload: ClassificationUpdateRequest) -> None:
@@ -225,6 +229,92 @@ async def save_garment_classification(
     return {
         "message": "Garment classification saved",
         "garment_id": garment_id,
+    }
+
+
+@router.put("/garments/{garment_id}/details")
+async def update_garment_details(
+    garment_id: str,
+    payload: GarmentDetailsUpdateRequest,
+    db: Session = Depends(get_db),
+):
+    garment = db.query(Garment).filter(Garment.id == garment_id).first()
+    if not garment:
+        raise HTTPException(status_code=404, detail="Garment not found")
+
+    normalized_name = (payload.filename or "").strip()
+    if normalized_name:
+        garment.filename = normalized_name
+
+    normalized_tags = normalize_pipeline_tags({
+        "category": payload.category,
+        "formality": payload.formality,
+        "season": payload.season,
+        "pattern": payload.pattern,
+        "occasion": payload.occasion,
+    })
+
+    payload.category = normalized_tags["category"]
+    payload.formality = normalized_tags["formality"]
+    payload.season = normalized_tags["season"]
+    payload.pattern = normalized_tags["pattern"]
+    payload.occasion = normalized_tags["occasion"]
+    _validate_classification(payload)
+
+    existing = (
+        db.query(GarmentClassification)
+        .filter(GarmentClassification.garment_id == garment_id)
+        .first()
+    )
+    if existing:
+        existing.user_id = payload.user_id
+        existing.category = payload.category
+        existing.formality = payload.formality
+        existing.season = payload.season
+        existing.pattern = payload.pattern
+        existing.occasion = payload.occasion
+    else:
+        db.add(
+            GarmentClassification(
+                garment_id=garment_id,
+                user_id=payload.user_id,
+                category=payload.category,
+                formality=payload.formality,
+                season=payload.season,
+                pattern=payload.pattern,
+                occasion=payload.occasion,
+            )
+        )
+
+    db.commit()
+    db.refresh(garment)
+
+    qdrant_payload = {
+        "filename": garment.filename,
+        "tags": {
+            "category": payload.category,
+            "formality": payload.formality,
+            "season": payload.season,
+            "pattern": payload.pattern,
+            "occasion": payload.occasion,
+        },
+    }
+    try:
+        update_garment_metadata(garment.qdrant_id, qdrant_payload)
+    except Exception:
+        pass
+
+    return {
+        "message": "Garment details updated",
+        "garment": {
+            "id": garment.id,
+            "filename": garment.filename,
+            "cutout_path": garment.cutout_path,
+            "dominant_colors": garment.dominant_colors,
+            "category": payload.category,
+            "tags": qdrant_payload["tags"],
+            "user_id": payload.user_id,
+        },
     }
 
 

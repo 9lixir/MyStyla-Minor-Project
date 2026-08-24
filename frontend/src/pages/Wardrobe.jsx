@@ -1,7 +1,25 @@
 import { useState, useEffect, useMemo } from "react"
 import { API_BASE_URL } from "../config"
 import CategoryIcon from "../components/CategoryIcon"
-import { CATEGORY_GROUPS, groupForCategory } from "../lib/categories"
+import {
+  CATEGORY_GROUPS,
+  FORMALITY_LABELS,
+  OCCASION_LABELS,
+  PATTERN_LABELS,
+  SEASON_LABELS,
+  groupForCategory,
+} from "../lib/categories"
+
+const EDIT_CATEGORY_LABELS = ["top", "bottom", "dress", "outerwear"]
+
+const toFormValue = (value, fallback = "") =>
+  String(value || fallback).trim().toLowerCase()
+
+const toOccasionFormValues = (value) => {
+  const values = Array.isArray(value) ? value : value ? [value] : []
+  const normalized = values.map((item) => toFormValue(item))
+  return normalized.length > 0 ? normalized : ["everyday wear"]
+}
 
 function GarmentCard({ garment, onDelete, onClick }) {
   const [confirming, setConfirming] = useState(false)
@@ -25,12 +43,14 @@ function GarmentCard({ garment, onDelete, onClick }) {
     <div 
       onClick={() => onClick(garment)}
       className="group relative cursor-pointer overflow-hidden rounded-2xl border border-[#2A3374] bg-[#151A4D]/90 shadow-sm transition hover:border-[#FF6FB5]/50 hover:shadow-md"
+      data-cy="garment-card"
     >
       <button
         onClick={handleDeleteClick}
         onMouseLeave={() => setConfirming(false)}
         disabled={deleting}
         title={confirming ? "Click again to confirm delete" : "Delete garment"}
+        data-cy="delete-garment-button"
         className={`absolute right-2 top-2 z-10 flex h-7 items-center gap-1 rounded-full border px-2 text-[10px] font-medium shadow-sm transition-all ${
           confirming
             ? "border-red-400 bg-red-500 text-white opacity-100"
@@ -95,6 +115,9 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
   const [garments, setGarments] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedGarment, setSelectedGarment] = useState(null)
+  const [editDraft, setEditDraft] = useState(null)
+  const [savingEdit, setSavingEdit] = useState(false)
+  const [editError, setEditError] = useState(null)
   const [deleteError, setDeleteError] = useState(null)
   const [activeGroup, setActiveGroup] = useState("all")
 
@@ -120,6 +143,69 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
     } catch (err) {
       setGarments(previous)
       setDeleteError("Couldn't delete that item. Please try again.")
+    }
+  }
+
+  const openGarment = (garment) => {
+    setSelectedGarment(garment)
+    setEditError(null)
+    setEditDraft({
+      filename: garment.filename || "",
+      category: toFormValue(garment.tags?.category, "top"),
+      formality: toFormValue(garment.tags?.formality, "casual"),
+      season: toFormValue(garment.tags?.season, "all-season"),
+      pattern: toFormValue(garment.tags?.pattern, "solid"),
+      occasion: toOccasionFormValues(garment.tags?.occasion),
+    })
+  }
+
+  const toggleDraftOccasion = (value) => {
+    setEditDraft((prev) => {
+      if (!prev) return prev
+      if (prev.occasion.includes(value)) {
+        const next = prev.occasion.filter((item) => item !== value)
+        return { ...prev, occasion: next.length > 0 ? next : prev.occasion }
+      }
+      return { ...prev, occasion: [...prev.occasion, value] }
+    })
+  }
+
+  const handleSaveEdit = async () => {
+    if (!selectedGarment || !editDraft) return
+    if (!editDraft.filename.trim()) {
+      setEditError("Name cannot be empty.")
+      return
+    }
+
+    setSavingEdit(true)
+    setEditError(null)
+    try {
+      const response = await fetch(`${API_BASE_URL}/scanning/garments/${selectedGarment.id}/details`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: editDraft.filename.trim(),
+          user_id: selectedGarment.user_id || null,
+          category: editDraft.category,
+          formality: editDraft.formality,
+          season: editDraft.season,
+          pattern: editDraft.pattern,
+          occasion: editDraft.occasion,
+        }),
+      })
+
+      const payload = await response.json()
+      if (!response.ok) {
+        throw new Error(payload.detail || "Update failed")
+      }
+
+      const updated = payload.garment
+      setGarments((prev) => prev.map((item) => (item.id === updated.id ? { ...item, ...updated } : item)))
+      setSelectedGarment((prev) => (prev ? { ...prev, ...updated } : prev))
+    } catch (err) {
+      setEditError(err.message || "Couldn't update that item. Please try again.")
+    } finally {
+      setSavingEdit(false)
     }
   }
 
@@ -236,7 +322,7 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                       key={garment.id}
                       garment={garment}
                       onDelete={handleDeleteGarment}
-                      onClick={setSelectedGarment}
+                      onClick={openGarment}
                     />
                   ))}
                 </div>
@@ -253,8 +339,9 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
           onClick={() => setSelectedGarment(null)}
         >
           <div
-            className="bg-[#151A4D] border border-[#2A3374] rounded-2xl max-w-sm w-full p-5 text-[#F5F3FF]"
+            className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-[#2A3374] bg-[#151A4D] p-5 text-[#F5F3FF]"
             onClick={(e) => e.stopPropagation()}
+            data-cy="garment-details-modal"
           >
             <div className="flex justify-between items-start mb-4">
               <h2 className="text-lg font-bold capitalize text-[#FF6FB5]">
@@ -281,20 +368,120 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
               )}
             </div>
 
-            <div className="space-y-2 mb-4 bg-[#0E1240]/60 p-3 rounded-xl border border-[#2A3374]/50">
-              <div className="flex justify-between text-xs">
-                <span className="text-[#B9C0E8]">File Name</span>
-                <span className="text-white truncate max-w-[180px] font-medium">{selectedGarment.filename}</span>
-              </div>
-              {Object.entries(selectedGarment.tags || {}).map(([field, value]) => (
-                <div key={field} className="flex justify-between text-xs border-t border-[#2A3374]/30 pt-2">
-                  <span className="text-[#B9C0E8] capitalize">{field}</span>
-                  <span className="text-white capitalize font-medium">
-                    {Array.isArray(value) ? value.join(", ") : value}
-                  </span>
+            {editDraft && (
+              <div className="mb-4 space-y-3 rounded-xl border border-[#2A3374]/50 bg-[#0E1240]/60 p-3">
+                <div>
+                  <label className="mb-1 block text-xs text-[#B9C0E8]" htmlFor="garment-name">
+                    Name
+                  </label>
+                  <input
+                    id="garment-name"
+                    value={editDraft.filename}
+                    onChange={(e) => setEditDraft((prev) => ({ ...prev, filename: e.target.value }))}
+                    className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm text-[#F5F3FF] outline-none transition focus:border-[#FF6FB5]"
+                    data-cy="garment-name-input"
+                  />
                 </div>
-              ))}
-            </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-xs text-[#B9C0E8]" htmlFor="garment-category">
+                      Category
+                    </label>
+                    <select
+                      id="garment-category"
+                      value={editDraft.category}
+                      onChange={(e) => setEditDraft((prev) => ({ ...prev, category: e.target.value }))}
+                      className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm capitalize text-[#F5F3FF] outline-none transition focus:border-[#FF6FB5]"
+                      data-cy="garment-category-select"
+                    >
+                      {EDIT_CATEGORY_LABELS.map((value) => (
+                        <option key={value} value={value}>{value}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs text-[#B9C0E8]" htmlFor="garment-formality">
+                      Formality
+                    </label>
+                    <select
+                      id="garment-formality"
+                      value={editDraft.formality}
+                      onChange={(e) => setEditDraft((prev) => ({ ...prev, formality: e.target.value }))}
+                      className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm capitalize text-[#F5F3FF] outline-none transition focus:border-[#FF6FB5]"
+                    >
+                      {FORMALITY_LABELS.map((value) => (
+                        <option key={value} value={value}>{value}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs text-[#B9C0E8]" htmlFor="garment-season">
+                      Season
+                    </label>
+                    <select
+                      id="garment-season"
+                      value={editDraft.season}
+                      onChange={(e) => setEditDraft((prev) => ({ ...prev, season: e.target.value }))}
+                      className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm capitalize text-[#F5F3FF] outline-none transition focus:border-[#FF6FB5]"
+                    >
+                      {SEASON_LABELS.map((value) => (
+                        <option key={value} value={value}>{value}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs text-[#B9C0E8]" htmlFor="garment-pattern">
+                      Pattern
+                    </label>
+                    <select
+                      id="garment-pattern"
+                      value={editDraft.pattern}
+                      onChange={(e) => setEditDraft((prev) => ({ ...prev, pattern: e.target.value }))}
+                      className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm capitalize text-[#F5F3FF] outline-none transition focus:border-[#FF6FB5]"
+                    >
+                      {PATTERN_LABELS.map((value) => (
+                        <option key={value} value={value}>{value}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="mb-1.5 text-xs text-[#B9C0E8]">Occasions</p>
+                  <div className="flex flex-wrap gap-2">
+                    {OCCASION_LABELS.map((value) => (
+                      <button
+                        type="button"
+                        key={value}
+                        onClick={() => toggleDraftOccasion(value)}
+                        className={`rounded-full border px-3 py-1 text-xs capitalize transition ${
+                          editDraft.occasion.includes(value)
+                            ? "border-[#FF6FB5] bg-[#FF6FB5]/15 text-[#FF7AB8]"
+                            : "border-[#2A3374] bg-[#1E2560] text-[#B9C0E8] hover:border-[#FFD3EC]"
+                        }`}
+                      >
+                        {value}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {editError ? <p className="text-xs text-[#FF7AB8]">{editError}</p> : null}
+
+                <button
+                  onClick={handleSaveEdit}
+                  disabled={savingEdit}
+                  className="w-full rounded-xl bg-[#FF6FB5] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#ff57a5] disabled:cursor-not-allowed disabled:opacity-60"
+                  data-cy="save-garment-details"
+                >
+                  {savingEdit ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            )}
 
             <div>
               <p className="text-xs text-[#B9C0E8] mb-1.5">Dominant Colors</p>

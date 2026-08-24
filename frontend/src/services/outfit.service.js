@@ -53,15 +53,19 @@ export async function fetchCurrentWeather(latitude, longitude) {
     longitude: String(longitude),
   });
 
-  const response = await fetch(`${API_BASE_URL}/weather/current?${params.toString()}`);
-
-  if (!response.ok) {
-    const contentType = response.headers.get('content-type') || '';
-    const payload = contentType.includes('application/json') ? await response.json() : null;
-    throw new Error(getErrorMessage(payload, 'Failed to load weather'));
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}/weather/current?${params.toString()}`);
+  } catch {
+    return null;
   }
 
-  return await response.json();
+  if (!response.ok) {
+    return null;
+  }
+
+  const payload = await response.json();
+  return typeof payload?.temperature_c === 'number' ? payload : null;
 }
 
 export async function fetchWardrobeGarments() {

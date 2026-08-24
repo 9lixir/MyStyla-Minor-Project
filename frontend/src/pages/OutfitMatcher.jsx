@@ -13,11 +13,38 @@ import { Card, CardContent } from '@/components/ui/card';
 import CategoryIcon from '@/components/CategoryIcon';
 import { API_BASE_URL } from '@/config';
 
-const OCCASIONS = ['Casual', 'Office', 'Party', 'Date', 'Farewell'];
+const OCCASIONS = [
+  'Casual',
+  'College',
+  'Shopping',
+  'Travel',
+  'Office',
+  'Meeting',
+  'Interview',
+  'Presentation',
+  'Party',
+  'Date',
+  'Dinner',
+  'Birthday',
+  'Wedding',
+  'Puja',
+  'Festival',
+  'Religious Ceremony',
+  'Farewell',
+  'Graduation',
+];
 const DEFAULT_LOCATION = {
   label: 'Kathmandu',
   latitude: 27.7172,
   longitude: 85.324,
+};
+
+const formatColorTitle = (color) => {
+  if (Array.isArray(color?.rgb)) {
+    return `RGB: ${color.rgb.join(',')}`;
+  }
+
+  return color?.hex ? `Color: ${color.hex}` : 'Garment color';
 };
 
 export default function OutfitMatcher({ onBack }) {
@@ -66,10 +93,15 @@ export default function OutfitMatcher({ onBack }) {
     setWeatherError('');
     try {
       const data = await fetchCurrentWeather(location.latitude, location.longitude);
+      if (!data) {
+        setWeather(null);
+        setWeatherLocation(location);
+        return;
+      }
       setWeather(data);
       setWeatherLocation(location);
     } catch (error) {
-      setWeatherError(error.message || 'Failed to load weather');
+      setWeather(null);
     } finally {
       setWeatherLoading(false);
     }
@@ -205,7 +237,7 @@ export default function OutfitMatcher({ onBack }) {
                       ? 'Loading weather...'
                       : weather
                       ? `${weatherLocation.label}: ${Math.round(weather.temperature_c)}°C, ${weather.condition}`
-                      : 'Weather not loaded'}
+                      : 'Weather skipped'}
                   </p>
                   {weather ? (
                     <p className="mt-1 text-xs capitalize text-[#B9C0E8]">
@@ -435,7 +467,7 @@ export default function OutfitMatcher({ onBack }) {
                                   key={cIdx}
                                   className="h-6 w-6 rounded-full border border-[#0E1240] shadow-sm ring-1 ring-[#2A3374]"
                                   style={{ backgroundColor: color.hex }}
-                                  title={`RGB: ${color.rgb.join(',')}`}
+                                  title={formatColorTitle(color)}
                                 />
                               ))}
                             </div>

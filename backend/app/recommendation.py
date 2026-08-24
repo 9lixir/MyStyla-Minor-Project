@@ -22,6 +22,18 @@ ACCESSORY_TYPES = {
         "jewelry": "Statement Jewelry",
         "watch": "Elegant Watch",
     },
+    "Athletic": {
+        "bag": "Sport Sling Bag",
+        "footwear": "Training Shoes",
+        "jewelry": "Minimal Jewelry",
+        "watch": "Fitness Watch",
+    },
+    "Festive": {
+        "bag": "Embellished Clutch",
+        "footwear": "Dress Shoes",
+        "jewelry": "Statement Jewelry",
+        "watch": "Elegant Watch",
+    },
 }
 
 # Category-aware color maps to prevent monochromatic accessory bloat
@@ -138,6 +150,10 @@ def recommend_accessories(formality: str, garments: list[dict]) -> list[dict]:
         "smart casual": "Smart Casual",
         "business casual": "Smart Casual",
         "formal": "Formal",
+        "athletic": "Athletic",
+        "festive": "Festive",
+        "traditional": "Festive",
+        "festive/traditional": "Festive",
     }
     norm_formality = formality_map.get(str(formality).lower(), "Casual")
     accessory_types = ACCESSORY_TYPES[norm_formality]

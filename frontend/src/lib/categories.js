@@ -80,7 +80,7 @@ export const CATEGORY_LABELS = [
 
 // Same labels, organized into display groups for the Wardrobe grid.
 // South Asian garments are folded into the group that matches how the outfit
-// matcher treats them (kurti -> top, lehenga -> dress, dhoti -> bottom, ...)
+// matcher treats them (kurti -> top, lehenga/sherwani -> dress, dhoti -> bottom, ...)
 // so each one inherits a sensible icon without needing a new icon key.
 export const CATEGORY_GROUPS = [
   {
@@ -99,7 +99,7 @@ export const CATEGORY_GROUPS = [
     id: "outerwear",
     label: "Outerwear",
     icon: "outerwear",
-    categories: ["jacket", "denim jacket", "leather jacket", "blazer", "coat", "parka", "windbreaker", "vest", "sherwani"],
+    categories: ["jacket", "denim jacket", "leather jacket", "blazer", "coat", "parka", "windbreaker", "vest"],
   },
   {
     id: "bottoms",
@@ -117,7 +117,7 @@ export const CATEGORY_GROUPS = [
     id: "dresses",
     label: "Dresses & Sets",
     icon: "dress",
-    categories: ["dress", "jumpsuit", "romper", "co-ord set", "saree", "lehenga", "salwar suit", "anarkali"],
+    categories: ["dress", "jumpsuit", "romper", "co-ord set", "saree", "lehenga", "sherwani", "salwar suit", "anarkali"],
   },
   {
     id: "formalwear",
@@ -170,7 +170,7 @@ const LEGACY_ALIASES = {
   dress: "dresses",
   women_kurta: "tops",
   kurta_men: "tops",
-  sherwanis: "outerwear",
+  sherwanis: "dresses",
   dhoti_pants: "bottoms",
   leggings_and_salwars: "bottoms",
   palazzos: "bottoms",
@@ -195,7 +195,28 @@ export function iconForCategory(category) {
   return CATEGORY_TO_ICON[key] || key; 
 }
 
-export const FORMALITY_LABELS = ["casual", "formal", "business casual", "athletic"];
+export const FORMALITY_LABELS = ["casual", "formal", "business casual", "athletic", "festive/traditional"];
 export const SEASON_LABELS = ["summer", "winter", "spring", "autumn", "all-season"];
 export const PATTERN_LABELS = ["solid", "striped", "floral", "plaid", "polka dot", "graphic print"];
-export const OCCASION_LABELS = ["everyday wear", "party", "work", "workout", "formal event"];
+export const OCCASION_LABELS = [
+  "everyday wear",
+  "college",
+  "shopping",
+  "travel",
+  "work",
+  "meeting",
+  "interview",
+  "presentation",
+  "party",
+  "date",
+  "dinner",
+  "birthday",
+  "wedding",
+  "puja",
+  "festival",
+  "religious ceremony",
+  "farewell",
+  "graduation",
+  "workout",
+  "formal event",
+];

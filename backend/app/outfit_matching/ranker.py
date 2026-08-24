@@ -1,86 +1,76 @@
 from typing import Any
+from app.outfit_matching.category_ontology import is_structurally_valid_outfit
 from app.outfit_matching.harmony import score_outfit_harmony
 from app.outfit_matching.compatibility import score_outfit_compatibility
-from app.outfit_matching.config import OUTFIT_TEMPLATES, OPTIONAL_CATEGORIES, W_COMPAT, W_HARMONY
+from app.outfit_matching.weather_scoring import outfit_weather_score
+from app.outfit_matching.config import OPTIONAL_CATEGORIES, OUTFIT_TEMPLATES, W_COMPAT, W_HARMONY, W_WEATHER
 
 
-def _generate_combinations(
-    buckets: dict[str, list[dict[str, Any]]]
-) -> list[list[dict[str, Any]]]:
-    """generate valid outfit combinations"""
-    candidates = []
-    
+def _generate_combinations(buckets: dict[str, list[dict[str, Any]]]) -> list[list[dict[str, Any]]]:
+    """Build valid outfit candidates from configured templates."""
+    candidates: list[list[dict[str, Any]]] = []
+
     for template in OUTFIT_TEMPLATES:
-        # skip templates with missing categories
-        if not all(cat in buckets for cat in template):
+        if any(not buckets.get(category) for category in template):
             continue
-        
-        # build combinations for this template
-        def cartesian_product(cats):
-            if not cats:
-                return [[]]
-            head_cat = cats[0]
-            tail_combos = cartesian_product(cats[1:])
-            result = []
-            for item in buckets[head_cat]:
-                for combo in tail_combos:
-                    result.append([item] + combo)
-            return result
-        
-        template_combos = cartesian_product(template)
-        
-        # append optional outerwear variants
-        if "outerwear" in buckets and "outerwear" not in template:
-            expanded = []
-            for combo in template_combos:
-                # keep base combo
-                expanded.append(combo)
-                # add each outerwear option
-                for outer in buckets["outerwear"]:
-                    expanded.append(combo + [outer])
-            candidates.extend(expanded)
-        else:
-            candidates.extend(template_combos)
-    
-    return candidates
 
+        partials: list[list[dict[str, Any]]] = [[]]
+        for category in template:
+            partials = [partial + [garment] for partial in partials for garment in buckets[category]]
+
+        candidates.extend(partials)
+
+    for optional_category in OPTIONAL_CATEGORIES:
+        optional_items = buckets.get(optional_category, [])
+        if not optional_items:
+            continue
+
+        layered = [
+            outfit + [item]
+            for outfit in candidates
+            for item in optional_items
+            if item not in outfit
+        ]
+        candidates.extend(layered)
+
+    return candidates
 
 def rank_outfits(
     wardrobe: list[dict[str, Any]],
     buckets: dict[str, list[dict[str, Any]]],
     top_k: int = 10,
+    weather: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
-    """rank outfits by harmony and compatibility"""
-    
     candidates = _generate_combinations(buckets)
-    
     if not candidates:
         return []
-    
-    # score each outfit
+
     ranked = []
     for outfit in candidates:
+        if not is_structurally_valid_outfit(outfit):
+            continue
+
         harmony_score = score_outfit_harmony(outfit)
         compat_score = score_outfit_compatibility(outfit)
-        final_score = W_COMPAT * compat_score + W_HARMONY * harmony_score
-        
+        weather_score = outfit_weather_score(outfit, weather)
+        final_score = (
+            W_COMPAT * compat_score + W_HARMONY * harmony_score + W_WEATHER * weather_score
+        )
+
         ranked.append({
             "garments": [
                 {
-                    "id": g["id"],
-                    "filename": g.get("filename", g["id"]),
-                    "cutout_path": g.get("cutout_path", ""),
-                    "category": g["category"],
-                    "dominant_colors": g.get("colors", []),
-                    "tags": g.get("tags", {}),
+                    "id": g["id"], "filename": g.get("filename", g["id"]),
+                    "cutout_path": g.get("cutout_path", ""), "category": g["category"],
+                    "dominant_colors": g.get("colors", []), "tags": g.get("tags", {}),
                 }
                 for g in outfit
             ],
             "harmony_score": harmony_score,
             "compat_score": compat_score,
-            "final_score": final_score,
+            "weather_score": weather_score,
+            "final_score": round(final_score, 3),
         })
-    
-    # return top ranked outfits
+
     ranked.sort(key=lambda x: x["final_score"], reverse=True)
     return ranked[:top_k]

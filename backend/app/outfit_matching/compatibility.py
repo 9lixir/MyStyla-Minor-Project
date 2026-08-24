@@ -3,6 +3,7 @@
 import math
 from typing import Any
 
+from app.outfit_matching.category_ontology import structural_compatibility_multiplier
 from app.outfit_matching.config import FORMALITY, SEASON, PATTERN, OCCASION, METADATA_WEIGHT_ALPHA
 
 
@@ -16,10 +17,13 @@ def _l2_normalize(vec: list[float]) -> list[float]:
 def _metadata_vector(tags: dict[str, Any]) -> list[float]:
     """build the fixed order metadata vector"""
     vec = []
-    vec += [1.0 if tags["formality"] == f else 0.0 for f in FORMALITY]
-    vec += [1.0 if tags["season"] == s else 0.0 for s in SEASON]
-    vec += [1.0 if tags["pattern"] == p else 0.0 for p in PATTERN]
-    vec += [1.0 if o in tags["occasion"] else 0.0 for o in OCCASION]
+    occasions = tags.get("occasion", [])
+    if isinstance(occasions, str):
+        occasions = [occasions]
+    vec += [1.0 if tags.get("formality") == f else 0.0 for f in FORMALITY]
+    vec += [1.0 if tags.get("season") == s else 0.0 for s in SEASON]
+    vec += [1.0 if tags.get("pattern") == p else 0.0 for p in PATTERN]
+    vec += [1.0 if o in occasions else 0.0 for o in OCCASION]
     return vec
 
 
@@ -41,10 +45,14 @@ def cosine_similarity(vec_a: list[float], vec_b: list[float]) -> float:
 
 
 def score_garment_pair(garment_a: dict[str, Any], garment_b: dict[str, Any]) -> float:
+    rule_multiplier = structural_compatibility_multiplier(garment_a, garment_b)
+    if rule_multiplier == 0.0:
+        return 0.0
+
     vec_a = build_combined_vector(garment_a)
     vec_b = build_combined_vector(garment_b)
     similarity = cosine_similarity(vec_a, vec_b)
-    return round(similarity, 3)
+    return round(similarity * rule_multiplier, 3)
 
 
 def score_outfit_compatibility(garments: list[dict[str, Any]]) -> float:

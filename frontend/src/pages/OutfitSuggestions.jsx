@@ -4,6 +4,7 @@ import OutfitSuggestionCard from "../components/OutfitSuggestionCard";
 import { getOutfitSuggestions } from "../services/recommendationApi";
 import { fetchCurrentWeather } from "../services/outfit.service";
 import { useAuthStore } from "@/store/auth-store";
+import { WEATHER_CHOICES, describeWeatherChoice } from "@/lib/weatherChoices";
 
 function OutfitSuggestions({ onBack }) {
   const { user } = useAuthStore.getState();
@@ -13,7 +14,9 @@ function OutfitSuggestions({ onBack }) {
   const [error, setError] = useState(null);
   const [weatherMode, setWeatherMode] = useState(false);
   const [weather, setWeather] = useState(null);
+  const [weatherLabel, setWeatherLabel] = useState("");
   const [weatherError, setWeatherError] = useState("");
+  const [showWeatherChoices, setShowWeatherChoices] = useState(false);
 
   useEffect(() => {
     let isCancelled = false;
@@ -50,10 +53,21 @@ function OutfitSuggestions({ onBack }) {
             position.coords.latitude,
             position.coords.longitude,
           );
+          if (!currentWeather) {
+            setWeather(null);
+            setWeatherMode(false);
+            setWeatherLabel("");
+            setIsLoading(false);
+            return;
+          }
           setWeather(currentWeather);
+          setWeatherLabel("Current Location");
           setWeatherMode(true);
-        } catch (err) {
-          setWeatherError(err.message || "Couldn't load weather.");
+          setShowWeatherChoices(false);
+        } catch {
+          setWeather(null);
+          setWeatherLabel("");
+          setWeatherMode(false);
           setIsLoading(false);
         }
       },
@@ -63,6 +77,22 @@ function OutfitSuggestions({ onBack }) {
       },
       { enableHighAccuracy: false, timeout: 10000 },
     );
+  };
+
+  const handleStandardSuggestions = () => {
+    setWeatherMode(false);
+    setWeather(null);
+    setWeatherLabel("");
+    setWeatherError("");
+    setShowWeatherChoices(false);
+  };
+
+  const handleWeatherChoice = (choice) => {
+    setWeather(choice.weather);
+    setWeatherLabel(choice.label);
+    setWeatherMode(true);
+    setShowWeatherChoices(true);
+    setWeatherError("");
   };
 
   return (
@@ -92,7 +122,7 @@ function OutfitSuggestions({ onBack }) {
 
         <div className="mb-5 flex flex-wrap gap-2">
           <button
-            onClick={() => setWeatherMode(false)}
+            onClick={handleStandardSuggestions}
             className={`rounded-full px-4 py-2 text-sm transition ${
               weatherMode
                 ? "border border-[#2A3374] bg-[#151A4D]/90 text-[#B9C0E8]"
@@ -109,12 +139,54 @@ function OutfitSuggestions({ onBack }) {
                 : "border border-[#2A3374] bg-[#151A4D]/90 text-[#B9C0E8]"
             }`}
           >
-            Suggest by Weather
+            Suggest for Current Weather
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowWeatherChoices((current) => !current)}
+            className={`rounded-full px-4 py-2 text-sm transition ${
+              showWeatherChoices
+                ? "bg-[#FF6FB5] text-white"
+                : "border border-[#2A3374] bg-[#151A4D]/90 text-[#B9C0E8]"
+            }`}
+            data-cy="toggle-weather-choices"
+          >
+            Choose Weather Condition
           </button>
         </div>
+
+        {showWeatherChoices ? (
+          <div className="mb-5 rounded-xl border border-[#2A3374] bg-[#151A4D]/70 p-3">
+            <p className="mb-2 text-xs uppercase tracking-[0.2em] text-[#FF6FB5]">
+              Weather Condition
+            </p>
+            <div className="grid gap-2 sm:grid-cols-4" data-cy="weather-choice-list">
+              {WEATHER_CHOICES.map((choice) => {
+                const isActive = weatherMode && weatherLabel === choice.label;
+                return (
+                  <button
+                    key={choice.id}
+                    type="button"
+                    onClick={() => handleWeatherChoice(choice)}
+                    className={`rounded-xl border px-4 py-3 text-left transition ${
+                      isActive
+                        ? "border-[#FF6FB5] bg-[#FF6FB5]/15 text-[#F5F3FF]"
+                        : "border-[#2A3374] bg-[#151A4D]/90 text-[#B9C0E8] hover:border-[#FF6FB5]/60"
+                    }`}
+                    data-cy={`weather-choice-${choice.id}`}
+                  >
+                    <span className="block text-sm font-medium">{choice.label}</span>
+                    <span className="mt-1 block text-xs text-[#B9C0E8]">{choice.summary}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
         {weatherMode && weather ? (
           <p className="mb-4 text-xs capitalize text-[#B9C0E8]">
-            Weather filter: {Math.round(weather.temperature_c)}°C, {weather.condition}
+            Weather filter: {weatherLabel ? `${weatherLabel} - ` : ""}
+            {describeWeatherChoice(weather)}
           </p>
         ) : null}
         {weatherError ? (
