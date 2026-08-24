@@ -20,7 +20,7 @@ CATEGORY_LABELS = [
     # Formalwear
     "suit", "tuxedo", "gown",
     # Footwear
-    "sneakers", "boots", "sandals", "heels", "flats", "loafers",
+        "sneakers", "boots", "sandals", "heels", "flats", "loafers", "mojari",
     # Accessories
     "belt", "hat", "scarf", "gloves", "tie", "bag", "sunglasses", "jewelry", "watch",
     # South Asian
@@ -37,7 +37,7 @@ NEPALI_SET = {"daura suruwal", "gunyu cholo", "haku patasi", "labeda suruwal", "
 NEPALI_PROMPTS = {
     "daura suruwal": "a photo of a daura suruwal, traditional Nepali men's outfit with a closed-neck double-breasted wrap-around top and matching narrow trousers",
     "gunyu cholo":   "a photo of a gunyu cholo, traditional Nepali women's outfit with a fitted blouse and a wrapped sari skirt",
-    "haku patasi":   "a photo of a haku patasi, traditional Newari black cotton sari with a red border",
+    "haku patasi":   "a photo of a haku patasi, traditional Newari attire, a fitted cropped blouse and black sari with a deep red border",
     "labeda suruwal":"a photo of a labeda suruwal, traditional Nepali long kurta-style tunic with loose trousers",
     "dhaka topi":    "a photo of a dhaka topi, a traditional Nepali patterned brimless cap worn by men",
 }
@@ -86,7 +86,7 @@ INDOFASHION_TO_CATEGORY = {
     "palazzos": "trousers",      "dupattas": "scarf",
     "blouse": "blouse",          "gowns": "gown",
     "petticoats": "skirt",       "nehru_jackets": "vest",
-    "mojaris_men": "loafers",    "mojaris_women": "flats",
+    "mojaris_men": "mojari",     "mojaris_women": "mojari",
 }
 
 LABEL_EMBEDDINGS = None

@@ -28,6 +28,7 @@ class GarmentClassification(Base):
     pattern = Column(String, nullable=False)
     occasion = Column(JSON, nullable=False)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    style_family = Column(String, default="western")
 
 class TagCorrection(Base):
     __tablename__ = "tag_corrections"

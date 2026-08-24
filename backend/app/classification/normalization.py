@@ -1,5 +1,22 @@
 from app.outfit_matching.config import OCCASION
 
+# normalization.py — add near the top, alongside category_map
+
+STYLE_FAMILY_MAP = {
+    # nepali
+    "daura suruwal": "nepali", "gunyu cholo": "nepali", "haku patasi": "nepali",
+    "labeda suruwal": "nepali", "dhaka topi": "nepali",
+    # south Asian
+    "saree": "south_asian", "kurti": "south_asian", "kurta": "south_asian",
+    "lehenga": "south_asian", "sherwani": "south_asian", "dhoti": "south_asian",
+    "salwar suit": "south_asian", "anarkali": "south_asian", "mojari": "south_asian",
+    # western footwear (the ones causing the oxford+lehenga problem)
+    "sneakers": "western", "boots": "western", "loafers": "western",
+    "oxford shoes": "western", "heels": "universal", "flats": "universal", "sandals": "universal",
+}
+
+def get_style_family(category: str) -> str:
+    return STYLE_FAMILY_MAP.get(str(category).lower(), "western")
 
 def normalize_pipeline_tags(tags: dict) -> dict:
     """map classifier labels into matcher tags"""
@@ -80,6 +97,7 @@ def normalize_pipeline_tags(tags: dict) -> dict:
 
     return {
         "category": category_map.get(str(tags.get("category", "")).lower(), "top"),
+        "style_family": get_style_family(tags.get("category", "")),
         "formality": formality_map.get(str(tags.get("formality", "")).lower(), "Casual"),
         "season": season_map.get(str(tags.get("season", "")).lower(), "Summer"),
         "pattern": pattern_map.get(str(tags.get("pattern", "")).lower(), "Solid"),

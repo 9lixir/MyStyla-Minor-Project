@@ -60,6 +60,7 @@ def get_wardrobe(user_id: str = None) -> list[dict]:
                     "season": classification.season,
                     "pattern": classification.pattern,
                     "occasion": classification.occasion,
+                    "style_family": classification.style_family, 
                 },
                 "embedding": embedding,
             }
