@@ -137,6 +137,7 @@ async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get
                 season=suggested_classification["season"],
                 pattern=suggested_classification["pattern"],
                 occasion=suggested_classification["occasion"],
+                style_family=suggested_classification["style_family"],
             )
         )
         db.commit()

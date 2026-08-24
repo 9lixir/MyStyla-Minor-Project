@@ -57,6 +57,7 @@ export const CATEGORY_LABELS = [
   "heels",
   "flats",
   "loafers",
+  "mojaris",
   // Accessories
   "belt",
   "hat",
@@ -76,6 +77,12 @@ export const CATEGORY_LABELS = [
   "salwar suit",
   "anarkali",
   "dhoti",
+  // Nepali
+  "daura suruwal",
+  "gunyu cholo",
+  "haku patasi",
+  "labeda suruwal",
+  "dhaka topi",
 ];
 
 // Same labels, organized into display groups for the Wardrobe grid.
@@ -117,7 +124,7 @@ export const CATEGORY_GROUPS = [
     id: "dresses",
     label: "Dresses & Sets",
     icon: "dress",
-    categories: ["dress", "jumpsuit", "romper", "co-ord set", "saree", "lehenga", "salwar suit", "anarkali"],
+    categories: ["dress", "jumpsuit", "romper", "co-ord set", "saree", "lehenga", "salwar suit", "anarkali", "daura suruwal", "gunyu cholo", "haku patasi", "labeda suruwal"],
   },
   {
     id: "formalwear",
@@ -135,7 +142,7 @@ export const CATEGORY_GROUPS = [
     id: "accessories",
     label: "Accessories",
     icon: "accessory",
-    categories: ["belt", "hat", "scarf", "gloves", "tie", "bag", "sunglasses", "jewelry", "watch"],
+    categories: ["belt", "hat", "scarf", "gloves", "tie", "bag", "sunglasses", "jewelry", "watch", "dhaka topi"],
   },
 ];
 

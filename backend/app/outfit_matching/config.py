@@ -3,7 +3,7 @@
 FORMALITY = ["Casual", "Smart Casual", "Formal"]
 SEASON = ["Spring", "Summer", "Autumn", "Winter"]
 PATTERN = ["Solid", "Striped", "Checked", "Graphic", "Floral"]
-OCCASION = ["Casual", "Office", "Party", "Date", "Farewell"]
+OCCASION = ["Casual", "Office", "Party", "Farewell"]
 
 # garment categories used to build outfits
 CATEGORIES = ["top", "bottom", "dress", "outerwear"]

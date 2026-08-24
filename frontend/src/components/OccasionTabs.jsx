@@ -1,4 +1,4 @@
-const OCCASIONS = ["Casual", "Office", "Party", "Date", "Farewell"];
+const OCCASIONS = ["Casual", "Office", "Party", "Farewell"];
 
 function OccasionTabs({ selected, onSelect }) {
   return (

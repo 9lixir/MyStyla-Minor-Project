@@ -2,6 +2,12 @@ import colorsys
 import math
 
 # --- Dictionary Mappings ---
+STYLE_FOOTWEAR_OVERRIDE = {
+    ("Formal", "south_asian"): "Mojari",
+    ("Formal", "nepali"): "Mojari",
+    ("Smart Casual", "south_asian"): "Juti",
+    ("Smart Casual", "nepali"): "Juti",
+}
 
 ACCESSORY_TYPES = {
     "Casual": {
@@ -131,7 +137,7 @@ def check_wardrobe_for_accessory(slot: str, db=None) -> dict | None:
 
 # --- Recommendation Entrypoint ---
 
-def recommend_accessories(formality: str, garments: list[dict]) -> list[dict]:
+def recommend_accessories(formality: str, garments: list[dict], style_family: str = "western") -> list[dict]:
     """Generate accessory recommendations with category-aware color mapping."""
     formality_map = {
         "casual": "Casual",
@@ -141,12 +147,15 @@ def recommend_accessories(formality: str, garments: list[dict]) -> list[dict]:
     }
     norm_formality = formality_map.get(str(formality).lower(), "Casual")
     accessory_types = ACCESSORY_TYPES[norm_formality]
+    footwear_override = STYLE_FOOTWEAR_OVERRIDE.get((norm_formality, style_family))
 
     outfit_classification = classify_outfit_tone(garments)
     tone = get_accessory_tone(outfit_classification)
 
     results = []
     for slot, base_type in accessory_types.items():
+        if slot == "footwear" and footwear_override:
+            base_type = footwear_override
         wardrobe_match = check_wardrobe_for_accessory(slot)
 
         if wardrobe_match:

@@ -13,7 +13,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import CategoryIcon from '@/components/CategoryIcon';
 import { API_BASE_URL } from '@/config';
 
-const OCCASIONS = ['Casual', 'Office', 'Party', 'Date', 'Farewell'];
+const OCCASIONS = ['Casual', 'Office', 'Party', 'Farewell'];
 const DEFAULT_LOCATION = {
   label: 'Kathmandu',
   latitude: 27.7172,

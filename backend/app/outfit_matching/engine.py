@@ -18,6 +18,14 @@ def _outfit_formality(garments: list[dict[str, Any]]) -> str:
     values = [g.get("tags", {}).get("formality", "Casual") for g in garments]
     return max(values, key=lambda value: order.get(value, 0), default="Casual")
 
+def _outfit_style_family(garments: list[dict[str, Any]]) -> str:
+    """if any garment is nepali/south_asian, treat the outfit as that family"""
+    values = [g.get("tags", {}).get("style_family", "western") for g in garments]
+    for family in ("nepali", "south_asian"):
+        if family in values:
+            return family
+    return "western"
+
 
 def _weather_filtered(garments: list[dict[str, Any]], weather: dict[str, Any] | None) -> list[dict[str, Any]]:
     if not weather:
@@ -63,7 +71,8 @@ def generate_outfits(
     for outfit in outfits:
         formality = _outfit_formality(outfit["garments"])
         outfit["formality"] = formality
-        outfit["accessories"] = recommend_accessories(formality, outfit["garments"])
+        style_family = _outfit_style_family(outfit["garments"])
+        outfit["accessories"] = recommend_accessories(formality, outfit["garments"], style_family)
 
     return {
         "message": f"Generated {len(outfits)} outfit(s) for occasion '{occasion}'",
