@@ -32,3 +32,10 @@ W_COMPAT = 0.6
 W_HARMONY = 0.4
 
 DEFAULT_TOP_K = 10
+# accessory categories - NOT used for building outfit templates, only for
+# validating garment classification during upload (bag, footwear, etc.)
+ACCESSORY_CATEGORIES = ["footwear", "bag", "jewelry", "watch", "belt", "hat", "scarf", "gloves", "tie", "sunglasses"]
+
+# full set of valid categories for garment classification validation
+ALL_CATEGORIES = CATEGORIES + ACCESSORY_CATEGORIES
+

@@ -63,7 +63,7 @@ def generate_outfits(
     for outfit in outfits:
         formality = _outfit_formality(outfit["garments"])
         outfit["formality"] = formality
-        outfit["accessories"] = recommend_accessories(formality, outfit["garments"])
+        outfit["accessories"] = recommend_accessories(formality, outfit["garments"], user_id=user_id)
 
     return {
         "message": f"Generated {len(outfits)} outfit(s) for occasion '{occasion}'",

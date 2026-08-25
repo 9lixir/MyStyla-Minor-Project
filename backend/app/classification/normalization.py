@@ -43,6 +43,23 @@ def normalize_pipeline_tags(tags: dict) -> dict:
         "haku patasi": "dress",
         "labeda suruwal": "dress",
 
+        # Footwear (all map to one slot name the accessory engine checks)
+        "sneakers": "footwear", "boots": "footwear", "sandals": "footwear",
+        "heels": "footwear", "flats": "footwear", "loafers": "footwear",
+
+
+        # Accessories
+        "bag": "bag",
+        "jewelry": "jewelry",
+        "watch": "watch",
+        "belt": "belt",
+        "hat": "hat",
+        "scarf": "scarf",
+        "gloves": "gloves",
+        "tie": "tie",
+        "sunglasses": "sunglasses",
+
+
     }
     formality_map = {
         "casual": "Casual",

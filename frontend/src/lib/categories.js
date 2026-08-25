@@ -132,11 +132,18 @@ export const CATEGORY_GROUPS = [
     categories: ["sneakers", "boots", "sandals", "heels", "flats", "loafers"],
   },
   {
+    id: "bags",
+    label: "Bags",
+    icon: "bag",
+    categories: ["bag"],
+  },
+  {
     id: "accessories",
     label: "Accessories",
     icon: "accessory",
-    categories: ["belt", "hat", "scarf", "gloves", "tie", "bag", "sunglasses", "jewelry", "watch"],
+    categories: ["belt", "hat", "scarf", "gloves", "tie", "sunglasses", "jewelry", "watch"],
   },
+  
 ];
 
 // category -> group id, built once so Wardrobe.jsx can bucket garments in O(1).
@@ -165,7 +172,7 @@ const LEGACY_ALIASES = {
   belt: "accessories",
   watch: "accessories",
   jewelry: "accessories",
-  bag: "accessories",
+  bag: "bags",
   accessory: "accessories",
   dress: "dresses",
   women_kurta: "tops",

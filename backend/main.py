@@ -19,8 +19,18 @@ logging.basicConfig(level=logging.INFO)
 
 load_dotenv()
 
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173")
-allow_origins = [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
+cors_origins = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173"
+)
+
+allow_origins = [
+    origin.strip()
+    for origin in cors_origins.split(",")
+    if origin.strip()
+]
+
+
 
 os.makedirs("uploads", exist_ok=True)
 os.makedirs("processed", exist_ok=True)
@@ -31,7 +41,11 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins = allow_origins,
+    allow_origins = [
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://localhost:5175",
+    ],
     allow_credentials = True,
     allow_methods =["*"],
     allow_headers = ["*"],

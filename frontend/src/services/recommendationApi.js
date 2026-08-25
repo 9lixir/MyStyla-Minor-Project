@@ -37,12 +37,13 @@ function toSuggestion(outfit, index) {
         colors: g.dominant_colors || [],
         isRecommendation: false,
       })),
-      ...accessories.map((a, i) => ({
+       ...accessories.map((a, i) => ({
         id: `${a.slot}-${i}`,
         category: a.slot,
         label: a.name,
         reason: a.reason,
         source: a.source,
+        imageUrl: a.cutout_path ? `${API_BASE_URL}/${a.cutout_path}` : null,
         isRecommendation: true,
       })),
     ],
