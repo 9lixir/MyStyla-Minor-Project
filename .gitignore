@@ -6,3 +6,24 @@ __pycache__/
 dist/
 build/
 .DS_Store
+qdrant_storage/
+documentation/
+/mystyla.db
+/frontend/mystyla.db
+/backend/mystyla.db
+/uploads/
+/processed/
+/backend/uploads/
+/backend/processed/
+/backend/for_deployment.txt
+data/
+
+# ML artifacts
+*.pt
+*.pth
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment
+.venv/
