@@ -40,8 +40,14 @@ def rank_outfits(
     buckets: dict[str, list[dict[str, Any]]],
     top_k: int = 10,
     weather: dict[str, Any] | None = None,
+    require_outerwear: bool = False,
 ) -> list[dict[str, Any]]:
     candidates = _generate_combinations(buckets)
+    if require_outerwear:
+        candidates = [
+            outfit for outfit in candidates
+            if any(g.get("category") == "outerwear" for g in outfit)
+        ]
     if not candidates:
         return []
 

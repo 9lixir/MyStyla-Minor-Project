@@ -6,6 +6,12 @@ def normalize_pipeline_tags(tags: dict) -> dict:
     """map classifier labels into matcher tags"""
     fine_category = normalize_fine_category(tags.get("fine_category") or tags.get("category"))
     category_map = {
+        # Matcher broad categories. User edits already send these values.
+        "top": "top",
+        "bottom": "bottom",
+        "dress": "dress",
+        "outerwear": "outerwear",
+
         #south asian garments
         "saree": "dress",
         "women_kurta": "top",
@@ -46,7 +52,7 @@ def normalize_pipeline_tags(tags: dict) -> dict:
         "maxi skirt": "bottom", "pleated skirt": "bottom",
         
         # Dresses & Sets
-        "dress": "dress", "jumpsuit": "dress", "romper": "dress",
+        "jumpsuit": "dress", "romper": "dress",
         "co-ord set": "dress", "gown": "dress", "suit": "dress", "tuxedo": "dress",
     }
     formality_map = {

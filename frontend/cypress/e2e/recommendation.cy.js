@@ -85,7 +85,19 @@ describe("Recommendations", () => {
     cy.wait("@generateSuggestions");
     cy.get("[data-cy=weather-choice-list]").should("not.exist");
     cy.get("[data-cy=toggle-weather-choices]").click();
+    cy.contains("button", "Standard Suggest")
+      .invoke("attr", "class")
+      .should("not.contain", "bg-[#FF6FB5]");
+    cy.contains("button", "Suggest for Current Weather")
+      .invoke("attr", "class")
+      .should("not.contain", "bg-[#FF6FB5]");
+    cy.get("[data-cy=toggle-weather-choices]")
+      .invoke("attr", "class")
+      .should("contain", "bg-[#FF6FB5]");
     cy.get("[data-cy=weather-choice-cold]").click();
+    cy.contains("button", "Suggest for Current Weather")
+      .invoke("attr", "class")
+      .should("not.contain", "bg-[#FF6FB5]");
     cy.wait("@generateSuggestions");
     cy.contains("Weather filter: Cold").should("be.visible");
     cy.contains("8°C").should("be.visible");

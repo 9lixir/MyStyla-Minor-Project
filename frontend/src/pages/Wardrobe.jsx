@@ -118,6 +118,7 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
   const [editDraft, setEditDraft] = useState(null)
   const [savingEdit, setSavingEdit] = useState(false)
   const [editError, setEditError] = useState(null)
+  const [editSuccess, setEditSuccess] = useState("")
   const [deleteError, setDeleteError] = useState(null)
   const [activeGroup, setActiveGroup] = useState("all")
 
@@ -149,6 +150,7 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
   const openGarment = (garment) => {
     setSelectedGarment(garment)
     setEditError(null)
+    setEditSuccess("")
     setEditDraft({
       filename: garment.filename || "",
       category: toFormValue(garment.tags?.category, "top"),
@@ -160,6 +162,7 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
   }
 
   const toggleDraftOccasion = (value) => {
+    setEditSuccess("")
     setEditDraft((prev) => {
       if (!prev) return prev
       if (prev.occasion.includes(value)) {
@@ -174,11 +177,13 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
     if (!selectedGarment || !editDraft) return
     if (!editDraft.filename.trim()) {
       setEditError("Name cannot be empty.")
+      setEditSuccess("")
       return
     }
 
     setSavingEdit(true)
     setEditError(null)
+    setEditSuccess("")
     try {
       const response = await fetch(`${API_BASE_URL}/scanning/garments/${selectedGarment.id}/details`, {
         method: "PUT",
@@ -202,8 +207,18 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
       const updated = payload.garment
       setGarments((prev) => prev.map((item) => (item.id === updated.id ? { ...item, ...updated } : item)))
       setSelectedGarment((prev) => (prev ? { ...prev, ...updated } : prev))
+      setEditDraft({
+        filename: updated.filename || editDraft.filename.trim(),
+        category: toFormValue(updated.tags?.category, editDraft.category),
+        formality: toFormValue(updated.tags?.formality, editDraft.formality),
+        season: toFormValue(updated.tags?.season, editDraft.season),
+        pattern: toFormValue(updated.tags?.pattern, editDraft.pattern),
+        occasion: toOccasionFormValues(updated.tags?.occasion || editDraft.occasion),
+      })
+      setEditSuccess("Saved changes")
     } catch (err) {
       setEditError(err.message || "Couldn't update that item. Please try again.")
+      setEditSuccess("")
     } finally {
       setSavingEdit(false)
     }
@@ -377,7 +392,10 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                   <input
                     id="garment-name"
                     value={editDraft.filename}
-                    onChange={(e) => setEditDraft((prev) => ({ ...prev, filename: e.target.value }))}
+                    onChange={(e) => {
+                      setEditSuccess("")
+                      setEditDraft((prev) => ({ ...prev, filename: e.target.value }))
+                    }}
                     className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm text-[#F5F3FF] outline-none transition focus:border-[#FF6FB5]"
                     data-cy="garment-name-input"
                   />
@@ -391,7 +409,10 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                     <select
                       id="garment-category"
                       value={editDraft.category}
-                      onChange={(e) => setEditDraft((prev) => ({ ...prev, category: e.target.value }))}
+                      onChange={(e) => {
+                        setEditSuccess("")
+                        setEditDraft((prev) => ({ ...prev, category: e.target.value }))
+                      }}
                       className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm capitalize text-[#F5F3FF] outline-none transition focus:border-[#FF6FB5]"
                       data-cy="garment-category-select"
                     >
@@ -408,7 +429,10 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                     <select
                       id="garment-formality"
                       value={editDraft.formality}
-                      onChange={(e) => setEditDraft((prev) => ({ ...prev, formality: e.target.value }))}
+                      onChange={(e) => {
+                        setEditSuccess("")
+                        setEditDraft((prev) => ({ ...prev, formality: e.target.value }))
+                      }}
                       className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm capitalize text-[#F5F3FF] outline-none transition focus:border-[#FF6FB5]"
                     >
                       {FORMALITY_LABELS.map((value) => (
@@ -424,7 +448,10 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                     <select
                       id="garment-season"
                       value={editDraft.season}
-                      onChange={(e) => setEditDraft((prev) => ({ ...prev, season: e.target.value }))}
+                      onChange={(e) => {
+                        setEditSuccess("")
+                        setEditDraft((prev) => ({ ...prev, season: e.target.value }))
+                      }}
                       className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm capitalize text-[#F5F3FF] outline-none transition focus:border-[#FF6FB5]"
                     >
                       {SEASON_LABELS.map((value) => (
@@ -440,7 +467,10 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                     <select
                       id="garment-pattern"
                       value={editDraft.pattern}
-                      onChange={(e) => setEditDraft((prev) => ({ ...prev, pattern: e.target.value }))}
+                      onChange={(e) => {
+                        setEditSuccess("")
+                        setEditDraft((prev) => ({ ...prev, pattern: e.target.value }))
+                      }}
                       className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm capitalize text-[#F5F3FF] outline-none transition focus:border-[#FF6FB5]"
                     >
                       {PATTERN_LABELS.map((value) => (
@@ -471,6 +501,7 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                 </div>
 
                 {editError ? <p className="text-xs text-[#FF7AB8]">{editError}</p> : null}
+                {editSuccess ? <p className="text-xs text-emerald-200" data-cy="save-garment-success">{editSuccess}</p> : null}
 
                 <button
                   onClick={handleSaveEdit}

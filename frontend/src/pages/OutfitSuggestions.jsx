@@ -17,6 +17,7 @@ function OutfitSuggestions({ onBack }) {
   const [weatherLabel, setWeatherLabel] = useState("");
   const [weatherError, setWeatherError] = useState("");
   const [showWeatherChoices, setShowWeatherChoices] = useState(false);
+  const [weatherSource, setWeatherSource] = useState("standard");
 
   useEffect(() => {
     let isCancelled = false;
@@ -64,15 +65,18 @@ function OutfitSuggestions({ onBack }) {
           setWeatherLabel("Current Location");
           setWeatherMode(true);
           setShowWeatherChoices(false);
+          setWeatherSource("current");
         } catch {
           setWeather(null);
           setWeatherLabel("");
           setWeatherMode(false);
+          setWeatherSource("standard");
           setIsLoading(false);
         }
       },
       () => {
         setWeatherError("Location permission was denied.");
+        setWeatherSource("standard");
         setIsLoading(false);
       },
       { enableHighAccuracy: false, timeout: 10000 },
@@ -85,6 +89,7 @@ function OutfitSuggestions({ onBack }) {
     setWeatherLabel("");
     setWeatherError("");
     setShowWeatherChoices(false);
+    setWeatherSource("standard");
   };
 
   const handleWeatherChoice = (choice) => {
@@ -93,6 +98,24 @@ function OutfitSuggestions({ onBack }) {
     setWeatherMode(true);
     setShowWeatherChoices(true);
     setWeatherError("");
+    setWeatherSource("choice");
+  };
+
+  const handleToggleWeatherChoices = () => {
+    setShowWeatherChoices((current) => {
+      const next = !current;
+      if (next) {
+        setWeatherSource("choice");
+        if (weatherSource === "current") {
+          setWeatherMode(false);
+          setWeather(null);
+          setWeatherLabel("");
+        }
+      } else if (!weatherMode) {
+        setWeatherSource("standard");
+      }
+      return next;
+    });
   };
 
   return (
@@ -124,9 +147,9 @@ function OutfitSuggestions({ onBack }) {
           <button
             onClick={handleStandardSuggestions}
             className={`rounded-full px-4 py-2 text-sm transition ${
-              weatherMode
-                ? "border border-[#2A3374] bg-[#151A4D]/90 text-[#B9C0E8]"
-                : "bg-[#FF6FB5] text-white"
+              weatherSource === "standard"
+                ? "bg-[#FF6FB5] text-white"
+                : "border border-[#2A3374] bg-[#151A4D]/90 text-[#B9C0E8]"
             }`}
           >
             Standard Suggest
@@ -134,7 +157,7 @@ function OutfitSuggestions({ onBack }) {
           <button
             onClick={handleWeatherSuggestions}
             className={`rounded-full px-4 py-2 text-sm transition ${
-              weatherMode
+              weatherSource === "current"
                 ? "bg-[#FF6FB5] text-white"
                 : "border border-[#2A3374] bg-[#151A4D]/90 text-[#B9C0E8]"
             }`}
@@ -143,9 +166,9 @@ function OutfitSuggestions({ onBack }) {
           </button>
           <button
             type="button"
-            onClick={() => setShowWeatherChoices((current) => !current)}
+            onClick={handleToggleWeatherChoices}
             className={`rounded-full px-4 py-2 text-sm transition ${
-              showWeatherChoices
+              showWeatherChoices || weatherSource === "choice"
                 ? "bg-[#FF6FB5] text-white"
                 : "border border-[#2A3374] bg-[#151A4D]/90 text-[#B9C0E8]"
             }`}

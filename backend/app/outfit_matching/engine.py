@@ -27,13 +27,50 @@ def _weather_prefiltered(garments: list[dict[str, Any]], weather: dict[str, Any]
     temperature = weather.get("temperature_c") if isinstance(weather, dict) else None
     if not isinstance(temperature, (int, float)):
         return garments
+    weather_mode, temp_c = _weather_mode_and_temperature(weather)
+    outerwear_required = requires_outerwear(weather_mode, temp_c)
     kept = [
         g for g in garments
-        if garment_weather_score(str(g.get("tags", {}).get("season", "")), temperature) >= 0.2
+        if (
+            garment_weather_score(str(g.get("tags", {}).get("season", "")), temperature) >= 0.2
+            or (outerwear_required and g.get("category") == "outerwear")
+        )
     ]
     if temperature <= 14:
         return kept
     return kept or garments
+
+
+def requires_outerwear(weather_mode: str | None, temp_c: float | None) -> bool:
+    mode = str(weather_mode or "").strip().lower()
+    is_cold_mode = "cold" in mode
+    is_rainy_mode = "rain" in mode
+    is_cold_temperature = isinstance(temp_c, (int, float)) and temp_c < 15
+    return is_cold_mode or is_rainy_mode or is_cold_temperature
+
+
+def _weather_mode_and_temperature(weather: dict[str, Any] | None) -> tuple[str | None, float | None]:
+    if not isinstance(weather, dict):
+        return None, None
+
+    mode = (
+        weather.get("weather_mode")
+        or weather.get("mode")
+        or weather.get("style_profile")
+        or weather.get("condition")
+    )
+    temperature = weather.get("temperature_c")
+    if not isinstance(temperature, (int, float)):
+        temperature = None
+    return str(mode) if mode is not None else None, temperature
+
+
+def _category_counts(garments: list[dict[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for garment in garments:
+        category = str(garment.get("category") or "unknown")
+        counts[category] = counts.get(category, 0) + 1
+    return counts
 
 
 def generate_outfits(user_id, occasion, top_k=DEFAULT_TOP_K, weather=None):
@@ -45,8 +82,16 @@ def generate_outfits(user_id, occasion, top_k=DEFAULT_TOP_K, weather=None):
     if not filtered:
         return {"message": f"No garments tagged for occasion '{occasion}'", "occasion": occasion, "outfits": []}
 
+    weather_mode, temp_c = _weather_mode_and_temperature(weather)
+    outerwear_required = requires_outerwear(weather_mode, temp_c)
     buckets = group_by_category(filtered)
-    outfits = rank_outfits(filtered, buckets, top_k=top_k, weather=weather)  # <- weather now flows in
+    outfits = rank_outfits(
+        filtered,
+        buckets,
+        top_k=top_k,
+        weather=weather,
+        require_outerwear=outerwear_required,
+    )
     for outfit in outfits:
         formality = _outfit_formality(outfit["garments"])
         outfit["formality"] = formality
@@ -55,7 +100,10 @@ def generate_outfits(user_id, occasion, top_k=DEFAULT_TOP_K, weather=None):
     return {
         "message": f"Generated {len(outfits)} outfit(s) for occasion '{occasion}'",
         "occasion": occasion, "weather": weather,
-        "wardrobe_size_after_filter": len(filtered), "outfits": outfits,
+        "outerwear_required": outerwear_required,
+        "wardrobe_size_after_filter": len(filtered),
+        "category_counts_after_filter": _category_counts(filtered),
+        "outfits": outfits,
     }
 
 
