@@ -145,19 +145,19 @@ export const CATEGORY_GROUPS = [
     id: "footwear",
     label: "Footwear",
     icon: "footwear",
-    categories: ["sneakers", "boots", "sandals", "heels", "flats", "loafers"],
+    categories: ["footwear", "sneakers", "boots", "sandals", "heels", "flats", "loafers"],
   },
   {
     id: "bags",
     label: "Bags",
     icon: "bag",
-    categories: ["bag"],
+    categories: ["bag", "bags"],
   },
   {
     id: "accessories",
     label: "Accessories",
     icon: "accessory",
-    categories: ["belt", "hat", "scarf", "gloves", "tie", "sunglasses", "jewelry", "watch", "dhaka topi", "patuka", "ghalek", "mujetro"],
+    categories: ["accessories", "belt", "hat", "scarf", "gloves", "tie", "sunglasses", "jewelry", "watch", "dhaka topi", "patuka", "ghalek", "mujetro"],
   },
 
 ];

@@ -22,6 +22,28 @@ STYLE_FAMILY_MAP = {
 def get_style_family(category: str) -> str:
     return STYLE_FAMILY_MAP.get(str(category).lower(), "western")
 
+def _apply_category_season_guard(category: str, season: str) -> str:
+    """Keep season values consistent with obvious garment semantics."""
+    cat = normalize_fine_category(category)
+    season_key = str(season).strip().lower()
+
+    warm_weather_categories = {
+        "sandals", "sandal", "sneakers", "sneaker", "heels", "heel", "flat", "flats",
+        "loafer", "loafers", "shorts", "tank top", "t-shirt", "crop top", "blouse",
+        "dress", "saree", "lehenga", "kurti", "top",
+    }
+    cold_weather_categories = {
+        "hoodie", "sweatshirt", "sweater", "cardigan", "jacket", "coat", "parka",
+        "windbreaker", "boot", "boots", "scarf", "gloves", "vest",
+    }
+
+    if cat in warm_weather_categories and season_key in {"winter", "autumn"}:
+        return "Summer"
+    if cat in cold_weather_categories and season_key in {"summer", "spring"}:
+        return "Winter"
+    return season
+
+
 def normalize_pipeline_tags(tags: dict) -> dict:
     """map classifier labels into matcher tags"""
     fine_category = normalize_fine_category(tags.get("fine_category") or tags.get("category"))
@@ -31,6 +53,8 @@ def normalize_pipeline_tags(tags: dict) -> dict:
         "bottom": "bottom",
         "dress": "dress",
         "outerwear": "outerwear",
+        "footwear": "footwear",
+        "accessories": "accessories",
 
         #south asian garments
         "saree": "dress",
@@ -88,20 +112,25 @@ def normalize_pipeline_tags(tags: dict) -> dict:
         "cholo": "top",          # blouse
 
         # Footwear (all map to one slot name the accessory engine checks)
-        "sneakers": "footwear", "boots": "footwear", "sandals": "footwear",
-        "heels": "footwear", "flats": "footwear", "loafers": "footwear",
-
+        "sneakers": "footwear", "sneaker": "footwear",
+        "boots": "footwear", "boot": "footwear",
+        "sandals": "footwear", "sandal": "footwear",
+        "heels": "footwear", "heel": "footwear",
+        "flats": "footwear", "flat": "footwear",
+        "loafers": "footwear", "loafer": "footwear",
+        "mojari": "footwear", "mojaris": "footwear",
 
         # Accessories
-        "bag": "bag",
-        "jewelry": "jewelry",
-        "watch": "watch",
-        "belt": "belt",
-        "hat": "hat",
-        "scarf": "scarf",
+        "bag": "bag", "bags": "bag",
+        "jewelry": "jewelry", "jewelery": "jewelry",
+        "watch": "watch", "watches": "watch",
+        "belt": "belt", "belts": "belt",
+        "hat": "hat", "hats": "hat",
+        "scarf": "scarf", "scarves": "scarf",
         "gloves": "gloves",
-        "tie": "tie",
-        "sunglasses": "sunglasses",
+        "tie": "tie", "ties": "tie",
+        "sunglasses": "sunglasses", "sunglass": "sunglasses",
+        "accessories": "bag",
 
 
     }
@@ -163,12 +192,16 @@ def normalize_pipeline_tags(tags: dict) -> dict:
     occasions = [occasion_map.get(str(value).lower(), value) for value in raw_occasions if value]
     occasions = [value for value in occasions if value in OCCASION]
 
+    raw_season = str(tags.get("season", "")).lower()
+    safe_season = season_map.get(raw_season, "All-Season")
+    safe_season = _apply_category_season_guard(fine_category, safe_season)
+
     normalized = {
         "category": category_map.get(fine_category, "top"),
         "fine_category": fine_category,
         "style_family": get_style_family(tags.get("category", "")),
         "formality": formality_map.get(str(tags.get("formality", "")).lower(), "Casual"),
-        "season": season_map.get(str(tags.get("season", "")).lower(), "All-Season"),
+        "season": safe_season,
         "pattern": pattern_map.get(str(tags.get("pattern", "")).lower(), "Solid"),
         "occasion": occasions or ["Casual"],
     }

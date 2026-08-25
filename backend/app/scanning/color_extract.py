@@ -12,6 +12,14 @@ def extract_colors(image_path :str, n_colors: int=3)-> list:
     alpha = np_image[:,:,3]
     garment_pixels = np_image[alpha>0][:,:3].astype(np.uint8) #rgb only
 
+    if garment_pixels.size == 0:
+        return []
+
+    # Some cutouts legitimately contain only a tiny amount of garment material or
+    # can be fully transparent if removal failed. KMeans requires at least one sample,
+    # and it also cannot accept more clusters than available pixels.
+    n_colors = min(max(1, n_colors), len(garment_pixels))
+
     #run k-means to find dominant colors
     kmeans = KMeans(n_clusters=n_colors, random_state=42, n_init=10)
     kmeans.fit(garment_pixels)
