@@ -16,3 +16,14 @@ documentation/
 /backend/uploads/
 /backend/processed/
 /backend/for_deployment.txt
+data/
+
+# ML artifacts
+*.pt
+*.pth
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment
+.venv/
