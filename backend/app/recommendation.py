@@ -1,6 +1,5 @@
 import colorsys
 import math
-from app.models import Garment, GarmentClassification
 
 # --- Dictionary Mappings ---
 STYLE_FOOTWEAR_OVERRIDE = {
@@ -202,6 +201,7 @@ def get_wardrobe_accessories(user_id: str | None, slot: str, formality: str) -> 
         return []
 
     from app.database import SessionLocal
+    from app.models import Garment, GarmentClassification
 
     db = SessionLocal()
     try:
