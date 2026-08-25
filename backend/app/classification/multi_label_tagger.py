@@ -20,14 +20,44 @@ CATEGORY_LABELS = [
     # Formalwear
     "suit", "tuxedo", "gown",
     # Footwear
-    "sneakers", "boots", "sandals", "heels", "flats", "loafers",
+    "sneakers", "boots", "sandals", "heels", "flats", "loafers", "mojari",
     # Accessories
     "belt", "hat", "scarf", "gloves", "tie", "bag", "sunglasses", "jewelry", "watch",
     # South Asian
     "kurti", "kurta", "saree", "lehenga", "sherwani", "salwar suit", "anarkali", "dhoti",
+    # Nepali
+    "daura suruwal", "gunyu cholo", "haku patasi", "labeda suruwal", "dhaka topi",
+    # Nepali — Magar
+    "phariya", "cholo", "patuka", "ghalek", "mujetro",
+    # Nepali — Himalayan / Gurung
+    "bakkhu", "gurung dress",
 ]
 
 SOUTH_ASIAN_SET = {"kurti", "kurta", "saree", "lehenga", "sherwani", "salwar suit", "anarkali", "dhoti"}
+
+NEPALI_SET = {"daura suruwal", "gunyu cholo", "haku patasi", "labeda suruwal", "dhaka topi",
+              "phariya", "cholo", "patuka", "ghalek", "mujetro", "bakkhu", "gurung dress"}
+
+
+NEPALI_PROMPTS = {
+    # Bahun / Chhetri & pan-Nepali
+    "daura suruwal": "a photo of a cream-coloured men's outfit with a closed-neck double-breasted long shirt fastened by cloth ties, worn with snug tapered trousers (daura suruwal)",
+    "gunyu cholo":   "a photo of a young woman's outfit with a red cloth wrapped and draped like a skirt over a fitted blouse and a shoulder sash (gunyu cholo)",
+    "labeda suruwal":"a photo of a men's outfit with a long straight knee-length tunic worn over loose wide trousers (labeda suruwal)",
+    "dhaka topi":    "a photo of a stiff brimless cap with a woven geometric black-and-white or multicoloured pattern (dhaka topi)",
+    # Newar
+    "haku patasi":   "a photo of a black cotton sari with a wide deep-red border, wrapped with a matching fitted cropped blouse (haku patasi)",
+    # Magar women's outfit components
+    "phariya":  "a photo of a colourful floral-printed cloth wrapped and draped as a long skirt (phariya)",
+    "cholo":    "a photo of a plain fitted closed-neck long-sleeved women's blouse in a solid dark colour (cholo)",
+    "patuka":   "a photo of a wide cloth sash wound tightly several times around the waist (patuka)",
+    "ghalek":   "a photo of a patterned rectangular cloth draped diagonally across one shoulder and tucked at the waist (ghalek)",
+    "mujetro":  "a photo of a light shawl or scarf draped loosely over the head and shoulders (mujetro)",
+    # Sherpa / Himalayan
+    "bakkhu":       "a photo of a long floor-length dark wrap-around robe gathered and tied at the waist with a wide sash, worn as an outer layer (bakkhu)",
+    # Gurung
+    "gurung dress": "a photo of a woman's outfit with a dark velvet blouse, a wrapped patterned skirt, and a bright red or gold sash across the shoulder (Gurung dress)",
+}
 
 FORMALITY_LABELS = ["casual", "formal", "business casual", "athletic", "festive/traditional"]
 SEASON_LABELS = ["summer", "winter", "spring", "autumn", "all-season"]
@@ -37,8 +67,6 @@ OCCASION_LABELS = [
     "wedding guest outfit", "puja or religious ceremony outfit", "festival celebration outfit",
 ]
 
-# Per-field abstention thresholds. A 55-way choice needs a higher bar than a
-# 4-way one. THESE ARE STARTING GUESSES -- tune them against labelled examples.
 CONFIDENCE_THRESHOLDS = {
     "category": 0.55,
     "formality": 0.45,
@@ -76,27 +104,25 @@ INDOFASHION_TO_CATEGORY = {
     "palazzos": "trousers",      "dupattas": "scarf",
     "blouse": "blouse",          "gowns": "gown",
     "petticoats": "skirt",       "nehru_jackets": "vest",
-    "mojaris_men": "loafers",    "mojaris_women": "flats",
+    "mojaris_men": "mojari",     "mojaris_women": "mojari",
 }
 
 LABEL_EMBEDDINGS = None
 
 
 def _get_label_embeddings():
-    """Cache label embeddings after first classification.
-
-    "category" uses its own prompt template and must NOT be rebuilt by the
-    generic loop below.
-    """
     global LABEL_EMBEDDINGS
     if LABEL_EMBEDDINGS is None:
         LABEL_EMBEDDINGS = {}
 
-        category_prompts = [
-            f"a photo of traditional South Asian {cat}" if cat in SOUTH_ASIAN_SET
-            else f"a photo of a {cat}"
-            for cat in CATEGORY_LABELS
-        ]
+        def _category_prompt(cat):
+            if cat in NEPALI_PROMPTS:
+                return NEPALI_PROMPTS[cat]
+            if cat in SOUTH_ASIAN_SET:
+                return f"a photo of traditional South Asian {cat}"
+            return f"a photo of a {cat}"
+
+        category_prompts = [_category_prompt(cat) for cat in CATEGORY_LABELS]
         LABEL_EMBEDDINGS["category"] = embed_texts(category_prompts)
 
         for field, labels in LABEL_LISTS.items():
@@ -141,7 +167,7 @@ def tag_garment(image_embedding: list, image=None) -> dict:
     tags = {}
     flags = {}
 
-    # ---- Stage 1: open-set router (zero-shot CLIP across all 55 categories) ----
+    # ---- Stage 1: open-set router (zero-shot CLIP across all categories) ----
     cat_scores = [cosine_similarity(image_embedding, le) for le in label_embeddings["category"]]
     cat_probs = softmax(cat_scores)
     best_idx = int(np.argmax(cat_probs))

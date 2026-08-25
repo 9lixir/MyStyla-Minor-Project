@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+*.pyc
+frontend/
+*.db
+uploads/
+processed/
+.env
+.git/
+indofashion_training.ipynb
+*.png

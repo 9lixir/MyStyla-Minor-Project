@@ -1,0 +1,2 @@
+Terminal 1:  cd backend → source venv/bin/activate → uvicorn main:app --host 0.0.0.0 --port 8000
+Terminal 2:  cloudflared tunnel run --token eyJhIjoiZDVkMDc3MjViNTc3NDdkOTBkMzA5MDI5OWRjMGY1YWQiLCJ0IjoiODIzYmNlNDQtOGQ1NC00YzBmLThkNTAtY2YzYzU5ODNlOTUxIiwicyI6Ik1tSXpOalU0WlRndE4yTXlPUzAwWmpneUxXSmtNR1V0WkRJeVlXWTVNek0yWkRjMCJ9
