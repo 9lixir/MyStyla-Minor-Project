@@ -65,11 +65,20 @@ function OutfitSuggestionCard({ suggestion, onViewDetails }) {
         <div className="mb-5 flex items-start gap-3 flex-wrap">
           {accessories.map((item) => (
             <div key={item.id} className="flex flex-col items-center w-20">
-              <div
-                className={`${SIZE_BY_CATEGORY[item.category] || "w-12 h-12"} rounded-lg border border-[#FFA8D4]/35 bg-[#FF7AB8]/12 text-[#FFA8D4] flex items-center justify-center`}
+                            <div
+                className={`${SIZE_BY_CATEGORY[item.category] || "w-12 h-12"} rounded-lg border border-[#FFA8D4]/35 bg-[#FF7AB8]/12 text-[#FFA8D4] flex items-center justify-center overflow-hidden`}
                 data-cy={`flat-lay-item-${item.category}`}
               >
-                <CategoryIcon category={item.category} className="w-2/3 h-2/3" />
+                {item.imageUrl ? (
+                  <img
+                    src={item.imageUrl}
+                    alt={item.label}
+                    className="h-full w-full object-contain p-1"
+                    onError={(e) => { e.target.style.display = "none"; }}
+                  />
+                ) : (
+                  <CategoryIcon category={item.category} className="w-2/3 h-2/3" />
+                )}
               </div>
               <span
                 className="text-[10px] text-center mt-1.5 text-[#B9C0E8] leading-tight"

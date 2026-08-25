@@ -104,7 +104,21 @@ def generate_outfits(user_id, occasion, top_k=DEFAULT_TOP_K, weather=None):
         formality = _outfit_formality(outfit["garments"])
         outfit["formality"] = formality
         style_family = _outfit_style_family(outfit["garments"])
-        outfit["accessories"] = recommend_accessories(formality, outfit["garments"], style_family)
+        season = next(
+            (
+                garment.get("tags", {}).get("season")
+                for garment in outfit["garments"]
+                if garment.get("tags", {}).get("season")
+            ),
+            None,
+        )
+        outfit["accessories"] = recommend_accessories(
+            formality,
+            outfit["garments"],
+            season=season,
+            user_id=user_id,
+            style_family=style_family,
+        )
 
     return {
         "message": f"Generated {len(outfits)} outfit(s) for occasion '{occasion}'",

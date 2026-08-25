@@ -6,7 +6,7 @@ from app.scanning.vector_store import store_garment_vector, update_garment_metad
 from app.scanning.preprocess import preprocess_image
 from app.database import get_db
 from app.models import Garment, GarmentClassification
-from app.outfit_matching.config import CATEGORIES, FORMALITY, SEASON, PATTERN, OCCASION
+from app.outfit_matching.config import ALL_CATEGORIES, FORMALITY, SEASON, PATTERN, OCCASION
 from pydantic import BaseModel
 from app.classification.classify import analyze_garment
 from app.classification.normalization import normalize_pipeline_tags
@@ -38,8 +38,8 @@ class GarmentDetailsUpdateRequest(ClassificationUpdateRequest):
 
 
 def _validate_classification(payload: ClassificationUpdateRequest) -> None:
-    if payload.category not in CATEGORIES:
-        raise HTTPException(status_code=400, detail=f"Invalid category. Allowed: {CATEGORIES}")
+    if payload.category not in ALL_CATEGORIES:
+        raise HTTPException(status_code=400, detail=f"Invalid category. Allowed: {ALL_CATEGORIES}")
     if payload.formality not in FORMALITY:
         raise HTTPException(status_code=400, detail=f"Invalid formality. Allowed: {FORMALITY}")
     if payload.season not in SEASON:
