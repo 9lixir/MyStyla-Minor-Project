@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import { API_BASE_URL } from "../config"
+import AbstractBackground from "../components/AbstractBackground"
+
+const LAVENDER = "#D8C9E8"
 
 function CameraCapture({ onCapture, onCancel }) {
   const videoRef = useRef(null)
@@ -80,13 +83,18 @@ function CameraCapture({ onCapture, onCancel }) {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="relative w-full overflow-hidden rounded-2xl border-2 border-dashed border-[#2A3374] bg-black">
+      {/* Camera mode gets a lavender frame -- distinguishes it from the
+          red/maroon upload flow instead of reusing the same accent everywhere */}
+      <div
+        className="relative w-full overflow-hidden rounded-2xl border-2 border-dashed bg-black"
+        style={{ borderColor: LAVENDER }}
+      >
         {error ? (
           <div className="flex h-72 flex-col items-center justify-center gap-3 p-6 text-center">
-            <svg className="h-8 w-8 text-[#FFA8D4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-8 w-8" style={{ color: LAVENDER }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 18a8 8 0 100-16 8 8 0 000 16zM12 8v4m0 4h.01" />
             </svg>
-            <p className="text-sm text-[#FFD3EC]">{error}</p>
+            <p className="text-sm text-white">{error}</p>
           </div>
         ) : (
           <>
@@ -111,7 +119,10 @@ function CameraCapture({ onCapture, onCancel }) {
       <div className="mt-5 flex w-full items-center justify-center gap-6">
         <button
           onClick={onCancel}
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-[#2A3374] bg-[#1E2560] text-[#B9C0E8] transition hover:border-[#FF6FB5]/60 hover:text-[#FF6FB5]"
+          className="flex h-11 w-11 items-center justify-center rounded-full border transition"
+          style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface-2)', color: 'var(--mystyla-muted)' }}
+          onMouseEnter={(e) => { e.currentTarget.style.borderColor = LAVENDER; e.currentTarget.style.color = 'var(--mystyla-ink)' }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--mystyla-border)'; e.currentTarget.style.color = 'var(--mystyla-muted)' }}
           title="Cancel"
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,7 +133,8 @@ function CameraCapture({ onCapture, onCancel }) {
         <button
           onClick={handleShutter}
           disabled={!ready || !!error}
-          className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-[linear-gradient(135deg,#F5A9CE_0%,#FF4FA0_100%)] shadow-lg transition disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-white shadow-lg transition disabled:cursor-not-allowed disabled:opacity-40"
+          style={{ background: 'linear-gradient(135deg, var(--mystyla-rose) 0%, var(--mystyla-primary) 100%)' }}
           title="Capture"
         >
           <span className="h-11 w-11 rounded-full bg-white" />
@@ -131,7 +143,10 @@ function CameraCapture({ onCapture, onCancel }) {
         <button
           onClick={handleSwitchCamera}
           disabled={devices.length < 2}
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-[#2A3374] bg-[#1E2560] text-[#B9C0E8] transition hover:border-[#FF6FB5]/60 hover:text-[#FF6FB5] disabled:cursor-not-allowed disabled:opacity-30"
+          className="flex h-11 w-11 items-center justify-center rounded-full border transition disabled:cursor-not-allowed disabled:opacity-30"
+          style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface-2)', color: 'var(--mystyla-muted)' }}
+          onMouseEnter={(e) => { if (devices.length >= 2) { e.currentTarget.style.borderColor = LAVENDER; e.currentTarget.style.color = 'var(--mystyla-ink)' } }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--mystyla-border)'; e.currentTarget.style.color = 'var(--mystyla-muted)' }}
           title="Switch camera"
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -196,12 +211,13 @@ export default function AddGarment({ onSuccess, onBack }) {
   }
 
   return (
-    <div className="mystyla-app-shell min-h-screen p-4 sm:p-6">
-      <div className="max-w-2xl mx-auto">
+    <div className="mystyla-app-shell relative min-h-screen p-4 sm:p-6">
+      <AbstractBackground />
+      <div className="relative max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <button
             onClick={onBack}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-[#2A3374] bg-[#151A4D]/90 text-[#B9C0E8] transition-colors duration-200 hover:border-[#FF6FB5]/60 hover:text-[#FF6FB5]"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--mystyla-border)] bg-[var(--mystyla-surface)] text-[var(--mystyla-muted)] transition-colors duration-200 hover:border-[var(--mystyla-primary)] hover:text-[var(--mystyla-primary)]"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -209,14 +225,25 @@ export default function AddGarment({ onSuccess, onBack }) {
           </button>
           <div>
             <p className="mystyla-masthead mb-1 text-[10px]">scan studio</p>
-            <h1 className="mystyla-display text-4xl text-[#F5F3FF]">Add Garment</h1>
-            <p className="mt-1 text-sm text-[#B9C0E8]">Upload a photo or capture one with your camera</p>
+            <h1 className="mystyla-display text-4xl text-[var(--mystyla-ink)]">Add Garment</h1>
+            <p className="mt-1 text-sm text-[var(--mystyla-muted)]">Upload a photo or capture one with your camera</p>
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-[#2A3374] bg-[#151A4D]/90 shadow-lg">
-          <div className="bg-[linear-gradient(135deg,#F5A9CE_0%,#FF4FA0_100%)] px-6 py-6 sm:px-8">
-            <h2 className="mb-2 font-semibold text-white">Getting the best results</h2>
+        <div
+          className="overflow-hidden rounded-2xl border shadow-lg"
+          style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)' }}
+        >
+          <div
+            className="px-6 py-6 sm:px-8"
+            style={{ background: 'linear-gradient(135deg, var(--mystyla-rose) 0%, var(--mystyla-primary) 100%)' }}
+          >
+            <h2
+              className="mb-2 text-white"
+              style={{ fontFamily: "'Fraunces', Georgia, serif" }}
+            >
+              Getting the best results
+            </h2>
             <ul className="space-y-1 text-sm text-white/90">
               <li>Center the garment in frame</li>
               <li>Use soft, bright lighting</li>
@@ -225,13 +252,20 @@ export default function AddGarment({ onSuccess, onBack }) {
           </div>
 
           <div className="p-6 sm:p-8">
-            {/* Mode switcher */}
-            <div className="mb-6 flex gap-2 rounded-xl border border-[#2A3374] bg-[#1E2560] p-1">
+            {/* Mode switcher -- upload stays primary red/maroon, camera gets
+                the lavender accent so it reads as its own distinct path */}
+            <div
+              className="mb-6 flex gap-2 rounded-xl border p-1"
+              style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface-2)' }}
+            >
               <button
                 onClick={() => setMode("upload")}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium transition ${
-                  mode === "upload" ? "bg-[#F5A9CE] text-white" : "text-[#B9C0E8] hover:text-[#F5F3FF]"
-                }`}
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium transition"
+                style={
+                  mode === "upload"
+                    ? { background: 'var(--mystyla-primary)', color: '#fff' }
+                    : { color: 'var(--mystyla-muted)' }
+                }
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -240,9 +274,12 @@ export default function AddGarment({ onSuccess, onBack }) {
               </button>
               <button
                 onClick={() => setMode("camera")}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium transition ${
-                  mode === "camera" ? "bg-[#F5A9CE] text-white" : "text-[#B9C0E8] hover:text-[#F5F3FF]"
-                }`}
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium transition"
+                style={
+                  mode === "camera"
+                    ? { background: LAVENDER, color: 'var(--mystyla-ink)' }
+                    : { color: 'var(--mystyla-muted)' }
+                }
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -259,7 +296,10 @@ export default function AddGarment({ onSuccess, onBack }) {
             ) : (
               <div className="mb-6">
                 <label className="block">
-                  <div className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#2A3374] bg-[#1E2560] p-8 transition-all duration-200 hover:border-[#FFD3EC]/70 sm:p-12">
+                  <div
+                    className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 transition-all duration-200 sm:p-12"
+                    style={{ borderColor: 'var(--mystyla-border-strong)', background: 'var(--mystyla-surface-2)' }}
+                  >
                     {preview ? (
                       <div className="text-center">
                         <img
@@ -267,18 +307,31 @@ export default function AddGarment({ onSuccess, onBack }) {
                           alt="preview"
                           className="max-h-96 object-contain rounded-lg shadow-md mb-4"
                         />
-                        <p className="text-sm font-medium text-[#B9C0E8]">Click to change image</p>
+                        <p className="text-sm font-medium" style={{ color: 'var(--mystyla-muted)' }}>Click to change image</p>
                       </div>
                     ) : (
                       <div className="text-center">
-                        <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-[#F5A9CE]/15">
-                          <svg className="h-8 w-8 text-[#FFD3EC]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div
+                          className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full"
+                          style={{ background: 'var(--mystyla-primary-soft)' }}
+                        >
+                          <svg className="h-8 w-8" style={{ color: 'var(--mystyla-primary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                           </svg>
                         </div>
-                        <p className="mb-1 text-lg font-semibold text-[#F5F3FF]">Add Garment Photo</p>
-                        <p className="mb-2 text-sm text-[#B9C0E8]">Drag and drop or click to select</p>
-                        <p className="text-xs text-[#9AA8E0]">JPG, PNG, or WebP (max 10MB)</p>
+                        <p
+                          className="mb-1 text-lg"
+                          style={{ fontFamily: "'Fraunces', Georgia, serif", color: 'var(--mystyla-ink)' }}
+                        >
+                          Add Garment Photo
+                        </p>
+                        <p className="mb-2 text-sm" style={{ color: 'var(--mystyla-muted)' }}>Drag and drop or click to select</p>
+                        <p
+                          className="text-[10px] uppercase tracking-[0.12em]"
+                          style={{ color: 'var(--mystyla-muted)', fontFamily: "'Manrope', sans-serif" }}
+                        >
+                          JPG, PNG, or WebP (max 10MB)
+                        </p>
                       </div>
                     )}
                     <input
@@ -293,13 +346,16 @@ export default function AddGarment({ onSuccess, onBack }) {
             )}
 
             {error && (
-              <div className="mb-6 flex items-start gap-3 rounded-xl border border-[#FF4FA0]/40 bg-[#FF4FA0]/10 p-4">
-                <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#FFCBE8]" fill="currentColor" viewBox="0 0 20 20">
+              <div
+                className="mb-6 flex items-start gap-3 rounded-xl border p-4"
+                style={{ borderColor: 'rgba(181,41,63,0.35)', background: 'rgba(181,41,63,0.08)' }}
+              >
+                <svg className="mt-0.5 h-5 w-5 flex-shrink-0" style={{ color: 'var(--mystyla-primary)' }} fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
                 <div>
-                  <p className="font-medium text-[#F5F3FF]">Upload failed</p>
-                  <p className="text-sm text-[#FFCBE8]">{error}</p>
+                  <p className="font-medium" style={{ color: 'var(--mystyla-ink)' }}>Upload failed</p>
+                  <p className="text-sm" style={{ color: 'var(--mystyla-primary)' }}>{error}</p>
                 </div>
               </div>
             )}
@@ -307,7 +363,10 @@ export default function AddGarment({ onSuccess, onBack }) {
             {mode === "upload" && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label className="block">
-                  <button className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#2A3374] bg-[#1E2560] px-4 py-3 font-semibold text-[#F5F3FF] transition-colors duration-200 hover:border-[#FF6FB5]/60 hover:text-[#FF6FB5]">
+                  <button
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 font-semibold transition-colors duration-200"
+                    style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface-2)', color: 'var(--mystyla-ink)' }}
+                  >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
@@ -325,7 +384,7 @@ export default function AddGarment({ onSuccess, onBack }) {
                   <button
                     onClick={handleUpload}
                     disabled={loading}
-                    className="mystyla-button flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold text-white transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="mystyla-button flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {loading ? (
                       <>
@@ -348,9 +407,12 @@ export default function AddGarment({ onSuccess, onBack }) {
             )}
 
             {loading && (
-              <div className="mt-6 rounded-xl border border-[#2A3374] bg-[#1E2560] p-4">
-                <p className="text-center text-sm text-[#B9C0E8]">
-                  <span className="font-semibold">Processing your garment...</span><br />
+              <div
+                className="mt-6 rounded-xl border p-4"
+                style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface-2)' }}
+              >
+                <p className="text-center text-sm" style={{ color: 'var(--mystyla-muted)' }}>
+                  <span className="font-semibold" style={{ color: 'var(--mystyla-ink)' }}>Processing your garment...</span><br />
                   This may take a moment while we analyze the image.
                 </p>
               </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { API_BASE_URL } from "../config"
 import CategoryIcon from "../components/CategoryIcon"
+import AbstractBackground from "../components/AbstractBackground"
 import {
   CATEGORY_GROUPS,
   FORMALITY_LABELS,
@@ -40,9 +41,10 @@ function GarmentCard({ garment, onDelete, onClick }) {
   }
 
   return (
-    <div 
+    <div
       onClick={() => onClick(garment)}
-      className="group relative cursor-pointer overflow-hidden rounded-2xl border border-[#2A3374] bg-[#151A4D]/90 shadow-sm transition hover:border-[#FF6FB5]/50 hover:shadow-md"
+      className="mystyla-hover-lift group relative cursor-pointer overflow-hidden rounded-2xl border"
+      style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)' }}
       data-cy="garment-card"
     >
       <button
@@ -54,8 +56,13 @@ function GarmentCard({ garment, onDelete, onClick }) {
         className={`absolute right-2 top-2 z-10 flex h-7 items-center gap-1 rounded-full border px-2 text-[10px] font-medium shadow-sm transition-all ${
           confirming
             ? "border-red-400 bg-red-500 text-white opacity-100"
-            : "border-[#2A3374] bg-[#0E1240]/90 text-[#B9C0E8] opacity-0 hover:border-red-400 hover:text-red-300 group-hover:opacity-100"
+            : "opacity-0 group-hover:opacity-100"
         }`}
+        style={
+          confirming
+            ? undefined
+            : { borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)', color: 'var(--mystyla-muted)' }
+        }
       >
         {deleting ? (
           <span className="px-1">…</span>
@@ -71,7 +78,7 @@ function GarmentCard({ garment, onDelete, onClick }) {
           </svg>
         )}
       </button>
-      <div className="flex h-40 items-center justify-center bg-[#1E2560]">
+      <div className="flex h-32 items-center justify-center" style={{ background: 'var(--mystyla-surface-2)' }}>
         {garment.cutout_path ? (
           <img
             src={`${API_BASE_URL}/${garment.cutout_path}`}
@@ -80,18 +87,18 @@ function GarmentCard({ garment, onDelete, onClick }) {
             onError={(e) => { e.target.style.display = "none" }}
           />
         ) : (
-          <CategoryIcon category={garment.tags?.category} className="h-10 w-10 text-[#5B63A8]" />
+          <CategoryIcon category={garment.tags?.category} className="h-9 w-9" style={{ color: 'var(--mystyla-muted)' }} />
         )}
       </div>
-      <div className="p-3.5">
-        <p className="truncate text-sm font-semibold capitalize text-[#F5F3FF]">
+      <div className="p-3">
+        <p className="truncate text-sm font-semibold capitalize" style={{ fontFamily: "'Fraunces', Georgia, serif", color: 'var(--mystyla-ink)' }}>
           {garment.filename}
         </p>
-        <p className="mt-0.5 text-xs capitalize text-[#FF6FB5]">
+        <p className="mt-0.5 text-xs capitalize" style={{ color: 'var(--mystyla-primary)' }}>
           {garment.tags?.category || "untagged"}
         </p>
         {garment.tags?.formality && (
-          <p className="mt-1 truncate text-xs capitalize text-[#B9C0E8]">
+          <p className="mt-1 truncate text-xs capitalize" style={{ color: 'var(--mystyla-muted)' }}>
             {garment.tags.formality} · {Array.isArray(garment.tags.occasion) ? garment.tags.occasion.join(", ") : garment.tags.occasion}
           </p>
         )}
@@ -100,12 +107,38 @@ function GarmentCard({ garment, onDelete, onClick }) {
             {garment.dominant_colors.map((color, i) => (
               <div
                 key={i}
-                className="h-4 w-4 rounded-full border border-[#0E1240] shadow-sm ring-1 ring-[#2A3374]"
-                style={{ backgroundColor: color?.hex || color }}
+                className="h-4 w-4 rounded-full border shadow-sm"
+                style={{ backgroundColor: color?.hex || color, borderColor: 'var(--mystyla-bg)' }}
               />
             ))}
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+function CategoryRow({ section, onDelete, onClick, delayBase = 0 }) {
+  return (
+    <div>
+      <div className="mb-3 flex items-baseline justify-between">
+        <h2 className="text-lg font-semibold capitalize" style={{ fontFamily: "'Fraunces', Georgia, serif", color: 'var(--mystyla-ink)' }}>
+          {section.label}
+        </h2>
+        <span className="text-[10px] uppercase tracking-[0.14em]" style={{ color: 'var(--mystyla-muted)' }}>
+          {section.garments.length} {section.garments.length === 1 ? "item" : "items"} &middot; swipe
+        </span>
+      </div>
+      <div className="mystyla-slider">
+        {section.garments.map((garment, idx) => (
+          <div
+            key={garment.id}
+            className="mystyla-slide mystyla-fade-in-up"
+            style={{ width: 168, animationDelay: `${delayBase + idx * 50}ms` }}
+          >
+            <GarmentCard garment={garment} onDelete={onDelete} onClick={onClick} />
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -254,13 +287,14 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
   const visibleSections = activeGroup === "all" ? sections : sections.filter(s => s.id === activeGroup)
 
   return (
-    <div className="mystyla-app-shell min-h-screen px-4 py-8 sm:px-6">
-      <div className="mx-auto max-w-6xl">
+    <div className="mystyla-app-shell relative min-h-screen px-4 py-8 sm:px-6">
+      <AbstractBackground variant="flowers" />
+      <div className="relative mx-auto max-w-6xl">
         <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="mystyla-masthead text-[10px] mb-2 uppercase tracking-wider text-[#FF6FB5]">my styla closet</p>
-            <h1 className="mystyla-display text-4xl text-[#F5F3FF] font-bold">My Wardrobe</h1>
-            <p className="mt-2 text-sm text-[#B9C0E8]">
+            <p className="mystyla-masthead text-[10px] mb-2 tracking-wider">my styla closet</p>
+            <h1 className="mystyla-display text-4xl font-bold" style={{ color: 'var(--mystyla-ink)' }}>My Wardrobe</h1>
+            <p className="mt-2 text-sm" style={{ color: 'var(--mystyla-muted)' }}>
               Scan, tag, match, and finish each outfit with accessories
             </p>
           </div>
@@ -268,7 +302,8 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
             {onShowOutfitSuggestions && (
               <button
                 onClick={onShowOutfitSuggestions}
-                className="rounded-full border border-[#2A3374] bg-[#151A4D]/90 px-4 py-2 text-sm font-medium text-[#F5F3FF] hover:border-[#FF6FB5]/60 hover:text-[#FF6FB5] transition"
+                className="rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 hover:-translate-y-0.5"
+                style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)', color: 'var(--mystyla-ink)' }}
                 title="Get outfit suggestions with accessory recommendations"
               >
                 Suggest
@@ -277,7 +312,8 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
             {onMatchOutfits && (
               <button
                 onClick={onMatchOutfits}
-                className="rounded-full bg-[#F5A9CE] px-4 py-2 text-sm font-medium text-white hover:bg-[#EA93BA] transition"
+                className="rounded-full px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5"
+                style={{ background: 'var(--mystyla-rose)' }}
                 title="Generate outfit combinations"
               >
                 Match
@@ -285,7 +321,7 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
             )}
             <button
               onClick={onAddGarment}
-              className="bg-[#FF6FB5] hover:bg-[#ff57a5] rounded-full px-4 py-2 text-sm font-medium text-white transition"
+              className="mystyla-button rounded-full px-4 py-2 text-sm font-medium"
             >
               Add Garment
             </button>
@@ -293,25 +329,26 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
         </div>
 
         {deleteError && (
-          <div className="mb-4 flex items-center justify-between rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-2.5 text-sm text-red-200">
+          <div className="mb-4 flex items-center justify-between rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-2.5 text-sm text-red-600">
             <span>{deleteError}</span>
-            <button onClick={() => setDeleteError(null)} className="ml-4 text-red-200/70 hover:text-red-100">
+            <button onClick={() => setDeleteError(null)} className="ml-4 text-red-500/70 hover:text-red-600">
               Dismiss
             </button>
           </div>
         )}
 
-        {/* Categories Tab Bar */}
-        <div className="mb-6 flex flex-wrap gap-2 border-b border-[#2A3374] pb-3">
+        {/* Category tab bar */}
+        <div className="mb-8 flex flex-wrap gap-2 pb-3" style={{ borderBottom: '1px dashed var(--mystyla-border-strong)' }}>
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveGroup(tab.id)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+              className="rounded-full px-3.5 py-1.5 text-xs font-medium transition"
+              style={
                 activeGroup === tab.id
-                  ? "bg-[#FF6FB5] text-white"
-                  : "bg-[#151A4D]/40 text-[#B9C0E8] hover:bg-[#151A4D]/80"
-              }`}
+                  ? { background: 'var(--mystyla-primary)', color: '#fff' }
+                  : { background: 'var(--mystyla-surface)', color: 'var(--mystyla-muted)', border: '1px solid var(--mystyla-border)' }
+              }
             >
               {tab.label} ({tab.count})
             </button>
@@ -319,29 +356,24 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
         </div>
 
         {loading ? (
-          <div className="text-center text-[#B9C0E8] py-12">Loading closet...</div>
+          <div className="text-center py-12" style={{ color: 'var(--mystyla-muted)' }}>Loading closet...</div>
         ) : visibleSections.length === 0 ? (
-          <div className="text-center text-[#B9C0E8] py-12 border border-dashed border-[#2A3374] rounded-2xl">
+          <div
+            className="text-center py-12 rounded-2xl border border-dashed"
+            style={{ borderColor: 'var(--mystyla-border-strong)', color: 'var(--mystyla-muted)' }}
+          >
             No garments found in this category.
           </div>
         ) : (
-          <div className="space-y-8">
-            {visibleSections.map(section => (
-              <div key={section.id}>
-                <h2 className="mb-4 text-lg font-semibold text-[#F5F3FF] border-b border-[#2A3374]/30 pb-1 capitalize">
-                  {section.label}
-                </h2>
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                  {section.garments.map(garment => (
-                    <GarmentCard
-                      key={garment.id}
-                      garment={garment}
-                      onDelete={handleDeleteGarment}
-                      onClick={openGarment}
-                    />
-                  ))}
-                </div>
-              </div>
+          <div className="space-y-10">
+            {visibleSections.map((section, sIdx) => (
+              <CategoryRow
+                key={section.id}
+                section={section}
+                onDelete={handleDeleteGarment}
+                onClick={openGarment}
+                delayBase={sIdx * 40}
+              />
             ))}
           </div>
         )}
@@ -354,23 +386,30 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
           onClick={() => setSelectedGarment(null)}
         >
           <div
-            className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-[#2A3374] bg-[#151A4D] p-5 text-[#F5F3FF]"
+            className="mystyla-fade-in-up max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl border p-5"
+            style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)', color: 'var(--mystyla-ink)' }}
             onClick={(e) => e.stopPropagation()}
             data-cy="garment-details-modal"
           >
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-lg font-bold capitalize text-[#FF6FB5]">
+              <h2 className="text-lg font-bold capitalize" style={{ fontFamily: "'Fraunces', Georgia, serif", color: 'var(--mystyla-primary)' }}>
                 {selectedGarment.tags?.category || "Garment Details"}
               </h2>
               <button
                 onClick={() => setSelectedGarment(null)}
-                className="text-[#B9C0E8] hover:text-white text-xl leading-none"
+                className="text-xl leading-none transition"
+                style={{ color: 'var(--mystyla-muted)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--mystyla-ink)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--mystyla-muted)')}
               >
                 &times;
               </button>
             </div>
 
-            <div className="h-56 bg-[#1E2560] rounded-lg flex items-center justify-center mb-4 border border-[#2A3374]">
+            <div
+              className="h-56 rounded-lg flex items-center justify-center mb-4 border"
+              style={{ background: 'var(--mystyla-surface-2)', borderColor: 'var(--mystyla-border)' }}
+            >
               {selectedGarment.cutout_path ? (
                 <img
                   src={`${API_BASE_URL}/${selectedGarment.cutout_path}`}
@@ -379,14 +418,14 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                   onError={(e) => { e.target.style.display = 'none' }}
                 />
               ) : (
-                <CategoryIcon category={selectedGarment.tags?.category} className="h-16 w-16 text-[#5B63A8]" />
+                <CategoryIcon category={selectedGarment.tags?.category} className="h-16 w-16" style={{ color: 'var(--mystyla-muted)' }} />
               )}
             </div>
 
             {editDraft && (
-              <div className="mb-4 space-y-3 rounded-xl border border-[#2A3374]/50 bg-[#0E1240]/60 p-3">
+              <div className="mb-4 space-y-3 rounded-xl border p-3" style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-bg)' }}>
                 <div>
-                  <label className="mb-1 block text-xs text-[#B9C0E8]" htmlFor="garment-name">
+                  <label className="mb-1 block text-xs" style={{ color: 'var(--mystyla-muted)' }} htmlFor="garment-name">
                     Name
                   </label>
                   <input
@@ -396,14 +435,15 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                       setEditSuccess("")
                       setEditDraft((prev) => ({ ...prev, filename: e.target.value }))
                     }}
-                    className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm text-[#F5F3FF] outline-none transition focus:border-[#FF6FB5]"
+                    className="w-full rounded-lg border px-3 py-2 text-sm outline-none transition"
+                    style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface-2)', color: 'var(--mystyla-ink)' }}
                     data-cy="garment-name-input"
                   />
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <label className="mb-1 block text-xs text-[#B9C0E8]" htmlFor="garment-category">
+                    <label className="mb-1 block text-xs" style={{ color: 'var(--mystyla-muted)' }} htmlFor="garment-category">
                       Category
                     </label>
                     <select
@@ -413,7 +453,8 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                         setEditSuccess("")
                         setEditDraft((prev) => ({ ...prev, category: e.target.value }))
                       }}
-                      className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm capitalize text-[#F5F3FF] outline-none transition focus:border-[#FF6FB5]"
+                      className="w-full rounded-lg border px-3 py-2 text-sm capitalize outline-none transition"
+                      style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface-2)', color: 'var(--mystyla-ink)' }}
                       data-cy="garment-category-select"
                     >
                       {EDIT_CATEGORY_LABELS.map((value) => (
@@ -423,7 +464,7 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs text-[#B9C0E8]" htmlFor="garment-formality">
+                    <label className="mb-1 block text-xs" style={{ color: 'var(--mystyla-muted)' }} htmlFor="garment-formality">
                       Formality
                     </label>
                     <select
@@ -433,7 +474,8 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                         setEditSuccess("")
                         setEditDraft((prev) => ({ ...prev, formality: e.target.value }))
                       }}
-                      className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm capitalize text-[#F5F3FF] outline-none transition focus:border-[#FF6FB5]"
+                      className="w-full rounded-lg border px-3 py-2 text-sm capitalize outline-none transition"
+                      style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface-2)', color: 'var(--mystyla-ink)' }}
                     >
                       {FORMALITY_LABELS.map((value) => (
                         <option key={value} value={value}>{value}</option>
@@ -442,7 +484,7 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs text-[#B9C0E8]" htmlFor="garment-season">
+                    <label className="mb-1 block text-xs" style={{ color: 'var(--mystyla-muted)' }} htmlFor="garment-season">
                       Season
                     </label>
                     <select
@@ -452,7 +494,8 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                         setEditSuccess("")
                         setEditDraft((prev) => ({ ...prev, season: e.target.value }))
                       }}
-                      className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm capitalize text-[#F5F3FF] outline-none transition focus:border-[#FF6FB5]"
+                      className="w-full rounded-lg border px-3 py-2 text-sm capitalize outline-none transition"
+                      style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface-2)', color: 'var(--mystyla-ink)' }}
                     >
                       {SEASON_LABELS.map((value) => (
                         <option key={value} value={value}>{value}</option>
@@ -461,7 +504,7 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs text-[#B9C0E8]" htmlFor="garment-pattern">
+                    <label className="mb-1 block text-xs" style={{ color: 'var(--mystyla-muted)' }} htmlFor="garment-pattern">
                       Pattern
                     </label>
                     <select
@@ -471,7 +514,8 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                         setEditSuccess("")
                         setEditDraft((prev) => ({ ...prev, pattern: e.target.value }))
                       }}
-                      className="w-full rounded-lg border border-[#2A3374] bg-[#1E2560] px-3 py-2 text-sm capitalize text-[#F5F3FF] outline-none transition focus:border-[#FF6FB5]"
+                      className="w-full rounded-lg border px-3 py-2 text-sm capitalize outline-none transition"
+                      style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface-2)', color: 'var(--mystyla-ink)' }}
                     >
                       {PATTERN_LABELS.map((value) => (
                         <option key={value} value={value}>{value}</option>
@@ -481,18 +525,19 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                 </div>
 
                 <div>
-                  <p className="mb-1.5 text-xs text-[#B9C0E8]">Occasions</p>
+                  <p className="mb-1.5 text-xs" style={{ color: 'var(--mystyla-muted)' }}>Occasions</p>
                   <div className="flex flex-wrap gap-2">
                     {OCCASION_LABELS.map((value) => (
                       <button
                         type="button"
                         key={value}
                         onClick={() => toggleDraftOccasion(value)}
-                        className={`rounded-full border px-3 py-1 text-xs capitalize transition ${
+                        className="rounded-full border px-3 py-1 text-xs capitalize transition"
+                        style={
                           editDraft.occasion.includes(value)
-                            ? "border-[#FF6FB5] bg-[#FF6FB5]/15 text-[#FF7AB8]"
-                            : "border-[#2A3374] bg-[#1E2560] text-[#B9C0E8] hover:border-[#FFD3EC]"
-                        }`}
+                            ? { borderColor: 'var(--mystyla-primary)', background: 'var(--mystyla-primary-soft)', color: 'var(--mystyla-primary)' }
+                            : { borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface-2)', color: 'var(--mystyla-muted)' }
+                        }
                       >
                         {value}
                       </button>
@@ -500,13 +545,13 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
                   </div>
                 </div>
 
-                {editError ? <p className="text-xs text-[#FF7AB8]">{editError}</p> : null}
-                {editSuccess ? <p className="text-xs text-emerald-200" data-cy="save-garment-success">{editSuccess}</p> : null}
+                {editError ? <p className="text-xs text-red-600">{editError}</p> : null}
+                {editSuccess ? <p className="text-xs text-emerald-600" data-cy="save-garment-success">{editSuccess}</p> : null}
 
                 <button
                   onClick={handleSaveEdit}
                   disabled={savingEdit}
-                  className="w-full rounded-xl bg-[#FF6FB5] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#ff57a5] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mystyla-button w-full rounded-xl px-4 py-2.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60"
                   data-cy="save-garment-details"
                 >
                   {savingEdit ? "Saving..." : "Save Changes"}
@@ -515,13 +560,13 @@ export default function Wardrobe({ onAddGarment, onMatchOutfits, onShowOutfitSug
             )}
 
             <div>
-              <p className="text-xs text-[#B9C0E8] mb-1.5">Dominant Colors</p>
+              <p className="text-xs mb-1.5" style={{ color: 'var(--mystyla-muted)' }}>Dominant Colors</p>
               <div className="flex gap-2">
                 {selectedGarment.dominant_colors?.map((color, i) => (
                   <div
                     key={i}
-                    className="w-8 h-8 rounded-full border border-[#0E1240] shadow-sm ring-1 ring-[#2A3374]"
-                    style={{ backgroundColor: color?.hex || color }}
+                    className="w-8 h-8 rounded-full border shadow-sm"
+                    style={{ backgroundColor: color?.hex || color, borderColor: 'var(--mystyla-bg)' }}
                     title={color?.hex || color}
                   />
                 ))}

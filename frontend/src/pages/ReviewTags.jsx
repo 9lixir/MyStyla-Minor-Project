@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react"
 import { API_BASE_URL } from "../config"
 import { useAuthStore } from "@/store/auth-store"
+import AbstractBackground from "../components/AbstractBackground"
 import {
   CATEGORY_GROUPS,
   FORMALITY_LABELS,
@@ -125,195 +126,229 @@ export default function ReviewTags({ garment, onBack, onSave }) {
   }
 
   return (
-    <div className="mystyla-app-shell mx-auto max-w-md p-6 min-h-screen">
-      <div className="mb-6 flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="rounded-full border border-[#2A3374] bg-[#151A4D]/90 px-3 py-1.5 text-sm text-[#B9C0E8] transition hover:border-[#FF6FB5]/70 hover:text-[#FF6FB5]"
+    <div className="mystyla-app-shell relative min-h-screen p-6">
+      <AbstractBackground />
+      <div className="relative mx-auto max-w-md">
+        <div className="mb-6 flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="rounded-full border px-3 py-1.5 text-sm transition"
+            style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)', color: 'var(--mystyla-muted)' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'var(--mystyla-primary)'
+              e.currentTarget.style.color = 'var(--mystyla-primary)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--mystyla-border)'
+              e.currentTarget.style.color = 'var(--mystyla-muted)'
+            }}
+          >
+            Back
+          </button>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--mystyla-ink)' }}>Review Tags</h1>
+        </div>
+
+        <p className="mb-4" style={{ color: 'var(--mystyla-muted)' }}>Confirm or edit garment details</p>
+
+        {/* Preview Box */}
+        <div
+          className="mb-4 flex h-48 items-center justify-center rounded-xl border p-4 shadow-sm"
+          style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)' }}
         >
-          Back
-        </button>
-        <h1 className="text-2xl font-bold text-[#F5F3FF]">Review Tags</h1>
-      </div>
+          <img
+            src={`${API_BASE_URL}/${garment.cutout}`}
+            alt="Garment cutout"
+            className="h-full object-contain"
+            onError={(e) => { e.target.style.display = "none" }}
+          />
+        </div>
 
-      <p className="mb-4 text-[#B9C0E8]">Confirm or edit garment details</p>
+        {/* Colors Row */}
+        <div
+          className="mb-4 rounded-xl border p-4 shadow-sm"
+          style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)' }}
+        >
+          <p className="mb-2 text-sm font-medium" style={{ color: 'var(--mystyla-ink)' }}>Dominant Colors</p>
+          <div className="flex gap-3">
+            {garment.dominant_colors?.map((color, i) => (
+              <div key={i} className="flex flex-col items-center gap-1">
+                <div
+                  className="h-10 w-10 rounded-full border"
+                  style={{ backgroundColor: color.hex, borderColor: 'var(--mystyla-border)' }}
+                />
+                <span className="text-xs" style={{ color: 'var(--mystyla-muted)' }}>{color.hex}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
-      {/* Preview Box */}
-      <div className="mb-4 flex h-48 items-center justify-center rounded-xl border border-[#2A3374] bg-[#151A4D]/90 p-4 shadow-sm">
-        <img
-          src={`${API_BASE_URL}/${garment.cutout}`}
-          alt="Garment cutout"
-          className="h-full object-contain"
-          onError={(e) => { e.target.style.display = "none" }}
-        />
-      </div>
+        {/* Fields Container */}
+        <div
+          className="mb-6 rounded-xl border p-4 shadow-sm"
+          style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)' }}
+        >
+          <p className="mb-3 text-sm font-medium" style={{ color: 'var(--mystyla-ink)' }}>
+            Tags <span className="ml-2 text-xs" style={{ color: 'var(--mystyla-muted)' }}>(editable)</span>
+          </p>
 
-      {/* Colors Row */}
-      <div className="mb-4 rounded-xl border border-[#2A3374] bg-[#151A4D]/90 p-4 shadow-sm">
-        <p className="mb-2 text-sm font-medium text-[#F5F3FF]">Dominant Colors</p>
-        <div className="flex gap-3">
-          {garment.dominant_colors?.map((color, i) => (
-            <div key={i} className="flex flex-col items-center gap-1">
-              <div
-                className="h-10 w-10 rounded-full border border-[#2A3374]"
-                style={{ backgroundColor: color.hex }}
-              />
-              <span className="text-xs text-[#B9C0E8]">{color.hex}</span>
+          {hasAnyWarnings && (
+            <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 p-2.5 text-xs text-red-600">
+              ⚠️ <strong>Low confidence tags detected.</strong> Please cross-check fields highlighted below.
             </div>
-          ))}
+          )}
+
+          {categoryUnrecognized && (
+            <div className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-2.5 text-xs text-amber-700">
+              ⚠️ <strong>Unrecognized category from server:</strong> "{category}". This UI has no matching
+              option — the taxonomy in <code>lib/categories.js</code> is out of sync with the backend.
+            </div>
+          )}
+
+          {/* Category */}
+          <div className="mb-3">
+            <div className="flex justify-between items-center mb-1">
+              <p className="text-xs capitalize" style={{ color: 'var(--mystyla-muted)' }}>Category</p>
+              {flags.category && (
+                <span className="text-[10px] font-bold animate-pulse" style={{ color: 'var(--mystyla-primary)' }}>⚠️ Low confidence</span>
+              )}
+            </div>
+            <select
+              value={categoryUnrecognized ? "" : category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none transition-colors"
+              style={{
+                background: 'var(--mystyla-surface-2)',
+                color: 'var(--mystyla-ink)',
+                borderColor: flags.category || categoryUnrecognized ? 'var(--mystyla-primary)' : 'var(--mystyla-border)',
+              }}
+            >
+              {(categoryUnrecognized || !category) && (
+                <option value="" disabled>
+                  {categoryUnrecognized ? `— unrecognized: ${category} —` : "— select a category —"}
+                </option>
+              )}
+              {CATEGORY_OPTION_GROUPS.map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.options.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+
+          {/* Formality */}
+          <div className="mb-3">
+            <div className="flex justify-between items-center mb-1">
+              <p className="text-xs capitalize" style={{ color: 'var(--mystyla-muted)' }}>Formality</p>
+              {flags.formality && (
+                <span className="text-[10px] font-bold animate-pulse" style={{ color: 'var(--mystyla-primary)' }}>⚠️ Low confidence</span>
+              )}
+            </div>
+            <select
+              value={formality}
+              onChange={(e) => setFormality(e.target.value)}
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none transition-colors capitalize"
+              style={{
+                background: 'var(--mystyla-surface-2)',
+                color: 'var(--mystyla-ink)',
+                borderColor: flags.formality ? 'var(--mystyla-primary)' : 'var(--mystyla-border)',
+              }}
+            >
+              {FORMALITY_LABELS.map((value) => (
+                <option key={value} value={value} className="capitalize">{value}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Season */}
+          <div className="mb-3">
+            <div className="flex justify-between items-center mb-1">
+              <p className="text-xs capitalize" style={{ color: 'var(--mystyla-muted)' }}>Season</p>
+              {flags.season && (
+                <span className="text-[10px] font-bold animate-pulse" style={{ color: 'var(--mystyla-primary)' }}>⚠️ Low confidence</span>
+              )}
+            </div>
+            <select
+              value={season}
+              onChange={(e) => setSeason(e.target.value)}
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none transition-colors capitalize"
+              style={{
+                background: 'var(--mystyla-surface-2)',
+                color: 'var(--mystyla-ink)',
+                borderColor: flags.season ? 'var(--mystyla-primary)' : 'var(--mystyla-border)',
+              }}
+            >
+              {SEASON_LABELS.map((value) => (
+                <option key={value} value={value} className="capitalize">{value}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Pattern */}
+          <div className="mb-3">
+            <div className="flex justify-between items-center mb-1">
+              <p className="text-xs capitalize" style={{ color: 'var(--mystyla-muted)' }}>Pattern</p>
+              {flags.pattern && (
+                <span className="text-[10px] font-bold animate-pulse" style={{ color: 'var(--mystyla-primary)' }}>⚠️ Low confidence</span>
+              )}
+            </div>
+            <select
+              value={pattern}
+              onChange={(e) => setPattern(e.target.value)}
+              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none transition-colors capitalize"
+              style={{
+                background: 'var(--mystyla-surface-2)',
+                color: 'var(--mystyla-ink)',
+                borderColor: flags.pattern ? 'var(--mystyla-primary)' : 'var(--mystyla-border)',
+              }}
+            >
+              {PATTERN_LABELS.map((value) => (
+                <option key={value} value={value} className="capitalize">{value}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Occasion */}
+          <div>
+            <div className="flex justify-between items-center mb-1.5">
+              <p className="text-xs capitalize" style={{ color: 'var(--mystyla-muted)' }}>Occasion</p>
+              {flags.occasion && (
+                <span className="text-[10px] font-bold animate-pulse" style={{ color: 'var(--mystyla-primary)' }}>⚠️ Low confidence</span>
+              )}
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {OCCASION_LABELS.map((value) => (
+                <button
+                  type="button"
+                  key={value}
+                  onClick={() => toggleOccasion(value)}
+                  className="px-3 py-1 rounded-full text-xs border transition capitalize"
+                  style={
+                    occasion.includes(value)
+                      ? { borderColor: 'var(--mystyla-primary)', background: 'var(--mystyla-primary-soft)', color: 'var(--mystyla-primary)' }
+                      : { borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface-2)', color: 'var(--mystyla-muted)' }
+                  }
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
+
+        {error ? <p className="mb-3 text-sm" style={{ color: 'var(--mystyla-primary)' }}>{error}</p> : null}
+
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="mystyla-button w-full rounded-xl py-3 font-medium transition disabled:cursor-not-allowed disabled:opacity-60 shadow-lg"
+        >
+          {saving ? "Saving..." : "Save to Wardrobe"}
+        </button>
       </div>
-
-      {/* Fields Container */}
-      <div className="mb-6 rounded-xl border border-[#2A3374] bg-[#151A4D]/90 p-4 shadow-sm">
-        <p className="mb-3 text-sm font-medium text-[#F5F3FF]">
-          Tags <span className="ml-2 text-xs text-[#9AA8E0]">(editable)</span>
-        </p>
-
-        {hasAnyWarnings && (
-          <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 p-2.5 text-xs text-red-200">
-            ⚠️ <strong>Low confidence tags detected.</strong> Please cross-check fields highlighted below.
-          </div>
-        )}
-
-        {categoryUnrecognized && (
-          <div className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-2.5 text-xs text-amber-200">
-            ⚠️ <strong>Unrecognized category from server:</strong> "{category}". This UI has no matching
-            option — the taxonomy in <code>lib/categories.js</code> is out of sync with the backend.
-          </div>
-        )}
-
-        {/* Category */}
-        <div className="mb-3">
-          <div className="flex justify-between items-center mb-1">
-            <p className="text-xs text-[#B9C0E8] capitalize">Category</p>
-            {flags.category && (
-              <span className="text-[10px] text-[#FF7AB8] font-bold animate-pulse">⚠️ Low confidence</span>
-            )}
-          </div>
-          <select
-            value={categoryUnrecognized ? "" : category}
-            onChange={(e) => setCategory(e.target.value)}
-            className={`w-full rounded-lg border bg-[#1E2560] px-3 py-2 text-sm text-[#F5F3FF] focus:border-[#FF6FB5] focus:outline-none transition-colors ${
-              flags.category || categoryUnrecognized ? "border-[#FF6FB5]" : "border-[#2A3374]"
-            }`}
-          >
-            {(categoryUnrecognized || !category) && (
-              <option value="" disabled className="bg-[#1E2560] text-[#9AA8E0]">
-                {categoryUnrecognized ? `— unrecognized: ${category} —` : "— select a category —"}
-              </option>
-            )}
-            {CATEGORY_OPTION_GROUPS.map((group) => (
-              <optgroup key={group.label} label={group.label} className="bg-[#151A4D] text-[#FF6FB5] font-semibold">
-                {group.options.map((opt) => (
-                  <option key={opt.value} value={opt.value} className="bg-[#1E2560] text-[#F5F3FF] font-normal">
-                    {opt.label}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-        </div>
-
-        {/* Formality */}
-        <div className="mb-3">
-          <div className="flex justify-between items-center mb-1">
-            <p className="text-xs text-[#B9C0E8] capitalize">Formality</p>
-            {flags.formality && (
-              <span className="text-[10px] text-[#FF7AB8] font-bold animate-pulse">⚠️ Low confidence</span>
-            )}
-          </div>
-          <select
-            value={formality}
-            onChange={(e) => setFormality(e.target.value)}
-            className={`w-full rounded-lg border bg-[#1E2560] px-3 py-2 text-sm text-[#F5F3FF] focus:border-[#FF6FB5] focus:outline-none transition-colors capitalize ${
-              flags.formality ? "border-[#FF6FB5]" : "border-[#2A3374]"
-            }`}
-          >
-            {FORMALITY_LABELS.map((value) => (
-              <option key={value} value={value} className="capitalize">{value}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Season */}
-        <div className="mb-3">
-          <div className="flex justify-between items-center mb-1">
-            <p className="text-xs text-[#B9C0E8] capitalize">Season</p>
-            {flags.season && (
-              <span className="text-[10px] text-[#FF7AB8] font-bold animate-pulse">⚠️ Low confidence</span>
-            )}
-          </div>
-          <select
-            value={season}
-            onChange={(e) => setSeason(e.target.value)}
-            className={`w-full rounded-lg border bg-[#1E2560] px-3 py-2 text-sm text-[#F5F3FF] focus:border-[#FF6FB5] focus:outline-none transition-colors capitalize ${
-              flags.season ? "border-[#FF6FB5]" : "border-[#2A3374]"
-            }`}
-          >
-            {SEASON_LABELS.map((value) => (
-              <option key={value} value={value} className="capitalize">{value}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Pattern */}
-        <div className="mb-3">
-          <div className="flex justify-between items-center mb-1">
-            <p className="text-xs text-[#B9C0E8] capitalize">Pattern</p>
-            {flags.pattern && (
-              <span className="text-[10px] text-[#FF7AB8] font-bold animate-pulse">⚠️ Low confidence</span>
-            )}
-          </div>
-          <select
-            value={pattern}
-            onChange={(e) => setPattern(e.target.value)}
-            className={`w-full rounded-lg border bg-[#1E2560] px-3 py-2 text-sm text-[#F5F3FF] focus:border-[#FF6FB5] focus:outline-none transition-colors capitalize ${
-              flags.pattern ? "border-[#FF6FB5]" : "border-[#2A3374]"
-            }`}
-          >
-            {PATTERN_LABELS.map((value) => (
-              <option key={value} value={value} className="capitalize">{value}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Occasion */}
-        <div>
-          <div className="flex justify-between items-center mb-1.5">
-            <p className="text-xs text-[#B9C0E8] capitalize">Occasion</p>
-            {flags.occasion && (
-              <span className="text-[10px] text-[#FF7AB8] font-bold animate-pulse">⚠️ Low confidence</span>
-            )}
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            {OCCASION_LABELS.map((value) => (
-              <button
-                type="button"
-                key={value}
-                onClick={() => toggleOccasion(value)}
-                className={`px-3 py-1 rounded-full text-xs border transition capitalize ${
-                  occasion.includes(value)
-                    ? "border-[#FF6FB5] bg-[#FF6FB5]/15 text-[#FF7AB8]"
-                    : "border-[#2A3374] bg-[#1E2560] text-[#B9C0E8] hover:border-[#FFD3EC]"
-                }`}
-              >
-                {value}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {error ? <p className="mb-3 text-sm text-[#FF7AB8]">{error}</p> : null}
-
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        className="w-full rounded-xl bg-[linear-gradient(135deg,#F5A9CE_0%,#FF93C2_58%,#FF6FB5_100%)] py-3 font-medium text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60 shadow-lg"
-      >
-        {saving ? "Saving..." : "Save to Wardrobe"}
-      </button>
     </div>
   )
 }

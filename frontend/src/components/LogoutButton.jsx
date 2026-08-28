@@ -13,8 +13,27 @@ export function LogoutButton({ onNavigate, className }) {
       onClick={handleLogout}
       className={
         className ??
-        'inline-flex items-center gap-2 rounded-full border border-[#2A3374] bg-[#151A4D]/90 px-4 py-2 text-sm font-bold text-[#B9C0E8] transition hover:border-[#FF6FB5]/80 hover:text-[#FF6FB5]'
+        'inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition'
       }
+      style={
+        className
+          ? undefined
+          : {
+              borderColor: 'var(--mystyla-border)',
+              background: 'var(--mystyla-surface)',
+              color: 'var(--mystyla-muted)',
+            }
+      }
+      onMouseEnter={(e) => {
+        if (className) return;
+        e.currentTarget.style.borderColor = 'rgba(181,41,63,0.7)';
+        e.currentTarget.style.color = 'var(--mystyla-primary)';
+      }}
+      onMouseLeave={(e) => {
+        if (className) return;
+        e.currentTarget.style.borderColor = 'var(--mystyla-border)';
+        e.currentTarget.style.color = 'var(--mystyla-muted)';
+      }}
     >
       <LogOut size={16} />
       Logout

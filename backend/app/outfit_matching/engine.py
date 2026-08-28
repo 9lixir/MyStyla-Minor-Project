@@ -7,7 +7,11 @@ from app.outfit_matching.models import validate_garment
 from app.outfit_matching.occasion_filter import filter_by_occasion, group_by_category
 from app.outfit_matching.ranker import rank_outfits
 from app.outfit_matching.wardrobe_repository import get_wardrobe
-from app.outfit_matching.weather_scoring import garment_weather_score
+from app.outfit_matching.weather_scoring import (
+    excludes_outerwear,
+    garment_weather_score,
+    requires_outerwear,
+)
 from app.recommendation import recommend_accessories
 from app.scanning.vector_store import search_similar_filtered
 
@@ -37,16 +41,25 @@ def _weather_prefiltered(garments: list[dict[str, Any]], weather: dict[str, Any]
         return garments
     weather_mode, temp_c = _weather_mode_and_temperature(weather)
     outerwear_required = requires_outerwear(weather_mode, temp_c)
-    kept = [
-        g for g in garments
-        if (
+    outerwear_excluded = excludes_outerwear(weather_mode, temp_c)
+
+    def _allowed(g: dict[str, Any]) -> bool:
+        is_outerwear = g.get("category") == "outerwear"
+        if outerwear_excluded and is_outerwear:
+            return False
+        return (
             garment_weather_score(str(g.get("tags", {}).get("season", "")), temperature) >= 0.2
-            or (outerwear_required and g.get("category") == "outerwear")
+            or (outerwear_required and is_outerwear)
         )
-    ]
+    print(f"DEBUG weather_mode={weather_mode!r} temp_c={temp_c!r} excluded={outerwear_excluded}")
+    kept = [g for g in garments if _allowed(g)]
     if temperature <= 14:
         return kept
-    return kept or garments
+    if kept:
+        return kept
+    # Fallback for an over-aggressive filter, but never let outerwear back in
+    # when it's genuinely hot, that was the original bug.
+    return [g for g in garments if not (outerwear_excluded and g.get("category") == "outerwear")]
 
 
 def requires_outerwear(weather_mode: str | None, temp_c: float | None) -> bool:

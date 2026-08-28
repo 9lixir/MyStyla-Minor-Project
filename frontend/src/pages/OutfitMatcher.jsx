@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import CategoryIcon from '@/components/CategoryIcon';
+import AbstractBackground from '@/components/AbstractBackground';
 import { API_BASE_URL } from '@/config';
 
 const OCCASIONS = [
@@ -38,6 +39,8 @@ const DEFAULT_LOCATION = {
   latitude: 27.7172,
   longitude: 85.324,
 };
+
+const scoreFont = { fontFamily: "'Fraunces', Georgia, serif" };
 
 const formatColorTitle = (color) => {
   if (Array.isArray(color?.rgb)) {
@@ -147,7 +150,7 @@ export default function OutfitMatcher({ onBack }) {
     try {
       const data = await generateOutfits(user.id, occasion, normalizedTopK, weather);
       setResults(data);
-      
+
       if (data.outfits.length === 0) {
         toast.info(`No outfits found for ${occasion}. Try adding more garments!`);
       } else {
@@ -203,36 +206,66 @@ export default function OutfitMatcher({ onBack }) {
   };
 
   return (
-    <div className="mystyla-app-shell min-h-screen p-4 sm:p-6">
-      <div className="max-w-3xl mx-auto">
-        <div className="mb-7 flex items-start justify-between gap-4">
+    <div className="mystyla-app-shell relative min-h-screen p-4 sm:p-6">
+      <AbstractBackground />
+      <div className="relative max-w-3xl mx-auto">
+        <div className="mb-8 flex items-start justify-between gap-4">
           <div>
             <p className="mystyla-masthead text-[10px] mb-2">match studio</p>
-            <h1 className="mystyla-display text-4xl text-[#F5F3FF]">Outfit Matcher</h1>
-            <p className="mt-2 text-sm text-[#B9C0E8]">
+            <h1 className="mystyla-display text-4xl" style={{ color: 'var(--mystyla-ink)' }}>
+              Outfit Matcher
+            </h1>
+            <p className="mt-2 text-sm" style={{ color: 'var(--mystyla-muted)' }}>
               Pick an occasion and MyStyla will pair garments with finishing accessories
             </p>
             {!engineHealthy ? (
-              <p className="mt-3 rounded-xl border border-[#FFA8D4]/45 bg-[#FFA8D4]/12 px-3 py-2 text-sm text-[#FFD3EC]">
+              <p
+                className="mt-3 rounded-xl border px-3 py-2 text-sm"
+                style={{
+                  borderColor: 'color-mix(in srgb, var(--mystyla-accent) 45%, transparent)',
+                  background: 'color-mix(in srgb, var(--mystyla-accent) 12%, transparent)',
+                  color: 'var(--mystyla-primary)',
+                }}
+              >
                 Outfit engine health check failed. Generate may still work if backend is starting.
               </p>
             ) : null}
           </div>
           <button
             onClick={onBack}
-            className="rounded-full border border-[#2A3374] bg-[#151A4D]/90 px-4 py-2 text-sm font-medium text-[#F5F3FF]/80 hover:border-[#FFA8D4]/70 hover:text-[#FFD3EC] transition"
+            className="rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 hover:-translate-y-0.5"
+            style={{
+              borderColor: 'var(--mystyla-border)',
+              background: 'var(--mystyla-surface)',
+              color: 'var(--mystyla-muted)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'var(--mystyla-accent)';
+              e.currentTarget.style.color = 'var(--mystyla-primary)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--mystyla-border)';
+              e.currentTarget.style.color = 'var(--mystyla-muted)';
+            }}
           >
             Back
           </button>
         </div>
 
-        <Card className="mb-6 border-[#2A3374] bg-[#151A4D]/90 shadow-sm">
+        {/* Weather + generate */}
+        <Card
+          className="mb-6 shadow-sm transition-shadow duration-300 hover:shadow-md"
+          style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)' }}
+        >
           <CardContent className="p-6">
-            <div className="mb-6 rounded-xl border border-[#2A3374] bg-[#1E2560] p-4">
+            <div
+              className="mb-6 rounded-xl border p-4"
+              style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface-2)' }}
+            >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-[#B9C0E8]">Current Weather</p>
-                  <p className="mt-1 text-sm text-[#F5F3FF]">
+                  <p className="mystyla-masthead text-[10px]">current weather</p>
+                  <p className="mt-1 text-sm" style={{ color: 'var(--mystyla-ink)' }}>
                     {weatherLoading
                       ? 'Loading weather...'
                       : weather
@@ -240,18 +273,26 @@ export default function OutfitMatcher({ onBack }) {
                       : 'Weather skipped'}
                   </p>
                   {weather ? (
-                    <p className="mt-1 text-xs capitalize text-[#B9C0E8]">
-                      Feels like {Math.round(weather.feels_like_c)}°C · Wind {Math.round(weather.wind_kph)} km/h · {weather.style_profile.replace('_', ' ')}
+                    <p className="mt-1 text-xs capitalize" style={{ color: 'var(--mystyla-muted)' }}>
+                      Feels like {Math.round(weather.feels_like_c)}°C · Wind {Math.round(weather.wind_kph)} km/h ·{' '}
+                      {weather.style_profile.replace('_', ' ')}
                     </p>
                   ) : null}
                   {weatherError ? (
-                    <p className="mt-1 text-xs text-[#FF7AB8]">{weatherError}</p>
+                    <p className="mt-1 text-xs" style={{ color: 'var(--mystyla-accent)' }}>
+                      {weatherError}
+                    </p>
                   ) : null}
                 </div>
                 <Button
                   onClick={handleUseCurrentLocation}
                   disabled={weatherLoading}
-                  className="rounded-xl border border-[#2A3374] bg-[#151A4D] px-4 py-2 text-sm text-[#F5F3FF] hover:border-[#FFA8D4]/70 hover:text-[#FFD3EC]"
+                  className="rounded-xl border px-4 py-2 text-sm transition-all duration-200 hover:-translate-y-0.5"
+                  style={{
+                    borderColor: 'var(--mystyla-border)',
+                    background: 'var(--mystyla-surface)',
+                    color: 'var(--mystyla-ink)',
+                  }}
                 >
                   {weatherLoading ? 'Checking...' : 'Use My Location'}
                 </Button>
@@ -260,13 +301,18 @@ export default function OutfitMatcher({ onBack }) {
 
             <div className="grid gap-4 sm:grid-cols-[1fr_150px]">
               <div>
-                <label className="mb-2 block text-sm font-medium text-[#F5F3FF]">
+                <label className="mb-2 block text-sm font-medium" style={{ color: 'var(--mystyla-ink)' }}>
                   Occasion
                 </label>
                 <select
                   value={occasion}
                   onChange={(e) => setOccasion(e.target.value)}
-                  className="w-full rounded-xl border border-[#2A3374] bg-[#1E2560] px-4 py-2.5 text-[#F5F3FF] focus:border-[#FFA8D4] focus:outline-none focus:ring-2 focus:ring-[#FFA8D4]/30"
+                  className="w-full rounded-xl border px-4 py-2.5 transition-colors duration-200 focus:outline-none focus:ring-2"
+                  style={{
+                    borderColor: 'var(--mystyla-border)',
+                    background: 'var(--mystyla-surface-2)',
+                    color: 'var(--mystyla-ink)',
+                  }}
                 >
                   {OCCASIONS.map((occ) => (
                     <option key={occ} value={occ}>
@@ -277,7 +323,7 @@ export default function OutfitMatcher({ onBack }) {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-[#F5F3FF]">
+                <label className="mb-2 block text-sm font-medium" style={{ color: 'var(--mystyla-ink)' }}>
                   Number of Outfits
                 </label>
                 <input
@@ -286,14 +332,19 @@ export default function OutfitMatcher({ onBack }) {
                   max="20"
                   value={topK}
                   onChange={(e) => setTopK(e.target.value)}
-                  className="w-full rounded-xl border border-[#2A3374] bg-[#1E2560] px-4 py-2.5 text-[#F5F3FF] focus:border-[#FFA8D4] focus:outline-none focus:ring-2 focus:ring-[#FFA8D4]/30"
+                  className="w-full rounded-xl border px-4 py-2.5 transition-colors duration-200 focus:outline-none focus:ring-2"
+                  style={{
+                    borderColor: 'var(--mystyla-border)',
+                    background: 'var(--mystyla-surface-2)',
+                    color: 'var(--mystyla-ink)',
+                  }}
                 />
               </div>
 
               <Button
                 onClick={handleGenerate}
                 disabled={loading}
-                className="mystyla-button w-full rounded-xl py-2.5 font-medium text-white transition sm:col-span-2"
+                className="mystyla-button w-full rounded-xl py-2.5 font-medium text-white transition-all duration-200 hover:-translate-y-0.5 sm:col-span-2"
               >
                 {loading ? 'Generating...' : 'Generate Outfits'}
               </Button>
@@ -301,17 +352,26 @@ export default function OutfitMatcher({ onBack }) {
           </CardContent>
         </Card>
 
-        <Card className="mb-6 border-[#2A3374] bg-[#151A4D]/90 shadow-sm">
+        {/* Match this item */}
+        <Card
+          className="mb-6 shadow-sm transition-shadow duration-300 hover:shadow-md"
+          style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)' }}
+        >
           <CardContent className="p-6">
             <div className="grid gap-4 sm:grid-cols-[1fr_150px]">
               <div>
-                <label className="mb-2 block text-sm font-medium text-[#F5F3FF]">
+                <label className="mb-2 block text-sm font-medium" style={{ color: 'var(--mystyla-ink)' }}>
                   Match This Item
                 </label>
                 <select
                   value={selectedGarmentId}
                   onChange={(e) => setSelectedGarmentId(e.target.value)}
-                  className="w-full rounded-xl border border-[#2A3374] bg-[#1E2560] px-4 py-2.5 text-[#F5F3FF] focus:border-[#FFA8D4] focus:outline-none focus:ring-2 focus:ring-[#FFA8D4]/30"
+                  className="w-full rounded-xl border px-4 py-2.5 transition-colors duration-200 focus:outline-none focus:ring-2 disabled:opacity-50"
+                  style={{
+                    borderColor: 'var(--mystyla-border)',
+                    background: 'var(--mystyla-surface-2)',
+                    color: 'var(--mystyla-ink)',
+                  }}
                   disabled={wardrobeGarments.length === 0}
                 >
                   {wardrobeGarments.length === 0 ? (
@@ -326,8 +386,14 @@ export default function OutfitMatcher({ onBack }) {
                 </select>
 
                 {selectedGarment && (
-                  <div className="mt-3 flex items-center gap-3 rounded-xl border border-[#2A3374] bg-[#1E2560] p-3">
-                    <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-[#5B63A8] bg-[#0E1240]">
+                  <div
+                    className="mt-3 flex items-center gap-3 rounded-xl border p-3 transition-all duration-300"
+                    style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface-2)' }}
+                  >
+                    <div
+                      className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border"
+                      style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-bg)' }}
+                    >
                       {selectedGarment.cutout_path ? (
                         <img
                           src={`${API_BASE_URL}/${selectedGarment.cutout_path}`}
@@ -335,26 +401,38 @@ export default function OutfitMatcher({ onBack }) {
                           className="h-full w-full object-contain p-1"
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-[#FFA8D4]">
+                        <div
+                          className="flex h-full w-full items-center justify-center"
+                          style={{ color: 'var(--mystyla-accent)' }}
+                        >
                           <CategoryIcon category={selectedGarment.category} className="h-7 w-7" />
                         </div>
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-[#F5F3FF]">
+                      <p className="truncate text-sm font-medium" style={{ color: 'var(--mystyla-ink)' }}>
                         {selectedGarment.filename || selectedGarment.category}
                       </p>
-                      <p className="text-xs capitalize text-[#B9C0E8]">{selectedGarment.category}</p>
+                      <p className="text-xs capitalize" style={{ color: 'var(--mystyla-muted)' }}>
+                        {selectedGarment.category}
+                      </p>
                     </div>
                   </div>
                 )}
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-[#F5F3FF]">
+                <label className="mb-2 block text-sm font-medium" style={{ color: 'var(--mystyla-ink)' }}>
                   Occasion Filter
                 </label>
-                <p className="rounded-xl border border-[#2A3374] bg-[#1E2560] px-4 py-2.5 text-sm text-[#B9C0E8]">
+                <p
+                  className="rounded-xl border px-4 py-2.5 text-sm"
+                  style={{
+                    borderColor: 'var(--mystyla-border)',
+                    background: 'var(--mystyla-surface-2)',
+                    color: 'var(--mystyla-muted)',
+                  }}
+                >
                   {occasion || 'None'}
                 </p>
               </div>
@@ -362,7 +440,7 @@ export default function OutfitMatcher({ onBack }) {
               <Button
                 onClick={handleMatchItem}
                 disabled={matchingItem || wardrobeGarments.length === 0}
-                className="mystyla-button w-full rounded-xl py-2.5 font-medium text-white transition sm:col-span-2"
+                className="mystyla-button w-full rounded-xl py-2.5 font-medium text-white transition-all duration-200 hover:-translate-y-0.5 sm:col-span-2"
               >
                 {matchingItem ? 'Matching...' : 'Match This Item'}
               </Button>
@@ -372,7 +450,10 @@ export default function OutfitMatcher({ onBack }) {
 
         {results && (
           <div className="space-y-4">
-            <div className="mb-4 rounded-2xl border border-[#2A3374] bg-[#151A4D]/90 px-4 py-3 text-sm text-[#B9C0E8]">
+            <div
+              className="mb-4 rounded-2xl border px-4 py-3 text-sm"
+              style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)', color: 'var(--mystyla-muted)' }}
+            >
               {results.message}
               {typeof results.wardrobe_size_after_filter === 'number'
                 ? ` • ${results.wardrobe_size_after_filter} garments available`
@@ -380,52 +461,66 @@ export default function OutfitMatcher({ onBack }) {
             </div>
 
             {results.outfits.length === 0 ? (
-              <Card className="border-[#2A3374] bg-[#151A4D]/90 shadow-sm">
+              <Card
+                className="shadow-sm"
+                style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)' }}
+              >
                 <CardContent className="p-8 text-center">
-                  <p className="text-[#B9C0E8]">
+                  <p style={{ color: 'var(--mystyla-muted)' }}>
                     No outfits found for {occasion}. Try another occasion or add more garments!
                   </p>
                 </CardContent>
               </Card>
             ) : (
               results.outfits.map((outfit, outfitIdx) => (
-                <Card key={outfitIdx} className="border-[#2A3374] bg-[#151A4D]/90 shadow-sm transition hover:shadow-md">
+                <Card
+                  key={outfitIdx}
+                  className="mystyla-fade-in-up shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+                  style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)', animationDelay: `${outfitIdx * 50}ms` }}
+                >
                   <CardContent className="p-6">
-                    <div className="mb-4 border-b border-[#2A3374] pb-4">
+                    <div
+                      className="mb-4 pb-4"
+                      style={{ borderBottom: '1px dashed var(--mystyla-border)' }}
+                    >
                       <div className="grid grid-cols-3 gap-4">
                         <div>
-                          <p className="text-xs uppercase tracking-wider text-[#B9C0E8]">
-                            Color Harmony
-                          </p>
-                          <p className="mt-1 text-2xl font-bold text-[#F5F3FF]">
+                          <p className="mystyla-masthead text-[10px]">Color Harmony</p>
+                          <p className="mt-1 text-2xl" style={{ ...scoreFont, color: 'var(--mystyla-ink)' }}>
                             {(outfit.harmony_score * 100).toFixed(0)}%
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs uppercase tracking-wider text-[#B9C0E8]">
-                            Compatibility
-                          </p>
-                          <p className="mt-1 text-2xl font-bold text-[#F5F3FF]">
+                          <p className="mystyla-masthead text-[10px]">Compatibility</p>
+                          <p className="mt-1 text-2xl" style={{ ...scoreFont, color: 'var(--mystyla-ink)' }}>
                             {outfit.compat_score.toFixed(2)}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs uppercase tracking-wider text-[#B9C0E8]">
-                            Overall Score
-                          </p>
-                          <p className="mt-1 text-2xl font-bold text-[#FFA8D4]">
+                          <p className="mystyla-masthead text-[10px]">Overall Score</p>
+                          <p className="mt-1 text-2xl" style={{ ...scoreFont, color: 'var(--mystyla-accent)' }}>
                             {(outfit.final_score * 100).toFixed(0)}%
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="mb-4 rounded-xl border border-[#2A3374] bg-[#1E2560] p-3">
-                      <p className="mb-2 text-[11px] uppercase tracking-wide text-[#B9C0E8]">Outfit Preview</p>
-                      <div className="flex items-start gap-3 overflow-x-auto pb-1">
+                    {/* Outfit preview slider */}
+                    <div
+                      className="mb-4 rounded-xl border p-3"
+                      style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface-2)' }}
+                    >
+                      <p className="mystyla-masthead mb-2 text-[10px]">Outfit Preview</p>
+                      <div
+                        className="flex snap-x snap-mandatory items-start gap-3 overflow-x-auto pb-2"
+                        style={{ scrollbarWidth: 'thin' }}
+                      >
                         {outfit.garments.map((garment, gIdx) => (
-                          <div key={gIdx} className="min-w-[90px] w-[90px]">
-                            <div className="h-24 w-full overflow-hidden rounded-lg border border-[#5B63A8] bg-[#0E1240]">
+                          <div key={gIdx} className="min-w-[90px] w-[90px] snap-start">
+                            <div
+                              className="h-24 w-full overflow-hidden rounded-lg border transition-transform duration-200 hover:scale-105"
+                              style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-bg)' }}
+                            >
                               {garment.cutout_path ? (
                                 <img
                                   src={`${API_BASE_URL}/${garment.cutout_path}`}
@@ -433,31 +528,41 @@ export default function OutfitMatcher({ onBack }) {
                                   className="h-full w-full object-contain p-1.5"
                                 />
                               ) : (
-                                <div className="flex h-full w-full items-center justify-center text-[#FFA8D4]">
+                                <div
+                                  className="flex h-full w-full items-center justify-center"
+                                  style={{ color: 'var(--mystyla-accent)' }}
+                                >
                                   <CategoryIcon category={garment.category} className="h-8 w-8" />
                                 </div>
                               )}
                             </div>
-                            <p className="mt-1.5 truncate text-[10px] text-[#F5F3FF]">{garment.filename || garment.category}</p>
-                            <p className="text-[9px] capitalize text-[#B9C0E8]">{garment.category}</p>
+                            <p className="mt-1.5 truncate text-[10px]" style={{ color: 'var(--mystyla-ink)' }}>
+                              {garment.filename || garment.category}
+                            </p>
+                            <p className="text-[9px] capitalize" style={{ color: 'var(--mystyla-muted)' }}>
+                              {garment.category}
+                            </p>
                           </div>
                         ))}
                       </div>
                     </div>
 
                     <div>
-                      <p className="mb-3 text-sm font-semibold text-[#F5F3FF]">Garments</p>
+                      <p className="mb-3 text-sm font-semibold" style={{ color: 'var(--mystyla-ink)' }}>
+                        Garments
+                      </p>
                       <div className="space-y-2">
                         {outfit.garments.map((garment, gIdx) => (
                           <div
                             key={gIdx}
-                            className="flex items-center justify-between rounded-xl bg-[#1E2560] p-3"
+                            className="flex items-center justify-between rounded-xl p-3 transition-colors duration-200"
+                            style={{ background: 'var(--mystyla-surface-2)' }}
                           >
                             <div className="flex-1">
-                              <p className="text-sm font-medium capitalize text-[#F5F3FF]">
+                              <p className="text-sm font-medium capitalize" style={{ color: 'var(--mystyla-ink)' }}>
                                 {garment.filename || garment.category}
                               </p>
-                              <p className="mt-0.5 text-xs capitalize text-[#B9C0E8]">
+                              <p className="mt-0.5 text-xs capitalize" style={{ color: 'var(--mystyla-muted)' }}>
                                 {garment.category}
                               </p>
                             </div>
@@ -465,8 +570,12 @@ export default function OutfitMatcher({ onBack }) {
                               {garment.dominant_colors?.slice(0, 3).map((color, cIdx) => (
                                 <div
                                   key={cIdx}
-                                  className="h-6 w-6 rounded-full border border-[#0E1240] shadow-sm ring-1 ring-[#2A3374]"
-                                  style={{ backgroundColor: color.hex }}
+                                  className="h-6 w-6 rounded-full shadow-sm ring-1"
+                                  style={{
+                                    backgroundColor: color.hex,
+                                    borderColor: 'var(--mystyla-bg)',
+                                    boxShadow: '0 0 0 1px var(--mystyla-border)',
+                                  }}
                                   title={formatColorTitle(color)}
                                 />
                               ))}
@@ -477,23 +586,36 @@ export default function OutfitMatcher({ onBack }) {
                     </div>
 
                     {outfit.accessories?.length > 0 ? (
-                      <div className="mt-4 border-t border-[#2A3374] pt-4">
-                        <p className="mb-3 text-sm font-semibold text-[#F5F3FF]">Accessories</p>
+                      <div className="mt-4 pt-4" style={{ borderTop: '1px dashed var(--mystyla-border)' }}>
+                        <p className="mb-3 text-sm font-semibold" style={{ color: 'var(--mystyla-ink)' }}>
+                          Accessories
+                        </p>
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                           {outfit.accessories.map((accessory) => (
                             <div
                               key={accessory.slot}
-                              className="rounded-xl border border-[#2A3374] bg-[#1E2560] p-3"
+                              className="rounded-xl border p-3 transition-transform duration-200 hover:-translate-y-0.5"
+                              style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface-2)' }}
                             >
-                              <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-md bg-[#FFA8D4]/12 text-[#FFA8D4]">
+                              <div
+                                className="mb-2 flex h-9 w-9 items-center justify-center rounded-md"
+                                style={{
+                                  background: 'color-mix(in srgb, var(--mystyla-accent) 12%, transparent)',
+                                  color: 'var(--mystyla-accent)',
+                                }}
+                              >
                                 <CategoryIcon category={accessory.slot} className="h-5 w-5" />
                               </div>
-                              <p className="text-sm font-medium text-[#F5F3FF]">{accessory.name}</p>
-                              <p className="mt-1 text-xs capitalize text-[#B9C0E8]">
+                              <p className="text-sm font-medium" style={{ color: 'var(--mystyla-ink)' }}>
+                                {accessory.name}
+                              </p>
+                              <p className="mt-1 text-xs capitalize" style={{ color: 'var(--mystyla-muted)' }}>
                                 {accessory.slot} · {accessory.source}
                               </p>
                               {accessory.reason ? (
-                                <p className="mt-2 text-xs leading-5 text-[#B9C0E8]">{accessory.reason}</p>
+                                <p className="mt-2 text-xs leading-5" style={{ color: 'var(--mystyla-muted)' }}>
+                                  {accessory.reason}
+                                </p>
                               ) : null}
                             </div>
                           ))}
@@ -501,10 +623,12 @@ export default function OutfitMatcher({ onBack }) {
                       </div>
                     ) : null}
 
-                    <div className="mt-4 border-t border-[#2A3374] pt-4 text-xs text-[#B9C0E8]">
+                    <div
+                      className="mt-4 pt-4 text-xs"
+                      style={{ borderTop: '1px dashed var(--mystyla-border)', color: 'var(--mystyla-muted)' }}
+                    >
                       <p>
-                        Score = 60% × {outfit.compat_score.toFixed(2)} + 40% ×{' '}
-                        {outfit.harmony_score.toFixed(2)}
+                        Score = 60% × {outfit.compat_score.toFixed(2)} + 40% × {outfit.harmony_score.toFixed(2)}
                       </p>
                     </div>
                   </CardContent>
@@ -516,15 +640,27 @@ export default function OutfitMatcher({ onBack }) {
 
         {matchResults && (
           <div className="mt-8 space-y-4">
-            <div className="rounded-2xl border border-[#2A3374] bg-[#151A4D]/90 px-4 py-3 text-sm text-[#B9C0E8]">
+            <div
+              className="rounded-2xl border px-4 py-3 text-sm"
+              style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)', color: 'var(--mystyla-muted)' }}
+            >
               {matchResults.message}
             </div>
 
-            <Card className="border-[#2A3374] bg-[#151A4D]/90 shadow-sm">
+            <Card
+              className="shadow-sm"
+              style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)' }}
+            >
               <CardContent className="p-5">
-                <p className="mb-2 text-xs uppercase tracking-wide text-[#B9C0E8]">Anchor Garment</p>
-                <div className="flex items-center gap-3 rounded-xl bg-[#1E2560] p-3">
-                  <div className="h-16 w-16 overflow-hidden rounded-lg border border-[#5B63A8] bg-[#0E1240]">
+                <p className="mystyla-masthead mb-2 text-[10px]">Anchor Garment</p>
+                <div
+                  className="flex items-center gap-3 rounded-xl p-3"
+                  style={{ background: 'var(--mystyla-surface-2)' }}
+                >
+                  <div
+                    className="h-16 w-16 overflow-hidden rounded-lg border"
+                    style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-bg)' }}
+                  >
                     {matchResults.anchor_garment?.cutout_path ? (
                       <img
                         src={`${API_BASE_URL}/${matchResults.anchor_garment.cutout_path}`}
@@ -532,7 +668,10 @@ export default function OutfitMatcher({ onBack }) {
                         className="h-full w-full object-contain p-1"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center text-[#FFA8D4]">
+                      <div
+                        className="flex h-full w-full items-center justify-center"
+                        style={{ color: 'var(--mystyla-accent)' }}
+                      >
                         <CategoryIcon
                           category={matchResults.anchor_garment?.category}
                           className="h-7 w-7"
@@ -541,10 +680,10 @@ export default function OutfitMatcher({ onBack }) {
                     )}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-[#F5F3FF]">
+                    <p className="text-sm font-medium" style={{ color: 'var(--mystyla-ink)' }}>
                       {matchResults.anchor_garment?.filename || matchResults.anchor_garment?.category}
                     </p>
-                    <p className="text-xs capitalize text-[#B9C0E8]">
+                    <p className="text-xs capitalize" style={{ color: 'var(--mystyla-muted)' }}>
                       {matchResults.anchor_garment?.category}
                     </p>
                   </div>
@@ -553,17 +692,27 @@ export default function OutfitMatcher({ onBack }) {
             </Card>
 
             {(matchResults.matches || []).length === 0 ? (
-              <Card className="border-[#2A3374] bg-[#151A4D]/90 shadow-sm">
+              <Card
+                className="shadow-sm"
+                style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)' }}
+              >
                 <CardContent className="p-8 text-center">
-                  <p className="text-[#B9C0E8]">No matches found for the selected garment.</p>
+                  <p style={{ color: 'var(--mystyla-muted)' }}>No matches found for the selected garment.</p>
                 </CardContent>
               </Card>
             ) : (
-              (matchResults.matches || []).map((match) => (
-                <Card key={match.id} className="border-[#2A3374] bg-[#151A4D]/90 shadow-sm">
+              (matchResults.matches || []).map((match, matchIdx) => (
+                <Card
+                  key={match.id}
+                  className="mystyla-fade-in-up shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+                  style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)', animationDelay: `${matchIdx * 50}ms` }}
+                >
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-16 w-16 overflow-hidden rounded-lg border border-[#5B63A8] bg-[#0E1240]">
+                      <div
+                        className="h-16 w-16 overflow-hidden rounded-lg border"
+                        style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-bg)' }}
+                      >
                         {match.cutout_path ? (
                           <img
                             src={`${API_BASE_URL}/${match.cutout_path}`}
@@ -571,20 +720,25 @@ export default function OutfitMatcher({ onBack }) {
                             className="h-full w-full object-contain p-1"
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center text-[#FFA8D4]">
+                          <div
+                            className="flex h-full w-full items-center justify-center"
+                            style={{ color: 'var(--mystyla-accent)' }}
+                          >
                             <CategoryIcon category={match.category} className="h-7 w-7" />
                           </div>
                         )}
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-[#F5F3FF]">
+                        <p className="text-sm font-medium" style={{ color: 'var(--mystyla-ink)' }}>
                           {match.filename || match.category}
                         </p>
-                        <p className="text-xs capitalize text-[#B9C0E8]">{match.category}</p>
+                        <p className="text-xs capitalize" style={{ color: 'var(--mystyla-muted)' }}>
+                          {match.category}
+                        </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs uppercase tracking-wide text-[#B9C0E8]">Compatibility</p>
-                        <p className="text-xl font-bold text-[#FFA8D4]">
+                        <p className="mystyla-masthead text-[10px]">Compatibility</p>
+                        <p className="text-xl" style={{ ...scoreFont, color: 'var(--mystyla-accent)' }}>
                           {(match.compatibility_score * 100).toFixed(0)}%
                         </p>
                       </div>
@@ -597,9 +751,12 @@ export default function OutfitMatcher({ onBack }) {
         )}
 
         {!results && !loading && (
-          <Card className="border-[#2A3374] bg-[#151A4D]/90 shadow-sm">
+          <Card
+            className="shadow-sm"
+            style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)' }}
+          >
             <CardContent className="p-8 text-center">
-              <p className="text-[#B9C0E8]">
+              <p style={{ color: 'var(--mystyla-muted)' }}>
                 Select an occasion and click "Generate Outfits" to see AI-matched combinations
               </p>
             </CardContent>
