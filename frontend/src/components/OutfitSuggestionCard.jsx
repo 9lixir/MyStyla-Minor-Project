@@ -12,14 +12,12 @@ function OutfitSuggestionCard({ suggestion, onViewDetails }) {
 
   return (
     <div
-      className="mystyla-hover-lift relative overflow-hidden rounded-[20px]"
+      className="mystyla-hover-lift relative w-full overflow-hidden rounded-[24px]"
       style={{ background: 'var(--mystyla-bg)', boxShadow: '0 1px 0 rgba(255,255,255,0.6) inset' }}
       data-cy="outfit-suggestion-card"
     >
-      {/* Scalloped top edge, flipped */}
-      <div className="mystyla-scallop" style={{ transform: 'rotate(180deg)' }} />
 
-      <div className="p-4 sm:p-5">
+      <div className="p-5 sm:p-6 lg:p-7">
         {/* Rank + match badge */}
         <div className="mb-4 flex items-center justify-between">
           <span
@@ -28,11 +26,25 @@ function OutfitSuggestionCard({ suggestion, onViewDetails }) {
           >
             Rank {suggestion.rank} &middot; {Math.round(suggestion.compatibility)}% match
           </span>
-          <div
-            className="flex h-7 w-7 items-center justify-center rounded-full border-2"
-            style={{ borderColor: 'var(--mystyla-primary)', background: 'var(--mystyla-surface)', color: 'var(--mystyla-ink)', fontFamily: "'Fraunces', Georgia, serif" }}
-          >
-            {suggestion.rank}
+          {/* wax-seal / stamp rank medallion */}
+          <div className="relative flex h-9 w-9 items-center justify-center">
+            <div
+              className="absolute inset-0"
+              style={{
+                background: 'radial-gradient(circle at 35% 30%, var(--mystyla-rose), var(--mystyla-primary))',
+                WebkitMaskImage: 'radial-gradient(circle at center, black 68%, transparent 69%)',
+                maskImage: 'radial-gradient(circle at center, black 68%, transparent 69%)',
+                clipPath:
+                  'polygon(50% 0%, 62% 8%, 76% 6%, 82% 20%, 95% 28%, 92% 43%, 100% 55%, 90% 65%, 92% 80%, 78% 84%, 70% 96%, 55% 92%, 44% 100%, 33% 90%, 18% 92%, 15% 77%, 3% 68%, 9% 54%, 0% 42%, 12% 33%, 10% 18%, 25% 16%, 33% 4%, 47% 9%)',
+                boxShadow: '0 3px 6px rgba(181,41,63,0.35)',
+              }}
+            />
+            <span
+              className="relative text-xs font-bold text-white"
+              style={{ fontFamily: "'Fraunces', Georgia, serif" }}
+            >
+              {suggestion.rank}
+            </span>
           </div>
         </div>
 
@@ -52,11 +64,11 @@ function OutfitSuggestionCard({ suggestion, onViewDetails }) {
             {garments.map((item, idx) => (
               <div
                 key={item.id}
-                className="mystyla-slide mystyla-fade-in-up min-w-[84px] w-[84px]"
+                className="mystyla-slide mystyla-fade-in-up min-w-[100px] w-[100px]"
                 style={{ animationDelay: `${idx * 70}ms` }}
               >
                 <div
-                  className="mystyla-hover-lift h-24 w-full overflow-hidden rounded-xl border"
+                  className="mystyla-hover-lift h-28 w-full overflow-hidden rounded-xl border"
                   style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface-2)' }}
                   data-cy={`flat-lay-item-${item.category}`}
                 >
@@ -114,15 +126,13 @@ function OutfitSuggestionCard({ suggestion, onViewDetails }) {
         {accessories.length > 0 && (
           <div
             className="relative overflow-hidden rounded-2xl p-3.5"
-            style={{ background: 'var(--mystyla-lavender)' }}
+            style={{ background: 'var(--mystyla-surface)' }}
           >
-            <svg className="absolute -bottom-4 -right-4 w-20 opacity-40" viewBox="0 0 300 300">
-              <path fill="#F5F3FF" d="M220,70 C260,120 255,190 210,225 C165,260 100,255 70,210 C40,165 45,100 90,70 C135,40 190,30 220,70 Z" />
-            </svg>
+
 
             <p
               className="relative mb-2 text-[10px] uppercase tracking-[0.14em]"
-              style={{ color: 'var(--mystyla-lavender-ink)', fontFamily: "'Manrope', sans-serif" }}
+              style={{ color: 'var(--mystyla-ink)', fontFamily: "'Manrope', sans-serif" }}
             >
               Accessories
             </p>
@@ -135,7 +145,7 @@ function OutfitSuggestionCard({ suggestion, onViewDetails }) {
                 >
                   <div
                     className={`${SIZE_BY_CATEGORY[item.category] || "w-12 h-12"} mystyla-hover-lift flex items-center justify-center overflow-hidden rounded-xl border`}
-                    style={{ borderColor: 'var(--mystyla-lavender-ink)', background: 'var(--mystyla-surface)', color: 'var(--mystyla-lavender-ink)' }}
+                    style={{ borderColor: 'var(--mystyla-ink)', background: 'var(--mystyla-surface)', color: 'var(--mystyla-ink)' }}
                     data-cy={`flat-lay-item-${item.category}`}
                   >
                     {item.imageUrl ? (
@@ -151,7 +161,7 @@ function OutfitSuggestionCard({ suggestion, onViewDetails }) {
                   </div>
                   <span
                     className="mt-1.5 text-center text-[10px] leading-tight"
-                    style={{ color: 'var(--mystyla-lavender-ink)', fontFamily: "'Manrope', sans-serif" }}
+                    style={{ color: 'var(--mystyla-ink)', fontFamily: "'Manrope', sans-serif" }}
                   >
                     {item.label}
                   </span>
@@ -162,7 +172,7 @@ function OutfitSuggestionCard({ suggestion, onViewDetails }) {
             {accessories.some((item) => item.reason) && (
               <div className="relative mt-3 space-y-1.5 border-t border-dashed pt-3" style={{ borderColor: 'rgba(61,35,82,0.25)' }}>
                 {accessories.filter((item) => item.reason).map((item) => (
-                  <p key={item.id} className="text-xs leading-5" style={{ color: 'var(--mystyla-lavender-ink)' }}>
+                  <p key={item.id} className="text-xs leading-5" style={{ color: 'var(--mystyla-ink)' }}>
                     <span className="font-medium">{item.label}:</span> {item.reason}
                   </p>
                 ))}

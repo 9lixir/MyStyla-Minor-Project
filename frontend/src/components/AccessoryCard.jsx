@@ -7,7 +7,7 @@ function AccessoryCard({ accessory }) {
         background: 'var(--mystyla-surface)',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = 'rgba(181,41,63,0.5)';
+       e.currentTarget.style.borderColor = 'var(--mystyla-lavender-ink)';
         e.currentTarget.style.boxShadow = '0 8px 24px -8px rgba(181,41,63,0.25)';
       }}
       onMouseLeave={(e) => {

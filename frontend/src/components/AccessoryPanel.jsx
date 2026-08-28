@@ -17,7 +17,7 @@ function AccessoryPanel({ accessories, isLoading, error }) {
     return (
       <div
         className="py-8 text-center text-sm"
-        style={{ color: 'var(--mystyla-primary)' }}
+        style={{ color: 'var(--mystyla-lavender-ink)' }}
         data-cy="accessory-error"
       >
         Couldn't load suggestions. Please try again.
