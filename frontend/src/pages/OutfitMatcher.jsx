@@ -225,6 +225,7 @@ export default function OutfitMatcher({ onBack }) {
       );
 
       setMatchResults(payload);
+      console.log(payload.matches[0])
 
       if ((payload.matches || []).length === 0) {
         toast.info(
@@ -724,19 +725,32 @@ export default function OutfitMatcher({ onBack }) {
                                   }}
                                 >
                                   <div
-                                    className="mb-2 flex h-9 w-9 items-center justify-center rounded-md"
-                                    style={{
-                                      background:
-                                        'color-mix(in srgb, var(--mystyla-accent) 12%, transparent)',
-                                      color:
-                                        'var(--mystyla-accent)',
-                                    }}
-                                  >
-                                    <CategoryIcon
-                                      category={accessory.slot}
-                                      className="h-5 w-5"
-                                    />
-                                  </div>
+  className="mb-3 h-24 w-full overflow-hidden rounded-lg border"
+  style={{
+    borderColor: 'var(--mystyla-border)',
+    background: 'var(--mystyla-bg)',
+  }}
+>
+  {accessory.cutout_path ? (
+    <img
+      src={`${API_BASE_URL}/${accessory.cutout_path}`}
+      alt={accessory.name || accessory.slot}
+      className="h-full w-full object-contain p-2"
+    />
+  ) : (
+    <div
+          className="flex h-full w-full items-center justify-center"
+          style={{
+            color: 'var(--mystyla-accent)',
+          }}
+        >
+          <CategoryIcon
+            category={accessory.slot}
+            className="h-8 w-8"
+          />
+        </div>
+      )}
+    </div>
 
                                   <p
                                     className="text-sm font-medium"
