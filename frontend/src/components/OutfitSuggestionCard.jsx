@@ -2,14 +2,8 @@ import CategoryIcon from "./CategoryIcon";
 import CompatibilityBar from "./CompatibilityBar";
 
 const SIZE_BY_CATEGORY = {
-  top: "w-20 h-20",
-  bottom: "w-16 h-20",
-  shoes: "w-14 h-14",
-  footwear: "w-14 h-14",
-  belt: "w-10 h-10",
-  watch: "w-10 h-10",
-  jewelry: "w-10 h-10",
-  bag: "w-12 h-12",
+  top: "w-20 h-20", bottom: "w-16 h-20", shoes: "w-14 h-14", footwear: "w-14 h-14",
+  belt: "w-10 h-10", watch: "w-10 h-10", jewelry: "w-10 h-10", bag: "w-12 h-12",
 };
 
 function OutfitSuggestionCard({ suggestion, onViewDetails }) {
@@ -18,106 +12,188 @@ function OutfitSuggestionCard({ suggestion, onViewDetails }) {
 
   return (
     <div
-      className="rounded-2xl border border-[#2A3374] bg-[#151A4D]/90 p-5 shadow-sm"
+      className="mystyla-hover-lift relative w-full overflow-hidden rounded-[24px]"
+      style={{ background: 'var(--mystyla-bg)', boxShadow: '0 1px 0 rgba(255,255,255,0.6) inset' }}
       data-cy="outfit-suggestion-card"
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="w-7 h-7 rounded-md bg-[#F5A9CE] text-[#1A2050] flex items-center justify-center text-xs font-medium">
-          {suggestion.rank}
-        </div>
-        <span
-          className="text-xs uppercase tracking-wider text-[#B9C0E8]"
-          style={{ fontFamily: "Inter, sans-serif" }}
-        >
-          Rank {suggestion.rank}
-        </span>
-      </div>
 
-      <div className="mb-5 rounded-xl border border-[#2A3374] bg-[#1E2560] p-3" data-cy="flat-lay">
-        <p className="mb-2 text-[11px] uppercase tracking-wide text-[#B9C0E8]">Outfit Preview</p>
-        <div className="flex items-start gap-3 overflow-x-auto pb-1">
-          {garments.map((item) => (
-            <div key={item.id} className="min-w-[86px] w-[86px]">
+      <div className="p-5 sm:p-6 lg:p-7">
+        {/* Rank + match badge */}
+        <div className="mb-4 flex items-center justify-between">
+          <span
+            className="text-[10px] uppercase tracking-[0.18em]"
+            style={{ color: 'var(--mystyla-gold)', fontFamily: "'Manrope', sans-serif" }}
+          >
+            Rank {suggestion.rank} &middot; {Math.round(suggestion.compatibility)}% match
+          </span>
+          {/* wax-seal / stamp rank medallion */}
+          <div className="relative flex h-9 w-9 items-center justify-center">
+            <div
+              className="absolute inset-0"
+              style={{
+                background: 'radial-gradient(circle at 35% 30%, var(--mystyla-rose), var(--mystyla-primary))',
+                WebkitMaskImage: 'radial-gradient(circle at center, black 68%, transparent 69%)',
+                maskImage: 'radial-gradient(circle at center, black 68%, transparent 69%)',
+                clipPath:
+                  'polygon(50% 0%, 62% 8%, 76% 6%, 82% 20%, 95% 28%, 92% 43%, 100% 55%, 90% 65%, 92% 80%, 78% 84%, 70% 96%, 55% 92%, 44% 100%, 33% 90%, 18% 92%, 15% 77%, 3% 68%, 9% 54%, 0% 42%, 12% 33%, 10% 18%, 25% 16%, 33% 4%, 47% 9%)',
+                boxShadow: '0 3px 6px rgba(181,41,63,0.35)',
+              }}
+            />
+            <span
+              className="relative text-xs font-bold text-white"
+              style={{ fontFamily: "'Fraunces', Georgia, serif" }}
+            >
+              {suggestion.rank}
+            </span>
+          </div>
+        </div>
+
+        {/* Outfit preview — real slider, scroll-snap */}
+        <div
+          className="mb-3 rounded-2xl border p-3.5"
+          style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)' }}
+          data-cy="flat-lay"
+        >
+          <p
+            className="mb-2.5 text-[10px] uppercase tracking-[0.14em]"
+            style={{ color: 'var(--mystyla-muted)', fontFamily: "'Manrope', sans-serif" }}
+          >
+            Outfit preview &middot; swipe
+          </p>
+          <div className="mystyla-slider flex items-start gap-3 pb-1">
+            {garments.map((item, idx) => (
               <div
-                className="h-24 w-full overflow-hidden rounded-lg border border-[#5B63A8] bg-[#0E1240]"
-                data-cy={`flat-lay-item-${item.category}`}
+                key={item.id}
+                className="mystyla-slide mystyla-fade-in-up min-w-[100px] w-[100px]"
+                style={{ animationDelay: `${idx * 70}ms` }}
               >
-                {item.imageUrl ? (
-                  <img
-                    src={item.imageUrl}
-                    alt={item.label}
-                    className="h-full w-full object-contain p-1.5"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-[#FFA8D4]">
-                    <CategoryIcon category={item.category} className="h-8 w-8" />
-                  </div>
-                )}
+                <div
+                  className="mystyla-hover-lift h-28 w-full overflow-hidden rounded-xl border"
+                  style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface-2)' }}
+                  data-cy={`flat-lay-item-${item.category}`}
+                >
+                  {item.imageUrl ? (
+                    <img src={item.imageUrl} alt={item.label} className="h-full w-full object-contain p-1.5" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center" style={{ color: 'var(--mystyla-primary)' }}>
+                      <CategoryIcon category={item.category} className="h-8 w-8" />
+                    </div>
+                  )}
+                </div>
+                <p
+                  className="mt-1.5 truncate text-[11px]"
+                  style={{ fontFamily: "'Fraunces', Georgia, serif", color: 'var(--mystyla-ink)' }}
+                >
+                  {item.label}
+                </p>
+                <p
+                  className="text-[9px] uppercase tracking-[0.1em]"
+                  style={{ color: 'var(--mystyla-muted)', fontFamily: "'Manrope', sans-serif" }}
+                >
+                  {item.category}
+                </p>
               </div>
-              <p className="mt-1.5 truncate text-[10px] text-[#F5F3FF]">{item.label}</p>
-              <p className="text-[9px] capitalize text-[#B9C0E8]">{item.category}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
 
-      {accessories.length > 0 ? (
-        <div className="mb-5 flex items-start gap-3 flex-wrap">
-          {accessories.map((item) => (
-            <div key={item.id} className="flex flex-col items-center w-20">
-                            <div
-                className={`${SIZE_BY_CATEGORY[item.category] || "w-12 h-12"} rounded-lg border border-[#FFA8D4]/35 bg-[#FF7AB8]/12 text-[#FFA8D4] flex items-center justify-center overflow-hidden`}
-                data-cy={`flat-lay-item-${item.category}`}
-              >
-                {item.imageUrl ? (
-                  <img
-                    src={item.imageUrl}
-                    alt={item.label}
-                    className="h-full w-full object-contain p-1"
-                    onError={(e) => { e.target.style.display = "none"; }}
-                  />
-                ) : (
-                  <CategoryIcon category={item.category} className="w-2/3 h-2/3" />
-                )}
-              </div>
-              <span
-                className="text-[10px] text-center mt-1.5 text-[#B9C0E8] leading-tight"
-                style={{ fontFamily: "Inter, sans-serif" }}
-              >
-                {item.label}
-              </span>
-              <span className="text-[9px] text-[#FFA8D4] uppercase tracking-wide mt-0.5">
-                Suggested
-              </span>
-            </div>
-          ))}
-        </div>
-      ) : null}
-
-      <div className="rounded-xl border border-[#2A3374] bg-[#1E2560] p-3">
-        <CompatibilityBar score={suggestion.compatibility} />
-      </div>
-
-      {accessories.some((item) => item.reason) ? (
-        <div className="mt-4 space-y-2 border-t border-[#2A3374] pt-4">
-          {accessories.filter((item) => item.reason).map((item) => (
-            <p key={item.id} className="text-xs leading-5 text-[#B9C0E8]">
-              <span className="font-medium text-[#F5F3FF]">{item.label}:</span> {item.reason}
-            </p>
-          ))}
-        </div>
-      ) : null}
-
-      {onViewDetails ? (
-        <button
-          onClick={() => onViewDetails?.(suggestion)}
-          className="w-full mt-4 py-2.5 rounded-xl border border-[#2A3374] text-sm text-[#F5F3FF] hover:border-[#FFA8D4] hover:text-[#FFA8D4] transition"
-          style={{ fontFamily: "Inter, sans-serif" }}
-          data-cy="view-details-button"
+        {/* Scoring summary — pill badges */}
+        <div
+          className="mb-3 rounded-2xl border p-3.5"
+          style={{ borderColor: 'var(--mystyla-border)', background: 'var(--mystyla-surface)' }}
         >
-          View Details
-        </button>
-      ) : null}
+          <p
+            className="mb-2.5 text-[10px] uppercase tracking-[0.14em]"
+            style={{ color: 'var(--mystyla-muted)', fontFamily: "'Manrope', sans-serif" }}
+          >
+            Scoring summary
+          </p>
+          <div className="mb-3 flex flex-wrap gap-1.5">
+            <span className="mystyla-pill rounded-full px-3 py-1 text-xs">
+              {Math.round(suggestion.compatibility)}% harmony
+            </span>
+            <span className="mystyla-pill rounded-full px-3 py-1 text-xs">
+              Compatible
+            </span>
+            <span className="mystyla-pill-violet rounded-full px-3 py-1 text-xs">
+              Weather fit
+            </span>
+          </div>
+          <CompatibilityBar score={suggestion.compatibility} />
+        </div>
+
+        {/* Accessories — colored band with hidden blob accent */}
+        {accessories.length > 0 && (
+          <div
+            className="relative overflow-hidden rounded-2xl p-3.5"
+            style={{ background: 'var(--mystyla-surface)' }}
+          >
+
+
+            <p
+              className="relative mb-2 text-[10px] uppercase tracking-[0.14em]"
+              style={{ color: 'var(--mystyla-ink)', fontFamily: "'Manrope', sans-serif" }}
+            >
+              Accessories
+            </p>
+            <div className="relative flex items-start gap-3 flex-wrap">
+              {accessories.map((item, idx) => (
+                <div
+                  key={item.id}
+                  className="mystyla-fade-in-up flex flex-col items-center w-[72px]"
+                  style={{ animationDelay: `${idx * 70}ms` }}
+                >
+                  <div
+                    className={`${SIZE_BY_CATEGORY[item.category] || "w-12 h-12"} mystyla-hover-lift flex items-center justify-center overflow-hidden rounded-xl border`}
+                    style={{ borderColor: 'var(--mystyla-ink)', background: 'var(--mystyla-surface)', color: 'var(--mystyla-ink)' }}
+                    data-cy={`flat-lay-item-${item.category}`}
+                  >
+                    {item.imageUrl ? (
+                      <img
+                        src={item.imageUrl}
+                        alt={item.label}
+                        className="h-full w-full object-contain p-1"
+                        onError={(e) => { e.target.style.display = "none"; }}
+                      />
+                    ) : (
+                      <CategoryIcon category={item.category} className="w-2/3 h-2/3" />
+                    )}
+                  </div>
+                  <span
+                    className="mt-1.5 text-center text-[10px] leading-tight"
+                    style={{ color: 'var(--mystyla-ink)', fontFamily: "'Manrope', sans-serif" }}
+                  >
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {accessories.some((item) => item.reason) && (
+              <div className="relative mt-3 space-y-1.5 border-t border-dashed pt-3" style={{ borderColor: 'rgba(61,35,82,0.25)' }}>
+                {accessories.filter((item) => item.reason).map((item) => (
+                  <p key={item.id} className="text-xs leading-5" style={{ color: 'var(--mystyla-ink)' }}>
+                    <span className="font-medium">{item.label}:</span> {item.reason}
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {onViewDetails && (
+          <button
+            onClick={() => onViewDetails?.(suggestion)}
+            className="mt-3 w-full rounded-full border py-2.5 text-sm transition"
+            style={{ borderColor: 'var(--mystyla-border-strong)', color: 'var(--mystyla-ink)', fontFamily: "'Manrope', sans-serif" }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--mystyla-primary)'; e.currentTarget.style.color = 'var(--mystyla-primary)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--mystyla-border-strong)'; e.currentTarget.style.color = 'var(--mystyla-ink)'; }}
+            data-cy="view-details-button"
+          >
+            View details
+          </button>
+        )}
+      </div>
     </div>
   );
 }

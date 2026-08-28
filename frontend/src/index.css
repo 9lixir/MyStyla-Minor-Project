@@ -1,19 +1,29 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
 :root {
-	--mystyla-ink: #fff7fb;
-	--mystyla-muted: #d8c2cf;
-	--mystyla-placeholder: #b894a8;
-	--mystyla-bg: #1d1c22;
-	--mystyla-surface: rgba(34, 31, 40, 0.9);
-	--mystyla-surface-2: #2f2a35;
-	--mystyla-border: #52465a;
-	--mystyla-primary: #f3a3c7;
-	--mystyla-primary-soft: #ffd7e8;
-	--mystyla-accent: #ff78b7;
-	--mystyla-rose: #ff9cca;
-	--mystyla-shadow: 0 24px 70px rgba(18, 13, 20, 0.36);
+	/* -- core palette: cherry / cream / lavender -- */
+	--mystyla-ink: #3a1a26;
+	--mystyla-muted: #8a6a4f;
+	--mystyla-placeholder: #b79a83;
+	--mystyla-bg: #fdf6ea;
+	--mystyla-surface: #fffaf1;
+	--mystyla-surface-2: #f6ecd8;
+	--mystyla-border: #e8d9c0;
+	--mystyla-border-strong: #d8c29e;
+
+	--mystyla-primary: #b5293f;
+	--mystyla-primary-soft: #f6dccb;
+	--mystyla-accent: #b5293f;
+	--mystyla-accent-2: #6a3f8f;
+	--mystyla-rose: #d9718a;
+	--mystyla-gold: #c17a3a;
+	--mystyla-lavender: #d8c9e8;
+	--mystyla-lavender-ink: #3d2352;
+
+	--mystyla-shadow: 0 20px 60px rgba(58, 26, 38, 0.16);
+	--mystyla-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 html,
@@ -26,12 +36,13 @@ body {
 	margin: 0;
 	color: var(--mystyla-ink);
 	background:
-		radial-gradient(circle at 12% 8%, rgba(255, 178, 214, 0.34), transparent 34%),
-		radial-gradient(circle at 92% 14%, rgba(255, 212, 232, 0.24), transparent 30%),
-		radial-gradient(circle at 78% 82%, rgba(255, 140, 196, 0.2), transparent 30%),
-		linear-gradient(180deg, #17151c 0%, #1a1720 52%, #1c1822 100%);
+		radial-gradient(#e8d9c0 1px, transparent 1px),
+		linear-gradient(180deg, #fdf6ea 0%, #fbf1e2 100%);
+	background-size: 14px 14px, 100% 100%;
 	font-family: "Manrope", "Segoe UI", sans-serif;
 }
+
+/* ============ auth shell (login / forgot password) ============ */
 
 .mystyla-auth-shell {
 	position: relative;
@@ -43,7 +54,7 @@ body {
 	content: "";
 	position: absolute;
 	border-radius: 999px;
-	filter: blur(10px);
+	filter: blur(6px);
 	pointer-events: none;
 }
 
@@ -52,7 +63,7 @@ body {
 	height: 26rem;
 	top: -10rem;
 	left: -7rem;
-	background: rgba(255, 178, 214, 0.32);
+	background: rgba(181, 41, 63, 0.14);
 }
 
 .mystyla-auth-shell::after {
@@ -60,7 +71,7 @@ body {
 	height: 20rem;
 	right: -6rem;
 	bottom: -8rem;
-	background: rgba(255, 140, 196, 0.22);
+	background: rgba(216, 201, 232, 0.5);
 }
 
 .mystyla-auth-card {
@@ -68,18 +79,21 @@ body {
 	background: var(--mystyla-surface);
 	border: 1px solid var(--mystyla-border);
 	box-shadow: var(--mystyla-shadow);
-	backdrop-filter: blur(18px);
 }
 
+/* ============ type + text utilities ============ */
+
 .mystyla-masthead {
-	letter-spacing: 0.35em;
+	letter-spacing: 0.28em;
 	text-transform: uppercase;
-	color: var(--mystyla-muted);
+	color: var(--mystyla-gold);
+	font-size: 10px;
 }
 
 .mystyla-display {
 	font-family: "Fraunces", Georgia, "Times New Roman", serif;
-	letter-spacing: -0.03em;
+	letter-spacing: -0.02em;
+	color: var(--mystyla-ink);
 }
 
 .mystyla-accent {
@@ -87,13 +101,30 @@ body {
 }
 
 .mystyla-accent-teal {
-	color: var(--mystyla-primary-soft);
+	color: var(--mystyla-lavender-ink);
 }
+
+.mystyla-accent-violet {
+	color: var(--mystyla-accent-2);
+}
+
+.mystyla-gradient-text {
+	background: linear-gradient(120deg, var(--mystyla-accent) 0%, var(--mystyla-accent-2) 100%);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
+.mystyla-subtle {
+	color: var(--mystyla-muted);
+}
+
+/* ============ form controls ============ */
 
 .mystyla-input {
 	width: 100%;
 	border: 0;
-	border-bottom: 1px solid rgba(255, 171, 211, 0.4);
+	border-bottom: 1px solid var(--mystyla-border-strong);
 	background: transparent;
 	padding: 0.8rem 0;
 	color: var(--mystyla-ink);
@@ -107,28 +138,157 @@ body {
 .mystyla-input:focus {
 	outline: none;
 	border-bottom-color: var(--mystyla-accent);
-	box-shadow: 0 10px 0 -9px rgba(255, 120, 183, 0.85);
+	box-shadow: 0 10px 0 -9px rgba(181, 41, 63, 0.35);
 }
 
 .mystyla-button {
-	background: linear-gradient(135deg, #f3a3c7 0%, #ff93c2 54%, #ff72b1 100%);
-	box-shadow: 0 16px 30px rgba(255, 120, 183, 0.3);
+	background: var(--mystyla-primary);
+	color: var(--mystyla-surface);
+	box-shadow: 0 12px 24px rgba(181, 41, 63, 0.22);
+	transition: transform 200ms var(--mystyla-ease), box-shadow 200ms var(--mystyla-ease), background 200ms ease;
 }
 
 .mystyla-button:hover {
-	background: linear-gradient(135deg, #ea93ba 0%, #ff83ba 52%, #ff62a8 100%);
+	background: #9c2136;
+	box-shadow: 0 16px 30px rgba(181, 41, 63, 0.28);
+	transform: translateY(-2px);
 }
 
-.mystyla-subtle {
-	color: var(--mystyla-muted);
-}
+/* ============ pills / badges ============ */
 
 .mystyla-pill {
-	background: rgba(255, 93, 168, 0.16);
-	color: var(--mystyla-accent);
+	background: var(--mystyla-primary-soft);
+	color: #6b3a10;
+	font-weight: 700;
 }
 
 .mystyla-pill-teal {
-	background: rgba(255, 171, 211, 0.2);
-	color: var(--mystyla-primary-soft);
+	background: var(--mystyla-lavender);
+	color: var(--mystyla-lavender-ink);
+	font-weight: 700;
+}
+
+.mystyla-pill-violet {
+	background: var(--mystyla-lavender);
+	color: var(--mystyla-lavender-ink);
+	font-weight: 700;
+}
+
+/* ============ ambient background blobs (AbstractBackground.jsx) ============ */
+
+.mystyla-blob-field {
+	position: fixed;
+	inset: 0;
+	overflow: hidden;
+	pointer-events: none;
+	z-index: 0;
+}
+
+.mystyla-blob {
+	position: absolute;
+	animation: mystyla-drift 22s ease-in-out infinite;
+}
+
+.mystyla-blob-slow {
+	animation-duration: 34s;
+}
+
+.mystyla-blob-reverse {
+	animation-direction: reverse;
+}
+
+@keyframes mystyla-drift {
+	0%, 100% { transform: translate(0, 0) scale(1); }
+	50% { transform: translate(1.5%, -2%) scale(1.03); }
+}
+
+.mystyla-stitch {
+	position: absolute;
+}
+
+/* ============ animation utilities ============ */
+
+@keyframes mystyla-fade-in-up {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes mystyla-shimmer {
+	0% { background-position: -200% 0; }
+	100% { background-position: 200% 0; }
+}
+
+.mystyla-fade-in,
+.mystyla-fade-in-up {
+	animation: mystyla-fade-in-up 480ms var(--mystyla-ease) both;
+}
+
+.mystyla-hover-lift {
+	transition: transform 220ms var(--mystyla-ease), box-shadow 220ms var(--mystyla-ease), border-color 220ms ease;
+}
+
+.mystyla-hover-lift:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 16px 32px rgba(58, 26, 38, 0.14);
+	border-color: rgba(181, 41, 63, 0.35);
+}
+
+.mystyla-skeleton {
+	background: linear-gradient(
+		90deg,
+		var(--mystyla-surface-2) 25%,
+		rgba(181, 41, 63, 0.1) 50%,
+		var(--mystyla-surface-2) 75%
+	);
+	background-size: 200% 100%;
+	animation: mystyla-shimmer 1.6s ease-in-out infinite;
+}
+
+/* ============ slider / carousel utilities ============ */
+
+.mystyla-slider {
+	display: flex;
+	gap: 0.75rem;
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	scroll-behavior: smooth;
+	scrollbar-width: thin;
+	scrollbar-color: var(--mystyla-accent) transparent;
+}
+
+.mystyla-slider::-webkit-scrollbar {
+	height: 6px;
+}
+
+.mystyla-slider::-webkit-scrollbar-thumb {
+	background: var(--mystyla-accent);
+	border-radius: 999px;
+}
+
+.mystyla-slider::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.mystyla-slide {
+	scroll-snap-align: start;
+	flex-shrink: 0;
+}
+
+/* ============ scalloped edge (header / section dividers) ============ */
+
+.mystyla-scallop {
+	height: 10px;
+	background: var(--mystyla-primary);
+	-webkit-mask-image: radial-gradient(circle at 10.5px 0, transparent 10.5px, black 10.6px);
+	mask-image: radial-gradient(circle at 10.5px 0, transparent 10.5px, black 10.6px);
+	-webkit-mask-size: 21px 10px;
+	mask-size: 21px 10px;
+	-webkit-mask-repeat: repeat-x;
+	mask-repeat: repeat-x;
 }

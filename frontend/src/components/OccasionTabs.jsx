@@ -1,22 +1,7 @@
 const OCCASIONS = [
-  "Casual",
-  "College",
-  "Shopping",
-  "Travel",
-  "Office",
-  "Meeting",
-  "Interview",
-  "Presentation",
-  "Party",
-  "Date",
-  "Dinner",
-  "Birthday",
-  "Wedding",
-  "Puja",
-  "Festival",
-  "Religious Ceremony",
-  "Farewell",
-  "Graduation",
+  "Casual", "College", "Shopping", "Travel", "Office", "Meeting",
+  "Interview", "Presentation", "Party", "Date", "Dinner", "Birthday",
+  "Wedding", "Puja", "Festival", "Religious Ceremony", "Farewell", "Graduation",
 ];
 
 function OccasionTabs({ selected, onSelect }) {
@@ -29,12 +14,33 @@ function OccasionTabs({ selected, onSelect }) {
             key={occasion}
             onClick={() => onSelect(occasion)}
             data-cy={`occasion-tab-${occasion.toLowerCase()}`}
-            className={`px-4 py-2 rounded-full text-sm transition ${
+            className="px-4 py-2 rounded-full text-sm transition-all duration-150"
+            style={
               isActive
-                ? "bg-[#F5A9CE] text-[#1A2050] shadow-sm"
-                : "bg-[#151A4D]/90 text-[#B9C0E8] border border-[#2A3374] hover:border-[#FFA8D4]/70 hover:text-[#FFD3EC]"
-            }`}
-            style={{ fontFamily: "Inter, sans-serif" }}
+                ? {
+                    background: 'var(--mystyla-primary)',
+                    color: 'var(--mystyla-surface)',
+                    fontWeight: 500,
+                    boxShadow: '0 4px 16px -4px rgba(181,41,63,0.45)',
+                    fontFamily: "'Manrope', sans-serif",
+                  }
+                : {
+                    border: '1px dashed var(--mystyla-border-strong)',
+                    background: 'var(--mystyla-surface)',
+                    color: 'var(--mystyla-muted)',
+                    fontFamily: "'Manrope', sans-serif",
+                  }
+            }
+            onMouseEnter={(e) => {
+              if (isActive) return;
+              e.currentTarget.style.borderColor = 'rgba(181,41,63,0.6)';
+              e.currentTarget.style.color = 'var(--mystyla-primary)';
+            }}
+            onMouseLeave={(e) => {
+              if (isActive) return;
+              e.currentTarget.style.borderColor = 'var(--mystyla-border-strong)';
+              e.currentTarget.style.color = 'var(--mystyla-muted)';
+            }}
           >
             {occasion}
           </button>

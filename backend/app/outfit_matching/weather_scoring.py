@@ -14,6 +14,7 @@ TEMP_FALLOFF_C = 8.0
 ALL_SEASON_SUITABILITY = 0.85
 BASE_SUITABILITY = 0.15
 UNKNOWN_TEMP_SUITABILITY = 0.6  # no weather passed in don't reward or punish
+HOT_TEMP_THRESHOLD_C = 27.0
 
 WARM_LAYER_SUBROLES = {"light_outer_layer", "outer_layer", "formal_layer", "heavy_outer_layer"}
 HEAVY_LAYER_SUBROLES = {"outer_layer", "heavy_outer_layer"}
@@ -42,6 +43,22 @@ def garment_weather_score(season: str, temperature_c: float | None) -> float:
 
     score = 1.0 - ((1.0 - BASE_SUITABILITY) * (distance / TEMP_FALLOFF_C))
     return round(max(BASE_SUITABILITY, min(1.0, score)), 3)
+
+
+def requires_outerwear(weather_mode: str | None, temp_c: float | None) -> bool:
+    mode = str(weather_mode or "").strip().lower()
+    is_cold_mode = "cold" in mode
+    is_rainy_mode = "rain" in mode
+    is_cold_temperature = isinstance(temp_c, (int, float)) and temp_c < 15
+    return is_cold_mode or is_rainy_mode or is_cold_temperature
+
+
+def excludes_outerwear(weather_mode: str | None, temp_c: float | None) -> bool:
+    """Hard exclusion for outerwear in hot conditions, mirroring requires_outerwear."""
+    mode = str(weather_mode or "").strip().lower()
+    is_hot_mode = "hot" in mode
+    is_hot_temperature = isinstance(temp_c, (int, float)) and temp_c >= HOT_TEMP_THRESHOLD_C
+    return is_hot_mode or is_hot_temperature
 
 
 def outfit_weather_score(garments: list[dict[str, Any]], weather: dict[str, Any] | None) -> float:
