@@ -439,15 +439,15 @@ export default function ReviewTags({ garment, onBack, onSave }) {
                 </p>
               </div>
 
-              <div
+              {/* <div
                 className="rounded-full px-3 py-1.5 text-[10px] uppercase tracking-[0.15em]"
                 style={{
                   background: "var(--mystyla-primary-soft)",
                   color: "var(--mystyla-primary)",
                 }}
               >
-                AI detected
-              </div>
+                
+              </div> */}
             </div>
 
             <div className="p-5 sm:p-7">
