@@ -245,15 +245,22 @@ function CategorySection({ section, onDelete, onClick, delayBase = 0 }) {
     return () => window.removeEventListener("resize", onResize)
   }, [section.garments.length])
 
-  const handleWheel = (e) => {
+  useEffect(() => {
     const el = scrollerRef.current
+    if (!el) return
 
-    if (!el || el.scrollWidth <= el.clientWidth) return
-    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return
+    const onWheel = (e) => {
+      if (el.scrollWidth <= el.clientWidth) return
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return
 
-    el.scrollLeft += e.deltaY
-    e.preventDefault()
-  }
+      e.preventDefault()
+      e.stopPropagation()
+      el.scrollLeft += e.deltaY
+    }
+
+    el.addEventListener("wheel", onWheel, { passive: false })
+    return () => el.removeEventListener("wheel", onWheel)
+  }, [])
 
   const scrollByPage = (direction) => {
     const el = scrollerRef.current
@@ -336,18 +343,19 @@ function CategorySection({ section, onDelete, onClick, delayBase = 0 }) {
 
         <div
           ref={scrollerRef}
-          onWheel={handleWheel}
           onScroll={updateScrollButtons}
-          className="grid overflow-x-auto scroll-smooth pb-4 pr-1"
+          className="grid overflow-x-auto overflow-y-hidden scroll-smooth pb-4 pr-1"
           style={{
             gridTemplateRows: `repeat(${SUBROWS}, ${SUBROW_HEIGHT}px)`,
             gridAutoFlow: "column dense",
             gridAutoColumns: `${COL_WIDTH}px`,
             gap: GRID_GAP,
             height: MASONRY_HEIGHT,
+            boxSizing: "border-box",
             touchAction: "pan-x",
             cursor: "grab",
             scrollbarWidth: "thin",
+            overscrollBehaviorX: "contain",
           }}
         >
           {section.garments.map((garment, idx) => (
