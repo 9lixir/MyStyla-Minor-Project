@@ -63,8 +63,8 @@ FORMALITY_LABELS = ["casual", "formal", "business casual", "athletic", "festive/
 SEASON_LABELS = ["summer", "winter", "spring", "autumn", "all-season"]
 PATTERN_LABELS = ["solid", "striped", "floral", "plaid", "polka dot", "graphic print"]
 OCCASION_LABELS = [
-    "everyday wear", "work", "party", "date night", "formal event",
-    "wedding guest outfit", "puja or religious ceremony outfit", "festival celebration outfit",
+    "everyday wear", "work", "party", "date", "formal event",
+    "wedding", "puja", "festival",
 ]
 
 CONFIDENCE_THRESHOLDS = {

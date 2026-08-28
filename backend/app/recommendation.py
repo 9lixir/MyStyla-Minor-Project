@@ -1,10 +1,42 @@
 import colorsys
 import math
 
+# --- Formal one-piece detection -------------------------------------------
+# Fine categories that are ALWAYS formal/festive one-pieces regardless of how
+# they happen to be tagged. A generic "dress" is deliberately NOT here -- a
+# casual sundress is also category "dress", and must not be treated as formal.
+INHERENTLY_FORMAL_ONE_PIECE = {
+    "gown", "saree", "lehenga", "anarkali", "sherwani", "salwar suit", "tuxedo",
+}
+
+# Owned footwear whose filename contains one of these is a flat/casual
+# silhouette and is excluded when the outfit has a formal one-piece.
+CASUAL_FOOTWEAR_WORDS = ("loafer", "sneaker", "trainer", "sandal",
+                         "flip", "slipper", "flat", "crocs")
+
+
+def _has_formal_one_piece(garments: list[dict]) -> bool:
+    """True only for genuinely formal/festive one-pieces. A generic dress
+    counts only when its own formality tag is Formal or Festive, so casual
+    and smart-casual dresses are left alone."""
+    for g in garments:
+        tags = g.get("tags", {}) or {}
+        fine = str(tags.get("fine_category") or "").lower()
+        broad = str(g.get("category") or tags.get("category") or "").lower()
+        formality = str(tags.get("formality") or "").lower()
+        if fine in INHERENTLY_FORMAL_ONE_PIECE:
+            return True
+        if broad == "dress" and formality in ("formal", "festive"):
+            return True
+    return False
+
+
 # --- Dictionary Mappings ---
 STYLE_FOOTWEAR_OVERRIDE = {
     ("Formal", "south_asian"): "Mojari",
     ("Formal", "nepali"): "Mojari",
+    ("Festive", "south_asian"): "Mojari",
+    ("Festive", "nepali"): "Mojari",
     ("Smart Casual", "south_asian"): "Juti",
     ("Smart Casual", "nepali"): "Juti",
 }
@@ -74,7 +106,18 @@ STATEMENT_SLOTS = {"jewelry", "watch"}
 
 # Only bag/footwear check the user's own wardrobe first; other accessories
 # always use the generic rule.
-WARDROBE_CHECKED_SLOTS = {"bag", "footwear"}
+WARDROBE_CHECKED_SLOTS = {
+    "bag",
+    "footwear",
+    "jewelry",
+    "watch",
+    "belt",
+    "hat",
+    "scarf",
+    "gloves",
+    "tie",
+    "sunglasses",
+}
 
 TONE_PREFIX = {
     "warm": "Gold",
@@ -276,6 +319,15 @@ def recommend_accessories(
         "festive/traditional": "Festive",
     }
     norm_formality = formality_map.get(str(formality).lower(), "Casual")
+
+    # A gown / lehenga / saree is a formal or festive statement piece. If the
+    # outfit formality came through low (bad tag), bump it up BEFORE any slot
+    # is resolved -- this fixes the catalog default, the season override AND
+    # the wardrobe query all at once, so casual footwear stops being pulled in.
+    has_formal_one_piece = _has_formal_one_piece(garments)
+    if has_formal_one_piece and norm_formality not in ("Formal", "Festive"):
+        norm_formality = "Festive" if style_family in ("south_asian", "nepali") else "Formal"
+
     accessory_types = ACCESSORY_TYPES[norm_formality]
     footwear_override = STYLE_FOOTWEAR_OVERRIDE.get((norm_formality, style_family))
 
@@ -293,6 +345,14 @@ def recommend_accessories(
         wardrobe_match = None
         if slot in WARDROBE_CHECKED_SLOTS:
             candidates = get_wardrobe_accessories(user_id, slot, norm_formality)
+            # With a formal one-piece, drop owned flats/loafers/sneakers so a
+            # color-matched casual shoe can't be slapped under a gown/lehenga.
+            if slot == "footwear" and has_formal_one_piece:
+                candidates = [
+                    c for c in candidates
+                    if not any(word in (c.get("filename") or "").lower()
+                               for word in CASUAL_FOOTWEAR_WORDS)
+                ]
             wardrobe_match = select_best_wardrobe_match(candidates, outfit_hue)
 
         if wardrobe_match:

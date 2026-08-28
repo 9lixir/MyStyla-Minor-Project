@@ -135,13 +135,14 @@ def normalize_pipeline_tags(tags: dict) -> dict:
 
     }
     formality_map = {
-        "casual": "Casual",
-        "business casual": "Smart Casual",
-        "formal": "Formal",
-        "athletic": "Athletic",
-        "festive": "Festive",
-        "traditional": "Festive",
-        "festive/traditional": "Festive",
+    "casual": "Casual",
+    "business casual": "Smart Casual",
+    "smart casual": "Smart Casual",   # accept canonical on re-save
+    "formal": "Formal",
+    "athletic": "Athletic",
+    "festive": "Festive",
+    "traditional": "Festive",
+    "festive/traditional": "Festive",
     }
     season_map = {
         "spring": "Spring",
@@ -151,12 +152,14 @@ def normalize_pipeline_tags(tags: dict) -> dict:
         "all-season": "All-Season",
     }
     pattern_map = {
-        "solid": "Solid",
-        "striped": "Striped",
-        "floral": "Floral",
-        "plaid": "Checked",
-        "polka dot": "Graphic",
-        "graphic print": "Graphic",
+    "solid": "Solid",
+    "striped": "Striped",
+    "floral": "Floral",
+    "plaid": "Checked",
+    "checked": "Checked",        # accept canonical on re-save
+    "polka dot": "Graphic",
+    "graphic print": "Graphic",
+    "graphic": "Graphic",        # accept canonical on re-save
     }
     occasion_map = {
         "casual": "Casual",
