@@ -74,7 +74,18 @@ STATEMENT_SLOTS = {"jewelry", "watch"}
 
 # Only bag/footwear check the user's own wardrobe first; other accessories
 # always use the generic rule.
-WARDROBE_CHECKED_SLOTS = {"bag", "footwear"}
+WARDROBE_CHECKED_SLOTS = {
+    "bag",
+    "footwear",
+    "jewelry",
+    "watch",
+    "belt",
+    "hat",
+    "scarf",
+    "gloves",
+    "tie",
+    "sunglasses",
+}
 
 TONE_PREFIX = {
     "warm": "Gold",
