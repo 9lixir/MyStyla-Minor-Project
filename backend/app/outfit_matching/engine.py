@@ -19,6 +19,30 @@ from app.recommendation import recommend_accessories
 from app.scanning.vector_store import search_similar_filtered
 
 
+OCCASION_FORMALITY_CEILING = {
+    "everyday wear": "Casual", "casual": "Casual", "college": "Casual",
+    "shopping": "Casual", "travel": "Casual", "workout": "Casual",
+    "party": "Smart Casual", "date": "Smart Casual",
+    "dinner": "Smart Casual", "birthday": "Smart Casual",
+    "work": "Formal", "office": "Formal", "meeting": "Formal",
+    "interview": "Formal", "presentation": "Formal", "formal event": "Formal",
+    "farewell": "Formal", "graduation": "Formal",
+    "wedding": "Festive", "puja": "Festive",
+    "festival": "Festive", "religious ceremony": "Festive",
+}
+_FORMALITY_PRIORITY = {"Festive": 5, "Formal": 4, "Smart Casual": 3, "Athletic": 2, "Casual": 1}
+
+
+def _cap_formality_by_occasion(formality: str, occasion: str | None) -> str:
+    """Never let accessories dress up beyond what the chosen occasion calls for:
+    a Casual occasion should not pull heels/clutch/belt just because one garment
+    happens to be tagged Formal."""
+    ceiling = OCCASION_FORMALITY_CEILING.get(str(occasion or "").strip().lower())
+    if ceiling and _FORMALITY_PRIORITY.get(formality, 1) > _FORMALITY_PRIORITY[ceiling]:
+        return ceiling
+    return formality
+
+
 def _outfit_formality(garments: list[dict[str, Any]]) -> str:
     priority = {"Festive": 5, "Formal": 4, "Smart Casual": 3, "Athletic": 2, "Casual": 1}
     values = [str(g.get("tags", {}).get("formality", "Casual")) for g in garments]
@@ -127,7 +151,7 @@ def generate_outfits(user_id, occasion, top_k=DEFAULT_TOP_K, weather=None):
         require_outerwear=outerwear_required,
     )
     for outfit in outfits:
-        formality = _outfit_formality(outfit["garments"])
+        formality = _cap_formality_by_occasion(_outfit_formality(outfit["garments"]), occasion)
         outfit["formality"] = formality
         style_family = _outfit_style_family(outfit["garments"])
         season = next(
