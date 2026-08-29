@@ -220,7 +220,17 @@ export function iconForCategory(category) {
 
 export const FORMALITY_LABELS = ["casual", "formal", "business casual", "athletic", "festive/traditional"];
 export const SEASON_LABELS = ["summer", "winter", "spring", "autumn", "all-season"];
-export const PATTERN_LABELS = ["solid", "striped", "floral", "plaid", "polka dot", "graphic print"];
+export const PATTERN_LABELS = ["solid", "striped", "floral", "plaid", "graphic"];
+
+const PATTERN_ALIAS = {
+  solid: "solid", striped: "striped", floral: "floral",
+  plaid: "plaid", checked: "plaid",                 // stored canonical is "Checked"
+  graphic: "graphic", "graphic print": "graphic", "polka dot": "graphic",
+};
+
+export function normalizePattern(value) {
+  return PATTERN_ALIAS[String(value || "").trim().toLowerCase()] || "solid";
+}
 export const OCCASION_LABELS = [
   "everyday wear",
   "college",
