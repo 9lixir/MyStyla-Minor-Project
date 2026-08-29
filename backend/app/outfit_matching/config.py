@@ -12,7 +12,14 @@ PATTERN = ["Solid", "Striped", "Checked", "Graphic", "Floral"]
 # because a garment photo alone can't tell College apart from Shopping.
 
 CLASSIFIER_OCCASIONS = [
-    "Casual", "Office", "Party", "Date", "Farewell", "Wedding", "Puja", "Festival",
+    "everyday wear",
+    "work",
+    "party",
+    "date",
+    "formal event",
+    "wedding",
+    "puja",
+    "festival",
 ]
 
 OCCASION = CLASSIFIER_OCCASIONS + [
@@ -26,13 +33,41 @@ OCCASION = CLASSIFIER_OCCASIONS + [
 # Cluster map used for occasion fallback matching — "similar occasions, similar dresses." 
 # Add new occasions here and they inherit fallback behavior automatically, no engine code changes needed.
 OCCASION_CLUSTERS = {
-    "Casual": "everyday", "College": "everyday", "Shopping": "everyday", "Travel": "everyday",
-    "Office": "formal_professional", "Meeting": "formal_professional",
-    "Interview": "formal_professional", "Presentation": "formal_professional",
-    "Party": "evening_social", "Date": "evening_social", "Dinner": "evening_social", "Birthday": "evening_social",
-    "Wedding": "festive_traditional", "Puja": "festive_traditional",
-    "Festival": "festive_traditional", "Religious Ceremony": "festive_traditional",
-    "Farewell": "milestone", "Graduation": "milestone",
+    # Everyday
+    "everyday wear": "everyday",
+    "Casual": "everyday",
+    "College": "everyday",
+    "Shopping": "everyday",
+    "Travel": "everyday",
+
+    # Work / professional
+    "work": "formal_professional",
+    "formal event": "formal_professional",
+    "Office": "formal_professional",
+    "Meeting": "formal_professional",
+    "Interview": "formal_professional",
+    "Presentation": "formal_professional",
+
+    # Social / evening
+    "party": "evening_social",
+    "date": "evening_social",
+    "Party": "evening_social",
+    "Date": "evening_social",
+    "Dinner": "evening_social",
+    "Birthday": "evening_social",
+    "Farewell": "evening_social",
+
+    # Traditional / festive
+    "wedding": "festive_traditional",
+    "puja": "festive_traditional",
+    "festival": "festive_traditional",
+    "Wedding": "festive_traditional",
+    "Puja": "festive_traditional",
+    "Festival": "festive_traditional",
+    "Religious Ceremony": "festive_traditional",
+
+    # Milestone
+    "Graduation": "milestone",
 }
 
 # garment categories used to build outfits
@@ -41,15 +76,6 @@ CATEGORIES = ["top", "bottom", "dress", "outerwear"]
 OUTFIT_TEMPLATES = [
     ["top", "bottom"],
     ["dress"],
-
-    # Traditional / ethnic outfits
-    ["saree"],
-    ["lehenga"],
-    ["salwar_suit"],
-    ["anarkali"],
-
-    # Single-piece formal/traditional outfits
-    ["sherwani"],
 ]
 
 OPTIONAL_CATEGORIES = ["outerwear"]

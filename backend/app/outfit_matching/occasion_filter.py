@@ -50,7 +50,8 @@ def filter_by_occasion(wardrobe: list[dict[str, Any]], occasion: str) -> list[di
     if not cluster:
         return [] 
 
-    sibling_occasions =     {name.lower() 
+    sibling_occasions = {
+    name.lower() 
      for name, cluster_name in OCCASION_CLUSTERS.items() 
      if cluster_name == cluster}
     
