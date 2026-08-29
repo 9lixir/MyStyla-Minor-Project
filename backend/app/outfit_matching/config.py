@@ -41,7 +41,17 @@ CATEGORIES = ["top", "bottom", "dress", "outerwear"]
 OUTFIT_TEMPLATES = [
     ["top", "bottom"],
     ["dress"],
+
+    # Traditional / ethnic outfits
+    ["saree"],
+    ["lehenga"],
+    ["salwar_suit"],
+    ["anarkali"],
+
+    # Single-piece formal/traditional outfits
+    ["sherwani"],
 ]
+
 OPTIONAL_CATEGORIES = ["outerwear"]
 
 EMBEDDING_DIM = 512
