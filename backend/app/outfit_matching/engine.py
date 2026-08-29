@@ -1,4 +1,7 @@
 from typing import Any
+import logging
+
+logger = logging.getLogger(__name__)
 
 from app.outfit_matching.category_ontology import structural_compatibility_multiplier
 from app.outfit_matching.compatibility import score_garment_pair
@@ -99,9 +102,16 @@ def generate_outfits(user_id, occasion, top_k=DEFAULT_TOP_K, weather=None):
     for garment in wardrobe:
         validate_garment(garment)
 
-    filtered = _weather_prefiltered(filter_by_occasion(wardrobe, occasion), weather)
-    if not filtered:
-        return {"message": f"No garments tagged for occasion '{occasion}'", "occasion": occasion, "outfits": []}
+    
+    occasion_filtered = filter_by_occasion(wardrobe, occasion)
+    if not occasion_filtered:
+        logger.warning(
+            "No garments matched occasion '%s'; falling back to full wardrobe",
+            occasion,
+        )
+        occasion_filtered = wardrobe
+    filtered = _weather_prefiltered(occasion_filtered, weather)
+
 
     weather_mode, temp_c = _weather_mode_and_temperature(weather)
     outerwear_required = requires_outerwear(weather_mode, temp_c)
