@@ -1,5 +1,5 @@
 from app.outfit_matching.category_ontology import enrich_matcher_tags, normalize_fine_category
-from app.outfit_matching.config import OCCASION
+from app.outfit_matching.config import OCCASION, OCCASION_CLUSTERS
 
 # normalization.py — add near the top, alongside category_map
 
@@ -44,7 +44,17 @@ def _apply_category_season_guard(category: str, season: str) -> str:
     return season
 
 
-def normalize_pipeline_tags(tags: dict) -> dict:
+
+
+def _occasion_cluster_expand(occasions):
+    """Add every occasion sharing a cluster with one already present, so a
+    garment tagged for one occasion also carries its siblings. Everything it
+    returns is a member of OCCASION."""
+    clusters = {OCCASION_CLUSTERS[o] for o in occasions if o in OCCASION_CLUSTERS}
+    siblings = [o for o in OCCASION if OCCASION_CLUSTERS.get(o) in clusters]
+    return list(dict.fromkeys(list(occasions) + siblings)) or list(occasions)
+
+def normalize_pipeline_tags(tags: dict, expand_occasion: bool = False) -> dict:
     """map classifier labels into matcher tags"""
     fine_category = normalize_fine_category(tags.get("fine_category") or tags.get("category"))
     category_map = {
@@ -162,38 +172,41 @@ def normalize_pipeline_tags(tags: dict) -> dict:
     "graphic": "Graphic",        # accept canonical on re-save
     }
     occasion_map = {
-        "casual": "Casual",
-        "everyday wear": "Casual",
+        "everyday wear": "everyday wear",
+        "casual": "everyday wear",
+        "workout": "everyday wear",
+        "loungewear": "everyday wear",
+        "work": "work",
+        "office": "work",
+        "party": "party",
+        "date": "date",
+        "date night": "date",
+        "formal event": "formal event",
+        "farewell": "formal event",
+        "wedding": "wedding",
+        "wedding guest outfit": "wedding",
+        "puja": "puja",
+        "puja or religious ceremony outfit": "puja",
+        "festival": "festival",
+        "festival celebration outfit": "festival",
         "college": "College",
         "shopping": "Shopping",
         "travel": "Travel",
-        "work": "Office",
-        "office": "Office",
         "meeting": "Meeting",
         "interview": "Interview",
         "presentation": "Presentation",
-        "party": "Party",
-        "date": "Date",
-        "date night": "Date",
         "dinner": "Dinner",
         "birthday": "Birthday",
-        "formal event": "Farewell",
-        "farewell": "Farewell",
-        "graduation": "Graduation",
-        "wedding": "Wedding",
-        "wedding guest outfit": "Wedding",
-        "puja": "Puja",
         "religious ceremony": "Religious Ceremony",
-        "puja or religious ceremony outfit": "Puja",
-        "festival": "Festival",
-        "festival celebration outfit": "Festival",
-        "workout": "Casual",
-        "loungewear": "Casual",
+        "graduation": "Graduation",
     }
     raw_occasion = tags.get("occasion")
     raw_occasions = raw_occasion if isinstance(raw_occasion, list) else [raw_occasion]
     occasions = [occasion_map.get(str(value).lower(), value) for value in raw_occasions if value]
     occasions = [value for value in occasions if value in OCCASION]
+    occasions = list(dict.fromkeys(occasions)) or ["everyday wear"]
+    if expand_occasion:
+        occasions = _occasion_cluster_expand(occasions)
 
     raw_season = str(tags.get("season", "")).lower()
     safe_season = season_map.get(raw_season, "All-Season")
@@ -206,6 +219,6 @@ def normalize_pipeline_tags(tags: dict) -> dict:
         "formality": formality_map.get(str(tags.get("formality", "")).lower(), "Casual"),
         "season": safe_season,
         "pattern": pattern_map.get(str(tags.get("pattern", "")).lower(), "Solid"),
-        "occasion": occasions or ["Casual"],
+        "occasion": occasions,
     }
     return enrich_matcher_tags(normalized)

@@ -145,7 +145,7 @@ export const CATEGORY_GROUPS = [
     id: "footwear",
     label: "Footwear",
     icon: "footwear",
-    categories: ["footwear", "sneakers", "boots", "sandals", "heels", "flats", "loafers"],
+    categories: ["footwear", "sneakers", "boots", "sandals", "heels", "flats", "loafers", "mojaris"],
   },
   {
     id: "bags",

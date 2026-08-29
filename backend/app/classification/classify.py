@@ -29,7 +29,7 @@ def process_and_update(garment_id: str, cutout_path: str) -> dict:
     """Full flow: classify + embed a cutout, then push results into the existing Qdrant point."""
     result = analyze_garment(cutout_path)
     raw_tags = result["tags"]
-    matcher_tags = normalize_pipeline_tags(raw_tags)
+    matcher_tags = normalize_pipeline_tags(raw_tags, expand_occasion = True)
  
     logger.info(
         "garment=%s raw_category=%s matcher_category=%s",

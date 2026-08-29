@@ -106,7 +106,7 @@ async def upload_garment(file: UploadFile = File(...), db: Session = Depends(get
         # Merged changes: extraction of vectors/flags alongside normalization logic
         embedding = result["embedding"]
         flags = result["flags"]
-        suggested_classification = normalize_pipeline_tags(result["tags"])
+        suggested_classification = normalize_pipeline_tags(result["tags"], expand_occasion=True)
 
         # storing in qdrant with metadata
         metadata = {

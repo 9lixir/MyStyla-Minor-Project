@@ -54,7 +54,6 @@ def _weather_prefiltered(garments: list[dict[str, Any]], weather: dict[str, Any]
             garment_weather_score(str(g.get("tags", {}).get("season", "")), temperature) >= 0.2
             or (outerwear_required and is_outerwear)
         )
-    print(f"DEBUG weather_mode={weather_mode!r} temp_c={temp_c!r} excluded={outerwear_excluded}")
     kept = [g for g in garments if _allowed(g)]
     if temperature <= 14:
         return kept
@@ -83,7 +82,11 @@ def _weather_mode_and_temperature(weather: dict[str, Any] | None) -> tuple[str |
         or weather.get("style_profile")
         or weather.get("condition")
     )
-    temperature = weather.get("temperature_c")
+    # Outerwear decisions follow how the weather FEELS, not the raw air temp:
+    # a 26C day that feels like 33C should not ask for a jacket.
+    temperature = weather.get("feels_like_c")
+    if not isinstance(temperature, (int, float)):
+        temperature = weather.get("temperature_c")
     if not isinstance(temperature, (int, float)):
         temperature = None
     return str(mode) if mode is not None else None, temperature
@@ -114,7 +117,7 @@ def generate_outfits(user_id, occasion, top_k=DEFAULT_TOP_K, weather=None):
 
 
     weather_mode, temp_c = _weather_mode_and_temperature(weather)
-    outerwear_required = requires_outerwear(weather_mode, temp_c)
+    outerwear_required = requires_outerwear(weather_mode, temp_c) and not excludes_outerwear(weather_mode, temp_c)
     buckets = group_by_category(filtered)
     outfits = rank_outfits(
         filtered,

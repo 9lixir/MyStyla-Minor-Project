@@ -44,10 +44,13 @@ def rank_outfits(
 ) -> list[dict[str, Any]]:
     candidates = _generate_combinations(buckets)
     if require_outerwear:
-        candidates = [
+        with_outer = [
             outfit for outfit in candidates
             if any(g.get("category") == "outerwear" for g in outfit)
         ]
+        # Prefer outfits with outerwear when available, but never dead-end to
+        # zero just because the wardrobe (or the templates) have none.
+        candidates = with_outer or candidates
     if not candidates:
         return []
 
