@@ -8,6 +8,7 @@ import {
   PATTERN_LABELS,
   SEASON_LABELS,
   groupForCategory,
+  normalizePattern,
 } from "../lib/categories"
 
 const EDIT_CATEGORY_LABELS = ["top", "bottom", "dress", "outerwear"]
@@ -459,7 +460,7 @@ export default function Wardrobe({
       category: toFormValue(garment.tags?.category, "top"),
       formality: toFormValue(garment.tags?.formality, "casual"),
       season: toFormValue(garment.tags?.season, "all-season"),
-      pattern: toFormValue(garment.tags?.pattern, "solid"),
+      pattern: normalizePattern(garment.tags?.pattern),
       occasion: toOccasionFormValues(garment.tags?.occasion),
     })
   }
@@ -551,10 +552,7 @@ export default function Wardrobe({
           updated.tags?.season,
           editDraft.season
         ),
-        pattern: toFormValue(
-          updated.tags?.pattern,
-          editDraft.pattern
-        ),
+        pattern: normalizePattern(updated.tags?.pattern),
         occasion: toOccasionFormValues(
           updated.tags?.occasion || editDraft.occasion
         ),

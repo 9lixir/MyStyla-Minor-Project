@@ -7,6 +7,7 @@ import {
   SEASON_LABELS,
   PATTERN_LABELS,
   OCCASION_LABELS,
+  normalizePattern,
 } from "@/lib/categories"
 
 const titleCase = (value) =>
@@ -64,9 +65,7 @@ export default function ReviewTags({ garment, onBack, onSave }) {
         ? String(source.season).toLowerCase()
         : fallback.season,
 
-      pattern: source.pattern
-        ? String(source.pattern).toLowerCase()
-        : fallback.pattern,
+      pattern: source.pattern ? normalizePattern(source.pattern) : fallback.pattern,
 
       occasion:
         Array.isArray(source.occasion) && source.occasion.length > 0
